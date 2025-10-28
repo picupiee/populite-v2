@@ -26,7 +26,7 @@ export default function SignIn() {
         `Cek email / password anda.\n\n ${error.message}`
       );
     } finally {
-      router.push("/");
+      router.push("/dashboard/home");
     }
   };
   return (
