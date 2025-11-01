@@ -1,7 +1,7 @@
 import { useAuth } from "@/context/AuthProvider";
 import { useToastService } from "@/hooks/useToastService";
 import { Link, router } from "expo-router";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Button, Text, TextInput, View } from "react-native";
 
 export default function SignIn() {
@@ -9,6 +9,7 @@ export default function SignIn() {
   const { showErrorToast } = useToastService();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const passwordInputRef = useRef<TextInput>(null);
 
   const handleLogin = async () => {
     try {
@@ -20,42 +21,47 @@ export default function SignIn() {
         return;
       }
       await login(email, password);
-    } catch (error: any) {
-      showErrorToast(
-        "Gagal Masuk !",
-        `Cek email / password anda.\n\n ${error.message}`
-      );
-    } finally {
       router.push("/dashboard/home");
+    } catch (error: any) {
+      showErrorToast("Gagal Masuk !", `${error.message}`);
+      console.error(error.message);
     }
   };
   return (
-    <View style={{ flex: 1, justifyContent: "center", padding: 20 }}>
-      <Text style={{ fontSize: 24, marginBottom: 20 }}>Sign In</Text>
+    <View className="flex-1 items-center justify-center p-20 md:scale-125 bg-slate-200">
+      <View className="my-10 w-full md:w-1/2">
+        <Text className="text-2xl mb-5">Sign In</Text>
+        <TextInput
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          returnKeyType="next"
+          onSubmitEditing={() => {
+            if (passwordInputRef.current) {
+              passwordInputRef.current.focus();
+            }
+          }}
+          className="border-b-2 border-slate-300 outline-none focus:border-slate-500 bg-slate-200 transition-colors ease-out p-3 mb-4"
+        />
 
-      <TextInput
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        // Add Nativewind styling here (e.g., className="border p-3 mb-4")
-        style={{ borderWidth: 1, padding: 10, marginBottom: 10 }}
-      />
+        <TextInput
+          ref={passwordInputRef}
+          returnKeyType="go"
+          onSubmitEditing={handleLogin}
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          className="border-b-2 border-slate-300 outline-none focus:border-slate-500 bg-slate-200 transition-colors ease-out p-3 mb-4"
+        />
 
-      <TextInput
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        // Add Nativewind styling here
-        style={{ borderWidth: 1, padding: 10, marginBottom: 20 }}
-      />
-
-      <Button title="Login" onPress={handleLogin} />
+        <Button title="Login" onPress={handleLogin} />
+      </View>
 
       {/* Links to other auth pages would go here */}
-      <View className="flex-row items-center justify-center mt-4 gap-2">
+      <View className="flex-row items-center justify-center mt-4 mb-4 gap-2">
         <Text>Don't have an account ?</Text>
         <Link href="/(auth)/signUp" className="text-center text-blue-500">
           Sign Up

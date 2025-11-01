@@ -1,7 +1,7 @@
 import { useAuth } from "@/context/AuthProvider";
 import { useToastService } from "@/hooks/useToastService";
-import { Link } from "expo-router";
-import React, { useState } from "react";
+import { Link, router } from "expo-router";
+import React, { useRef, useState } from "react";
 import { Button, Text, TextInput, View } from "react-native";
 
 export default function SignUp() {
@@ -10,6 +10,7 @@ export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const passwordInputRef = useRef<TextInput>(null);
 
   const handleSignUp = async () => {
     setLoading(true);
@@ -22,47 +23,58 @@ export default function SignUp() {
         return;
       }
       await signup(email, password);
+      showSuccessToast("Berhasil mendaftar", "Selamat datang di Populite");
+      router.push("/dashboard/home");
     } catch (error: any) {
-      showErrorToast(
-        "Gagal Mendaftar",
-        `Silahkan coba lagi nanti.\n\n${error.message}`
-      );
+      showErrorToast("Gagal Mendaftar", `${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", padding: 20 }}>
-      <Text className="text-2xl mb-5">Create Account</Text>
-      {/* Input fields and Button using Nativewind classes (className) */}
-      <TextInput
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        className="border p-3 mb-4 rounded"
-      />
-      <TextInput
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        className="border p-3 mb-6 rounded"
-      />
+    <View className="flex-1 items-center justify-center p-20 md:scale-125 bg-slate-200">
+      <View className="my-10 w-full md:w-1/2">
+        <Text className="text-2xl mb-5">Sign Up</Text>
+        <TextInput
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          returnKeyType="next"
+          onSubmitEditing={() => {
+            if (passwordInputRef.current) {
+              passwordInputRef.current.focus();
+            }
+          }}
+          className="border-b-2 border-slate-300 outline-none focus:border-slate-500 bg-slate-200 transition-colors ease-out p-3 mb-4"
+        />
 
-      <Button
-        title={loading ? "Creating..." : "Sign Up"}
-        onPress={handleSignUp}
-        disabled={loading}
-      />
+        <TextInput
+          ref={passwordInputRef}
+          returnKeyType="go"
+          onSubmitEditing={handleSignUp}
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          className="border-b-2 border-slate-300 outline-none focus:border-slate-500 bg-slate-200 transition-colors ease-out p-3 mb-4"
+        />
 
-      <View className="flex-row items-center justify-center mt-4 gap-2">
+        <Button title="Register" onPress={handleSignUp} />
+      </View>
+
+      {/* Links to other auth pages would go here */}
+      <View className="flex-row items-center justify-center mt-4 mb-4 gap-2">
         <Text>Already Registered ?</Text>
         <Link href="/(auth)/signIn" className="text-center text-blue-500">
           Sign In
         </Link>
       </View>
+      <Link href="/(auth)/reset-password" className="text-center text-blue-500">
+        Forgot Password ?
+      </Link>
     </View>
   );
 }

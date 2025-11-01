@@ -29,7 +29,7 @@ export function CustomDrawerContent(props: DrawerContentComponentProps) {
             await logout();
             // AuthGuard handles the redirect
           }}
-          className="w-full bg-red-500 p-2 rounded-lg"
+          className="w-full bg-red-500 p-2 py-4 rounded-lg"
         >
           <Text className="font-semibold text-center text-white">Logout</Text>
         </Pressable>
