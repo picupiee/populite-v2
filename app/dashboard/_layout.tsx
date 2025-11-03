@@ -11,47 +11,79 @@ export default function DashboardLayout() {
         drawerActiveTintColor: "#4F46E5",
         drawerStyle: { paddingTop: 40 },
         drawerLabelStyle: { marginLeft: 5 },
-        drawerItemStyle: { marginVertical: 5 },
+        drawerItemStyle: { marginVertical: 1 },
       }}
       drawerContent={CustomDrawerContent}
     >
       <Drawer.Screen
         name="home"
         options={{
-          title: "Home",
+          drawerItemStyle: { height: 0, overflow: "hidden" },
+        }}
+      />
+      <Drawer.Screen
+        name="summary"
+        options={{
+          title: "Beranda",
           drawerIcon: ({ color }) => (
             <Ionicons name="home-outline" size={24} color={color} />
           ),
         }}
       />
       <Drawer.Screen
-        name="summary"
-        options={{
-          title: "Summary",
-        }}
-      />
-      <Drawer.Screen
         name="blog"
         options={{
           title: "Blog",
+          drawerIcon: ({ color }) => (
+            <Ionicons name="list-outline" size={24} color={color} />
+          ),
         }}
       />
       <Drawer.Screen
         name="profile"
         options={{
           title: "Profile",
+          drawerIcon: ({ color }) => (
+            <Ionicons name="person-outline" size={24} color={color} />
+          ),
         }}
       />
       <Drawer.Screen
         name="setting"
         options={{
           title: "Settings",
+          drawerIcon: ({ color }) => (
+            <Ionicons name="settings-outline" size={24} color={color} />
+          ),
         }}
       />
       <Drawer.Screen
         name="(secure)/data-entry"
         options={{
-          title: "Data Entry (Hidden)",
+          title: "Pendataan Warga Baru",
+          drawerIcon: ({ color }) => (
+            <Ionicons name="create-outline" size={24} color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="(secure)/data-view/index"
+        options={{
+          title: "Data Warga",
+          drawerIcon: ({ color }) => (
+            <Ionicons name="people-outline" size={24} color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="(secure)/data-view/data/[id]"
+        options={{
+          drawerItemStyle: { height: 0, overflow: "hidden" },
+        }}
+      />
+      <Drawer.Screen
+        name="(secure)/data-view/edit/[id]"
+        options={{
           drawerItemStyle: { height: 0, overflow: "hidden" },
         }}
       />
