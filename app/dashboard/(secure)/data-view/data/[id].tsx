@@ -182,7 +182,13 @@ export default function RecordDetailScreen() {
           icon="people-outline"
         />
         <Text className="mt-4 text-xs font-normal text-gray-400">
-          Data diperbaharui pada {record.entryDate.toLocaleDateString("id-ID")}
+          Data Masuk:{" "}
+          {record.entryDate.toLocaleDateString("id-ID", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}
         </Text>
         {/* Delete Button */}
         <Pressable

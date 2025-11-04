@@ -32,10 +32,10 @@ const RecordItem = ({ record }: { record: PopulationRecord }) => {
           {/* Left Side: Details */}
           <View className="flex-1">
             <Text className="text-lg font-bold text-gray-800">
-              {record.houseId} - {record.street}
+              {record.name} - {record.houseId} - {record.street}
             </Text>
             <Text className="text-sm text-gray-600 mt-1">
-              Status: {record.houseStatus} | Domicile: {record.domicile}
+              Status Hunian: {record.houseStatus} | Domisili: {record.domicile}
             </Text>
             <Text className="text-xs text-gray-500 mt-1">
               Adults: {record.adultTotal} | Kids: {record.kidsTotal}
@@ -49,11 +49,14 @@ const RecordItem = ({ record }: { record: PopulationRecord }) => {
               size={24}
               color="#4F46E5"
             />
-            <Text className="text-xs text-gray-500 mt-1">
+            {/* <Text className="text-xs text-gray-500 mt-1">
               Entry: {entryDate}
-            </Text>
+            </Text> */}
           </View>
         </View>
+        <Text className="text-xs text-gray-500 absolute right-2 bottom-2 underline underline-offset-4">
+          Didata Pada: {entryDate}
+        </Text>
       </Pressable>
     </Link>
   );

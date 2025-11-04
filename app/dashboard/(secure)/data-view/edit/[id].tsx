@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -123,10 +123,15 @@ export default function EditRecordScreen() {
   return (
     <ScrollView className="flex-1 p-6 bg-white">
       {/* Commented out Stack.Screen title override as per your UI requirement */}
-      {/* <Stack.Screen options={{ title: `Edit ${record.houseId}` }} /> */}
+      <Stack.Screen
+        options={{
+          title: `${record.name} - ${record.houseId} di Jl. ${record.street}`,
+          headerTitleStyle: { fontSize: 16 },
+        }}
+      />
 
       <Text className="text-2xl font-bold mb-6 text-gray-800">
-        Ubah Data Hunian: {record.houseId}
+        Ubah Data Hunian {record.houseId}
       </Text>
 
       {/* Input: House ID */}

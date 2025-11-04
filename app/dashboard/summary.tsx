@@ -159,7 +159,7 @@ export default function SummaryScreen() {
     return (
       <View className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" color="#4F46E5" />
-        <Text className="mt-2 text-gray-600">Generating Summary...</Text>
+        <Text className="mt-2 text-gray-600">Memuat Data Ringkasan...</Text>
       </View>
     );
   }
@@ -169,13 +169,13 @@ export default function SummaryScreen() {
       <View className="flex-1 items-center justify-center p-10">
         <Ionicons name="warning-outline" size={60} color="#EF4444" />
         <Text className="text-xl font-bold text-red-500 mt-4">
-          Failed to Load Summary
+          Gagal Memuat Data Ringkasan
         </Text>
         <Pressable
           onPress={handleRefresh}
           className="mt-4 p-2 bg-gray-100 rounded"
         >
-          <Text className="text-indigo-600 font-semibold">Try Refreshing</Text>
+          <Text className="text-indigo-600 font-semibold">Coba Muat Ulang</Text>
         </Pressable>
       </View>
     );
