@@ -11,7 +11,7 @@ import {
 } from "react-native";
 
 // Stable Hooks and Data
-import { PopulationRecord } from "@/constants/data";
+import { PopulationRecord, STREET_OPTIONS } from "@/constants/data";
 import { usePopulationMutations } from "@/hooks/useFirestoreMutations"; // Stable Mutation
 import { usePopulationRecordListener } from "@/hooks/usePopulationRecordListener"; // Stable Read
 import { useToastService } from "@/hooks/useToastService";
@@ -133,18 +133,6 @@ export default function EditRecordScreen() {
       <Text className="text-2xl font-bold mb-6 text-gray-800">
         Ubah Data Hunian {record.houseId}
       </Text>
-
-      {/* Input: House ID */}
-      {/* <View className="mb-4">
-        <Text className="text-sm font-medium mb-1 text-gray-700">House ID</Text>
-        <TextInput
-          value={formData.houseId || ""}
-          onChangeText={(val) => handleChange("houseId", val)}
-          className="p-3 border border-gray-300 rounded-lg focus:border-indigo-500"
-          editable={!saving}
-        />
-      </View> */}
-
       {/* Input: Name */}
       <View className="mb-4">
         <Text className="text-sm font-medium mb-1 text-gray-700">
@@ -157,7 +145,6 @@ export default function EditRecordScreen() {
           editable={!saving}
         />
       </View>
-
       {/* Input: House Status (Use Picker/Dropdown here) */}
       <View className="mb-4">
         <Text className="text-sm font-medium mb-1 text-gray-700">
@@ -197,6 +184,28 @@ export default function EditRecordScreen() {
                  />
             </View>
             */}
+      {/* Street Selector */}
+      <View className="mb-4">
+        <Text className="text-sm font-medium mb-1 text-gray-700">
+          Jalan (Gang)
+        </Text>
+        <View className="flex-row flex-wrap justify-between gap-2">
+          {STREET_OPTIONS.map((streetOption) => (
+            <Pressable
+              key={streetOption}
+              onPress={() => handleChange("street", streetOption)}
+              className={`p-2 rounded-lg border flex-grow items-center ${formData.street === streetOption ? "bg-green-500 border-green-700" : "bg-white border-gray-300"}`}
+              disabled={saving}
+            >
+              <Text
+                className={`font-semibold text-sm ${formData.street === streetOption ? "text-white" : "text-gray-700"}`}
+              >
+                {streetOption}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
 
       {/* Save Button */}
       <Pressable

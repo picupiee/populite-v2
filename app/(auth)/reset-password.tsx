@@ -78,7 +78,7 @@ export default function ResetPasswordScreen() {
             href="/(auth)/signIn"
             className="text-center mt-4 text-blue-500"
           >
-            Back to Sign In
+            Kembali ke Form Masuk
           </Link>
         </View>
       </View>

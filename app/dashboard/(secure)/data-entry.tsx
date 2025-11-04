@@ -1,5 +1,7 @@
 // app/dashboard/(secure)/data-entry.tsx
-import { PopulationRecord } from "@/constants/data";
+import FormInput from "@/components/ui/FormInput";
+import SelectGroup from "@/components/ui/SelectGroup";
+import { PopulationRecord, STREET_OPTIONS } from "@/constants/data";
 import { usePopulationMutations } from "@/hooks/useFirestoreMutations";
 import { useToastService } from "@/hooks/useToastService";
 import { checkHouseIdExists } from "@/utils/populationService";
@@ -17,7 +19,7 @@ const initialFormState: Omit<
     gender: "Pria", // Default to Male
     housePrefix: "",
     houseSuffix: "",
-    street: "",
+    street: "Pinus 1",
     domicile: "Gunung Sari", // Default to Gunung Sari
     houseStatus: "Ditempati", // Default to Ditempati
     kidsTotal: 0,
@@ -135,14 +137,13 @@ export default function DataEntryScreen() {
         </Text>
 
         {/* Name */}
-        <Text className="font-semibold text-gray-700 mt-2 mb-1">
-          Nama Penghuni
-        </Text>
-        <TextInput
-          placeholder="Isi Nama Lengkap"
+        <FormInput
+          label="Nama Penghuni"
           value={formData.name}
-          onChangeText={(text) => handleChange("name", text)}
-          className="border p-3 rounded-lg border-gray-300"
+          onChangeText={(value) => handleChange("name", value)}
+          placeholder="e.g., Budi Santoso"
+          keyboardType="default"
+          // Pass the error string from your validation state
         />
 
         {/* House Status Selector */}
@@ -198,27 +199,37 @@ export default function DataEntryScreen() {
                 />
               </View>
             </View>
-            {/* New Version is Up */}
-            {/* Old Way Down */}
-            {/* <TextInput
-              placeholder="e.g., C28/19"
-              value={formData.houseId}
-              onChangeText={(text) => handleChange("houseId", text)}
-              className="border p-3 rounded-lg border-gray-300"
-            /> */}
           </View>
-          <View className="flex-1">
-            <Text className="font-semibold text-gray-700 mt-2 mb-1">
+          {/* <View className="flex-1"> */}
+          {/* <Text className="font-semibold text-gray-700 mt-2 mb-1 text-center">
               Jalan (Gang)
-            </Text>
-            <TextInput
-              placeholder="Contoh: Mawar"
-              value={formData.street}
-              onChangeText={(text) => handleChange("street", text)}
-              className="border p-3 rounded-lg border-gray-300"
-              autoCapitalize="sentences"
+            </Text> */}
+          {/* <View className="flex-row flex-wrap justify-between gap-2">
+              {STREET_OPTIONS.map((streetOption) => (
+                <Pressable
+                  key={streetOption}
+                  onPress={() => handleChange("street", streetOption)}
+                  className={`p-2 rounded-lg border flex-grow items-center ${formData.street === streetOption ? "bg-green-500" : "bg-white border-gray-300"}`}
+                >
+                  <Text
+                    className={`font-semibold text-sm ${formData.street === streetOption ? "text-white" : "text-gray-700"}`}
+                  >
+                    {streetOption}
+                  </Text>
+                </Pressable>
+              ))}
+            </View> */}
+          <View className="flex-1">
+            <SelectGroup
+              label="Jalan (Gang)"
+              options={STREET_OPTIONS}
+              selectedValue={formData.street}
+              onValueChange={(value) => handleChange("street", value)}
+              horizontal={true} // Horizontal layout is good for forms
+              className="mt-2"
             />
           </View>
+          {/* </View> */}
         </View>
 
         {/* Gender Selector (Only for Ditempati/Sewa) */}
@@ -249,29 +260,27 @@ export default function DataEntryScreen() {
             <Text className="text-center mt-3 font-semibold border-b-2 border-gray-200 pb-2">
               Total Penghuni Rumah
             </Text>
-            <View className="flex-row justify-between gap-3">
+            <View className="flex-row justify-between gap-3 mt-2">
               <View className="flex-1">
-                <Text className="font-semibold text-gray-700 mt-2 mb-1 text-center">
-                  Dewasa
-                </Text>
-                <TextInput
+                <FormInput
+                  label="Dewasa"
+                  value={formData.adultTotal}
+                  onChangeText={(value) => handleChange("adultTotal", value)}
                   placeholder="0"
-                  value={String(formData.adultTotal)}
-                  onChangeText={(text) => handleChange("adultTotal", text)}
-                  keyboardType="numeric"
-                  className="border p-3 rounded-lg border-gray-300"
+                  keyboardType="default"
+                  labelStyle="text-center"
+                  // Pass the error string from your validation state
                 />
               </View>
               <View className="flex-1">
-                <Text className="font-semibold text-gray-700 mt-2 mb-1 text-center">
-                  Anak-anak
-                </Text>
-                <TextInput
+                <FormInput
+                  label="Anak-anak"
+                  value={formData.kidsTotal}
+                  onChangeText={(value) => handleChange("kidsTotal", value)}
                   placeholder="0"
-                  value={String(formData.kidsTotal)}
-                  onChangeText={(text) => handleChange("kidsTotal", text)}
-                  keyboardType="numeric"
-                  className="border p-3 rounded-lg border-gray-300"
+                  keyboardType="default"
+                  labelStyle="text-center"
+                  // Pass the error string from your validation state
                 />
               </View>
             </View>

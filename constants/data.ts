@@ -18,3 +18,7 @@ export interface PopulationRecord {
   entryDate: Date;
   // Anything else will be added here base on user feedback
 }
+
+export const STREET_OPTIONS = ["Pinus 1", "Pinus 2", "Edelweis", "Mawar"];
+export const STATUS_OPTIONS = ["Ditempati", "Sewa", "Kosong"];
+export const GENDER_OPTIONS = ["Pria", "Wanita"];
