@@ -1,9 +1,11 @@
+import AppButton from "@/components/ui/AppButton";
 import { useToastService } from "@/hooks/useToastService";
 import { auth } from "@/lib/firebase"; // Direct import of auth instance
 import { Link, useRouter } from "expo-router";
 import { sendPasswordResetEmail } from "firebase/auth";
 import React, { useState } from "react";
-import { Alert, Button, Text, TextInput, View } from "react-native";
+import { Alert, Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
@@ -49,29 +51,37 @@ export default function ResetPasswordScreen() {
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", padding: 20 }}>
-      <Text className="text-2xl mb-5">Reset Password</Text>
-      <Text className="text-base mb-4 text-gray-600">
-        Enter your email to receive a password reset link.
-      </Text>
+    <SafeAreaView className="flex-1">
+      <View className="flex-1 items-center justify-center p-10 md:scale-125 bg-slate-200">
+        <View className="my-10 w-full md:w-1/2">
+          <Text className="text-2xl mb-2 text-center">Reset Password</Text>
+          <Text className="text-xs mb-4 text-gray-600 text-center">
+            Silahkan masukkan alamat email untuk mereset password.
+          </Text>
 
-      <TextInput
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        className="border p-3 mb-6 rounded"
-      />
+          <TextInput
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            className="border-b-2 border-slate-300 outline-none focus:border-slate-500 bg-slate-200 transition-colors ease-out p-3 mb-4"
+          />
 
-      <Button
-        title={loading ? "Sending..." : "Send Reset Link"}
-        onPress={handleReset}
-        disabled={loading}
-      />
+          <AppButton
+            title="Reset Password"
+            loadingText="Mohon Tunggu..."
+            onPress={handleReset}
+            variant="primary"
+          />
 
-      <Link href="/(auth)/signIn" className="text-center mt-4 text-blue-500">
-        Back to Sign In
-      </Link>
-    </View>
+          <Link
+            href="/(auth)/signIn"
+            className="text-center mt-4 text-blue-500"
+          >
+            Back to Sign In
+          </Link>
+        </View>
+      </View>
+    </SafeAreaView>
   );
 }

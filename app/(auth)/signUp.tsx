@@ -1,8 +1,9 @@
+import AppButton from "@/components/ui/AppButton";
 import { useAuth } from "@/context/AuthProvider";
 import { useToastService } from "@/hooks/useToastService";
 import { Link, router } from "expo-router";
 import React, { useRef, useState } from "react";
-import { Button, Text, TextInput, View } from "react-native";
+import { Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignUp() {
@@ -37,9 +38,9 @@ export default function SignUp() {
     <SafeAreaView className="flex-1">
       <View className="flex-1 items-center justify-center p-10 md:scale-125 bg-slate-200">
         <View className="my-10 w-full md:w-1/2">
-          <Text className="text-2xl mb-5">Sign Up</Text>
+          <Text className="text-2xl mb-5">Daftar</Text>
           <TextInput
-            placeholder="Email"
+            placeholder="Alamat Email"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -64,21 +65,21 @@ export default function SignUp() {
             className="border-b-2 border-slate-300 outline-none focus:border-slate-500 bg-slate-200 transition-colors ease-out p-3 mb-4"
           />
 
-          <Button title="Register" onPress={handleSignUp} />
+          <AppButton title="Daftar" onPress={handleSignUp} variant="primary" />
         </View>
 
         {/* Links to other auth pages would go here */}
         <View className="flex-row items-center justify-center mt-4 mb-4 gap-2">
-          <Text>Already Registered ?</Text>
+          <Text>Sudah Terdaftar ?</Text>
           <Link href="/(auth)/signIn" className="text-center text-blue-500">
-            Sign In
+            Masuk
           </Link>
         </View>
         <Link
           href="/(auth)/reset-password"
           className="text-center text-blue-500"
         >
-          Forgot Password ?
+          Luoa Password ?
         </Link>
       </View>
     </SafeAreaView>
