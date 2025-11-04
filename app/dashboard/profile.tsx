@@ -1,13 +1,21 @@
 // app/dashboard/home.tsx
-import { View, Text } from 'react-native';
+import { router } from "expo-router";
+import { Pressable, Text, View } from "react-native";
 
 export default function Profile() {
   return (
     <View className="flex-1 items-center justify-center p-5 bg-white">
-      <Text className="text-3xl font-bold text-indigo-700 mb-4">Welcome Back!</Text>
-      <Text className="text-lg text-gray-600 text-center">
-        This is your Profile Page. Click the menu ☰ to navigate.
+      <Text className="text-3xl font-bold text-indigo-700 mb-4">
+        Segera Hadir
       </Text>
+      <Text className="text-lg text-gray-600 text-center">
+        Halaman Ini Belum Tersedia !
+      </Text>
+      <Pressable className="mt-4" onPress={() => router.back()}>
+        <Text className="text-lg text-blue-600 underline">
+          Kembali ke Beranda
+        </Text>
+      </Pressable>
     </View>
   );
 }
