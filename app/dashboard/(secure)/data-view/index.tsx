@@ -107,7 +107,7 @@ export default function DataViewListScreen() {
   const STREET_FILTER_OPTIONS = ["Semua", ...STREET_OPTIONS];
   const GENDER_FILTER_OPTIONS = ["Semua", ...GENDER_OPTIONS];
 
-  const [viewMode, setViewMode] = useState<"card" | "list">("card");
+  const [viewMode, setViewMode] = useState<"card" | "list">("list");
   const [isControlsVisible, setIsControlsVisible] = useState(false);
 
   // Use useFocusEffect to reload data whenever the screen becomes focused (e.g., after saving a new record)
@@ -201,10 +201,10 @@ export default function DataViewListScreen() {
       {/* Configure Stack Header */}
       {/* <Stack.Screen options={{ title: "Population Records" }} /> */}
       {/* Header For Add new Entry, Filter and Sort options */}
-      <Text className="italic text-xs font-semibold bg-gray-100 p-2 rounded-md text-center">
+      <Text className="italic text-xs font-semibold bg-red-100 p-2 rounded-md text-center">
         Data yang ditampilkan adalah <strong>data mockup / tidak asli</strong>.
-        Mohon untuk tidak menggunakan data asli sebelum proyek ini bersifat
-        final dan sudah dalam status "in-production"
+        Mohon untuk tidak menggunakan data asli sebelum proyek ini sudah dalam
+        status <strong>"In-Production"</strong>
       </Text>
       <View className="p-4 bg-white border-b border-gray-100">
         {/* --- Top Row: Title and Actions (Add Button, View Switcher, Filter Toggle) --- */}
@@ -224,16 +224,6 @@ export default function DataViewListScreen() {
             {/* View Switcher */}
             <View className="flex-row border border-gray-300 rounded-lg overflow-hidden">
               <Pressable
-                onPress={() => setViewMode("card")}
-                className={`p-2 ${viewMode === "card" ? "bg-indigo-600" : "bg-white"}`}
-              >
-                <Ionicons
-                  name="apps-outline"
-                  size={20}
-                  color={viewMode === "card" ? "#fff" : "#4F46E5"}
-                />
-              </Pressable>
-              <Pressable
                 onPress={() => setViewMode("list")}
                 className={`p-2 border-l border-gray-300 ${viewMode === "list" ? "bg-indigo-600" : "bg-white"}`}
               >
@@ -241,6 +231,16 @@ export default function DataViewListScreen() {
                   name="list-outline"
                   size={20}
                   color={viewMode === "list" ? "#fff" : "#4F46E5"}
+                />
+              </Pressable>
+              <Pressable
+                onPress={() => setViewMode("card")}
+                className={`p-2 ${viewMode === "card" ? "bg-indigo-600" : "bg-white"}`}
+              >
+                <Ionicons
+                  name="apps-outline"
+                  size={20}
+                  color={viewMode === "card" ? "#fff" : "#4F46E5"}
                 />
               </Pressable>
             </View>
@@ -389,7 +389,55 @@ export default function DataViewListScreen() {
           )}
         </View>
       </View>
-      {sortedAndFilterRecords.length === 0 && !loading ? (
+      {loading ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#4F46E5" />
+          <Text className="mt-2 text-gray-600">Loading data...</Text>
+        </View>
+      ) : records && records.length === 0 ? (
+        <View className="flex-1 items-center justify-center p-10">
+          <Ionicons name="documents-outline" size={60} color="#9CA3AF" />
+          <Text className="text-xl font-semibold text-gray-500 mt-4">
+            Data Hunian Masih Kosong
+          </Text>
+          <Text className="text-gray-400 text-center mt-2">
+            Mulai pendataan warga / hunian dengan mengklik tombol{" "}
+            <strong>+ Warga / Hunian Baru</strong> diatas.
+          </Text>
+        </View>
+      ) : sortedAndFilterRecords.length === 0 ? (
+        <View className="flex-1 items-center justify-center p-10">
+          <Ionicons name="search-outline" size={60} color="#9CA3AF" />
+          <Text className="text-xl font-semibold text-gray-500 mt-4">
+            Data Tidak Ditemukan !
+          </Text>
+          <Text className="text-gray-400 text-center mt-2">
+            Coba lagi dengan pilihan filter yang lain.
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          // 💡 Use the sorted and filtered array!
+          data={sortedAndFilterRecords}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) =>
+            viewMode === "card" ? (
+              <RecordItem record={item} /> // Existing, verbose card view
+            ) : (
+              <CompactListItem record={item} /> // New, compact list view
+            )
+          }
+          contentContainerStyle={{
+            paddingHorizontal: viewMode === "card" ? 10 : 0,
+            paddingBottom: 20,
+          }}
+
+          // ... (rest of FlatList props like RefreshControl)
+        />
+      )}
+
+      {/* Old one, saved for later */}
+      {/* {sortedAndFilterRecords.length === 0 && !loading ? (
         <View className="flex-1 items-center justify-center p-10">
           <Ionicons name="search-outline" size={60} color="#9CA3AF" />
           <Text className="text-xl font-semibold text-gray-500 mt-4">
@@ -417,7 +465,7 @@ export default function DataViewListScreen() {
           }}
           // ... (rest of FlatList props like RefreshControl)
         />
-      )}
+      )} */}
     </View>
   );
 }

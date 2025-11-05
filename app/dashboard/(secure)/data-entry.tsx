@@ -21,21 +21,38 @@ const initialFormState: Omit<
     gender: "Pria", // Default to Male
     housePrefix: "",
     houseSuffix: "",
-    street: "Pinus 1",
+    street: STREET_OPTIONS[0],
     domicile: "Gunung Sari", // Default to Gunung Sari
     houseStatus: "Ditempati", // Default to Ditempati
     kidsTotal: 0,
     adultTotal: 0, // Default to 1 adult if Ditempati
     dateOccupied: undefined, // Will be set only if status is Ditempati/Sewa
   };
-  
+const INITIAL_ERRORS = {
+  name: null,
+  gender: null,
+  housePrefix: "",
+  houseSuffix: "",
+  street: null,
+  domicile: null,
+  houseStatus: null,
+  dateOccupied: null,
+};
 
 export default function DataEntryScreen() {
   const router = useRouter();
   const { addRecord } = usePopulationMutations();
   const { showSuccessToast, showErrorToast } = useToastService();
   const [formData, setFormData] = useState(initialFormState);
+  const [errors, setErrors] = useState(INITIAL_ERRORS);
   const [loading, setLoading] = useState(false);
+
+  const handleReset = () => {
+    setFormData(initialFormState);
+    setErrors(INITIAL_ERRORS);
+    router.back();
+    console.log("Form Resetted !");
+  };
 
   const handleChange = (key: keyof typeof initialFormState, value: any) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -307,7 +324,7 @@ export default function DataEntryScreen() {
           variant="primary"
         />
         <AppButton
-          onPress={() => router.back()}
+          onPress={handleReset}
           title="Batal"
           variant="danger"
           className="mt-3"

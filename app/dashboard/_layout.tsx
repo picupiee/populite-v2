@@ -69,7 +69,7 @@ export default function DashboardLayout() {
       <Drawer.Screen
         name="(secure)/data-view/index"
         options={{
-          title: "Data Warga (Data Mockup / Contoh)",
+          title: "Data Warga",
           drawerIcon: ({ color }) => (
             <Ionicons name="people-outline" size={24} color={color} />
           ),

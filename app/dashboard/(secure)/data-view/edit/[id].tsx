@@ -13,6 +13,7 @@ import {
 // Stable Hooks and Data
 import AppButton from "@/components/ui/AppButton";
 import DatePickerInput from "@/components/ui/DatePickerInput";
+import FormInput from "@/components/ui/FormInput";
 import { PopulationRecord, STREET_OPTIONS } from "@/constants/data";
 import { usePopulationMutations } from "@/hooks/useFirestoreMutations"; // Stable Mutation
 import { usePopulationRecordListener } from "@/hooks/usePopulationRecordListener"; // Stable Read
@@ -206,6 +207,32 @@ export default function EditRecordScreen() {
               </Text>
             </Pressable>
           ))}
+        </View>
+      </View>
+      {/* Update Adult / Kids Total */}
+      <Text className="text-center font-medium mt-2 border-t-2 border-gray-200 pt-2">
+        Perbaharui Jumlah Penghuni
+      </Text>
+      <View className="flex-row justify-between gap-3 mt-2">
+        <View className="flex-1">
+          <FormInput
+            label="Dewasa"
+            value={formData.adultTotal}
+            onChangeText={(value) => handleChange("adultTotal", value)}
+            placeholder="0"
+            keyboardType="decimal-pad"
+            labelStyle="text-center"
+          />
+        </View>
+        <View className="flex-1">
+          <FormInput
+            label="Anak-Anak"
+            value={formData.kidsTotal}
+            onChangeText={(value) => handleChange("kidsTotal", value)}
+            placeholder="0"
+            keyboardType="decimal-pad"
+            labelStyle="text-center"
+          />
         </View>
       </View>
       {/* Change Date of Occupy */}
