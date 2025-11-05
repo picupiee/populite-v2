@@ -184,6 +184,11 @@ export default function DataViewListScreen() {
       {/* Configure Stack Header */}
       {/* <Stack.Screen options={{ title: "Population Records" }} /> */}
       {/* Header For Add new Entry, Filter and Sort options */}
+      <Text className="italic text-xs font-semibold bg-gray-100 p-2 rounded-md text-center">
+        Data yang ditampilkan adalah <strong>data mockup / tidak asli</strong>.
+        Mohon untuk tidak menggunakan data asli sebelum proyek ini bersifat
+        final dan sudah dalam status "in-production"
+      </Text>
       <View className="p-4 bg-white border-b border-gray-100">
         {/* --- Top Row: Title and Actions (Add Button, View Switcher, Filter Toggle) --- */}
         <View className="flex-row justify-between items-center mb-4">
