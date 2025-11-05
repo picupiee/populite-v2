@@ -122,7 +122,7 @@ export default function DataEntryScreen() {
 
   // Helper for Date input (we'll simplify this for now without a date picker)
   const DatePlaceholder = () => (
-    <Text className="text-gray-500 italic text-xs text-center">
+    <Text className="text-gray-500 italic mt-2 text-sm">
       Pilih tanggal sesuai perkiraan penghuni masuk atau tinggal didalam hunian.
     </Text>
   );

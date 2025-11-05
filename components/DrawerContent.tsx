@@ -34,7 +34,7 @@ export function CustomDrawerContent(props: DrawerContentComponentProps) {
           <Text className="font-semibold text-center text-white">Logout</Text>
         </Pressable>
         <Text className="text-xs text-gray-500 mt-2 text-center">
-          Populite versi 1.0.0 | With 💪 by PicuPiee
+          Populite V2 | With 💪 by PicuPiee
         </Text>
       </View>
     </View>
