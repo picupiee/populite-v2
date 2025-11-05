@@ -168,6 +168,13 @@ export default function RecordDetailScreen() {
           value={record.houseStatus}
           icon="home-outline"
         />
+        <DetailCard
+          title="Mulai Menghuni Sejak"
+          value={record.dateOccupied.toLocaleDateString("id-ID", {
+            year: "numeric",
+          })}
+          icon="calendar-outline"
+        />
         <Text className="mt-5 pt-2 border-t-2 border-gray-200 text-lg font-semibold text-center">
           Jumlah Penghuni Rumah
         </Text>

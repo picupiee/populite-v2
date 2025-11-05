@@ -1,4 +1,6 @@
 // app/dashboard/(secure)/data-entry.tsx
+import AppButton from "@/components/ui/AppButton";
+import DatePickerInput from "@/components/ui/DatePickerInput";
 import FormInput from "@/components/ui/FormInput";
 import SelectGroup from "@/components/ui/SelectGroup";
 import { PopulationRecord, STREET_OPTIONS } from "@/constants/data";
@@ -26,6 +28,7 @@ const initialFormState: Omit<
     adultTotal: 0, // Default to 1 adult if Ditempati
     dateOccupied: undefined, // Will be set only if status is Ditempati/Sewa
   };
+  
 
 export default function DataEntryScreen() {
   const router = useRouter();
@@ -119,9 +122,8 @@ export default function DataEntryScreen() {
 
   // Helper for Date input (we'll simplify this for now without a date picker)
   const DatePlaceholder = () => (
-    <Text className="text-gray-500 italic mt-2 text-sm">
-      Using a simple text input for Date for now. We will integrate a date
-      picker later.
+    <Text className="text-gray-500 italic text-xs text-center">
+      Pilih tanggal sesuai perkiraan penghuni masuk atau tinggal didalam hunian.
     </Text>
   );
 
@@ -200,25 +202,7 @@ export default function DataEntryScreen() {
               </View>
             </View>
           </View>
-          {/* <View className="flex-1"> */}
-          {/* <Text className="font-semibold text-gray-700 mt-2 mb-1 text-center">
-              Jalan (Gang)
-            </Text> */}
-          {/* <View className="flex-row flex-wrap justify-between gap-2">
-              {STREET_OPTIONS.map((streetOption) => (
-                <Pressable
-                  key={streetOption}
-                  onPress={() => handleChange("street", streetOption)}
-                  className={`p-2 rounded-lg border flex-grow items-center ${formData.street === streetOption ? "bg-green-500" : "bg-white border-gray-300"}`}
-                >
-                  <Text
-                    className={`font-semibold text-sm ${formData.street === streetOption ? "text-white" : "text-gray-700"}`}
-                  >
-                    {streetOption}
-                  </Text>
-                </Pressable>
-              ))}
-            </View> */}
+          {/* Street Pick */}
           <View className="flex-1">
             <SelectGroup
               label="Jalan (Gang)"
@@ -288,18 +272,11 @@ export default function DataEntryScreen() {
         )}
 
         {/* Date Occupied Input (Optional, requires conversion) */}
-        <Text className="font-semibold text-gray-700 mt-4 mb-1">
-          Tanggal Dihuni (YYYY-MM-DD)
-        </Text>
-        <TextInput
-          placeholder="e.g., 2023-01-15 (Optional)"
-          value={
-            formData.dateOccupied instanceof Date
-              ? formData.dateOccupied.toLocaleDateString("id-ID").split("T")[0]
-              : (formData.dateOccupied as string) || ""
-          }
-          onChangeText={(text) => handleChange("dateOccupied", new Date(text))} // Simplistic date conversion
-          className="border p-3 rounded-lg border-gray-300"
+        <DatePickerInput
+          label="Tanggal Hunian Ditempati"
+          value={formData.dateOccupied}
+          onChange={(date) => handleChange("dateOccupied", date)}
+          className="mb-0"
         />
         <DatePlaceholder />
 
@@ -323,21 +300,18 @@ export default function DataEntryScreen() {
             </Pressable>
           ))}
         </View>
-
-        {/* <Button
-          title={loading ? "Saving..." : "Save Population Record"}
+        <AppButton
           onPress={handleSave}
-          disabled={loading}
-        /> */}
-        <Pressable
-          className="p-2 bg-indigo-600 rounded-lg"
-          onPress={handleSave}
-          disabled={loading}
-        >
-          <Text className="font-semibold text-white text-lg text-center">
-            {loading ? "Menyimpan..." : "Simpan Data"}
-          </Text>
-        </Pressable>
+          title="Simpan Data"
+          loadingText="Menyimpan..."
+          variant="primary"
+        />
+        <AppButton
+          onPress={() => router.back()}
+          title="Batal"
+          variant="danger"
+          className="mt-3"
+        />
 
         <View className="h-10" />
       </ScrollView>

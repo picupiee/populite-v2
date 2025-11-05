@@ -11,6 +11,8 @@ import {
 } from "react-native";
 
 // Stable Hooks and Data
+import AppButton from "@/components/ui/AppButton";
+import DatePickerInput from "@/components/ui/DatePickerInput";
 import { PopulationRecord, STREET_OPTIONS } from "@/constants/data";
 import { usePopulationMutations } from "@/hooks/useFirestoreMutations"; // Stable Mutation
 import { usePopulationRecordListener } from "@/hooks/usePopulationRecordListener"; // Stable Read
@@ -206,17 +208,28 @@ export default function EditRecordScreen() {
           ))}
         </View>
       </View>
+      {/* Change Date of Occupy */}
+      <View className="mb-4">
+        <DatePickerInput
+          label="Tanggal Dihuni (Date Occupied)"
+          value={formData.dateOccupied} // Must be a Date object or undefined
+          onChange={(date) => handleChange("dateOccupied", date)}
+        />
+      </View>
 
       {/* Save Button */}
-      <Pressable
+      <AppButton
         onPress={handleUpdate}
-        className="mt-4 bg-indigo-600 p-3 rounded-lg shadow-md"
-        disabled={saving}
-      >
-        <Text className="text-white text-center font-bold text-lg">
-          {saving ? "Menyimpan..." : "Simpan Data"}
-        </Text>
-      </Pressable>
+        title="Simpan Data"
+        loadingText="Menyimpan..."
+        variant="primary"
+      />
+      <AppButton
+        onPress={() => router.back()}
+        title="Batal"
+        variant="danger"
+        className="mt-3"
+      />
     </ScrollView>
   );
 }

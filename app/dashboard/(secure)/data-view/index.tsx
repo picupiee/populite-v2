@@ -178,6 +178,23 @@ export default function DataViewListScreen() {
     results.sort((a, b) => compare(a, b, sort.key));
     return results;
   }, [records, filters, sort]);
+  const activeFilters = React.useMemo(() => {
+    const filtersArray = [];
+
+    if (filters.street !== "Semua") {
+      filtersArray.push(`Jalan: ${filters.street}`);
+    }
+    if (filters.status !== "Semua") {
+      filtersArray.push(`Status: ${filters.status}`);
+    }
+    // Only include Gender filter if it's not 'Semua' and we are in 'list' view mode
+    // (Gender filtering typically only makes sense when listing individuals, though we include it here)
+    if (filters.gender !== "Semua") {
+      filtersArray.push(`Gender: ${filters.gender}`);
+    }
+
+    return filtersArray;
+  }, [filters]);
 
   return (
     <View className="flex-1 bg-white">
@@ -337,6 +354,35 @@ export default function DataViewListScreen() {
             </View>
           </View>
         )}
+        <View>
+          {activeFilters.length > 0 && (
+            <View className="px-4 bg-white border-b border-gray-100">
+              <View className="flex-row items-center flex-wrap">
+                <Text className="text-sm text-gray-700 font-semibold mr-3">
+                  Filter Aktif :
+                </Text>
+                {activeFilters.map((filter, index) => (
+                  <View
+                    key={index}
+                    className="flex-row items-center bg-indigo-100 px-3 py-1 mr-2 mb-1 rounded-full border border-indigo-200"
+                  >
+                    <Text className="text-xs font-medium text-indigo-700">
+                      {filter}
+                    </Text>
+                    {/* Optional: Add a clear button for each filter */}
+                    {/* <Pressable onPress={() => clearFilter(filterKey)} className="ml-1">
+                        <Ionicons name="close-circle" size={14} color="#4F46E5" />
+                    </Pressable> */}
+                  </View>
+                ))}
+                {/* Optional: Add a button to reset all filters */}
+                {/* <Pressable onPress={resetFilters} className="ml-2">
+                <Text className="text-xs text-red-500 underline">Clear All</Text>
+            </Pressable> */}
+              </View>
+            </View>
+          )}
+        </View>
       </View>
       {sortedAndFilterRecords.length === 0 && !loading ? (
         <View className="flex-1 items-center justify-center p-10">

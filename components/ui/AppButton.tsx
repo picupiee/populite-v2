@@ -46,7 +46,7 @@ export default function AppButton({
     <Pressable
       onPress={onPress}
       disabled={isLoading}
-      className={`p-4 rounded-lg shadow-md flex-row justify-center items-center ${styles.button} ${disableStyle} ${className}`}
+      className={`p-2 rounded-lg shadow-md flex-row justify-center items-center ${styles.button} ${disableStyle} ${className}`}
     >
       {isLoading ? (
         <View className="flex-row items-center">
@@ -59,7 +59,7 @@ export default function AppButton({
           </Text>
         </View>
       ) : (
-        <Text className={`font-bold text-lg ${textColor}`}>{title}</Text>
+        <Text className={`font-bold text-base ${textColor}`}>{title}</Text>
       )}
     </Pressable>
   );
