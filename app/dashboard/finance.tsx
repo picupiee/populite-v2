@@ -2,7 +2,7 @@
 import { router } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 
-export default function Blog() {
+export default function Finance() {
   return (
     <View className="flex-1 items-center justify-center p-5 bg-white">
       <Text className="text-3xl font-bold text-indigo-700 mb-4">
