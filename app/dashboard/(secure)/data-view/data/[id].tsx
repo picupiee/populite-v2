@@ -3,7 +3,7 @@ import { usePopulationRecordListener } from "@/hooks/usePopulationRecordListener
 import { useToastService } from "@/hooks/useToastService";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Link, Stack, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect } from "react";
+import React from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -48,12 +48,13 @@ export default function RecordDetailScreen() {
   const { showSuccessToast, showErrorToast } = useToastService();
 
   // 1. Handle Not Found Error
-  useEffect(() => {
-    if (!loading && error && error.message === "Record not found") {
-      showErrorToast("Not Found", `Record with ID ${id} not found.`);
-      router.back();
-    }
-  }, [loading, error, id]); // Stable dependencies: only runs on state change
+  // useEffect(() => {
+  //   if (!loading && id && error && error.message === "Record not found") {
+  //     showErrorToast("Not Found", `Record with ID ${id} not found.`);
+  //     router.setParams({ id: "" });
+  //     router.replace("/dashboard/(secure)/data-view");
+  //   }
+  // }, [loading, error, id, router, showErrorToast]); // Stable dependencies: only runs on state change
 
   // 2. Format Dates (safely)
   const formattedDate = record?.entryDate.toLocaleDateString("id-ID", {
@@ -63,13 +64,13 @@ export default function RecordDetailScreen() {
     hour: "2-digit",
     minute: "2-digit",
   });
-  const formattedOccupiedDate = record?.dateOccupied
-    ? record.dateOccupied.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    : "N/A";
+  const formattedOccupiedDate = record?.dateOccupied ? (
+    record.dateOccupied.toLocaleDateString("en-US", {
+      year: "numeric",
+    })
+  ) : (
+    <Text className="text-gray-400">Belum Diisi</Text>
+  );
 
   // 3. Delete Logic
   const handleDelete = async () => {
@@ -80,30 +81,31 @@ export default function RecordDetailScreen() {
       Platform.OS !== "web"
         ? () =>
             Alert.alert(
-              "Confirm Deletion",
-              `Are you sure you want to delete ${record.houseId}?`,
+              "Konfirmasi",
+              `Yakin ingin menghapus data ${record?.houseId}?`,
               [
-                { text: "Cancel", style: "cancel" },
-                { text: "Delete", style: "destructive", onPress: runDelete },
+                { text: "Batal", style: "cancel" },
+                { text: "Hapus", style: "destructive", onPress: runDelete },
               ]
             )
         : () => {
             if (
-              window.confirm(
-                `Are you sure you want to delete ${record.houseId}?`
-              )
+              window.confirm(`Yakin ingin menghapus data ${record?.houseId}?`)
             ) {
               runDelete();
+              router.replace("/dashboard/(secure)/data-view");
             }
           };
 
     const runDelete = async () => {
       try {
         await deleteRecord(id);
-        showSuccessToast("Deleted!", "Record successfully removed.");
-        router.replace("/dashboard/(secure)/data-view"); // Go back to the list
+        showSuccessToast("Sukses Dihapus!", "Data Berhasil Dihapus");
       } catch (err) {
-        showErrorToast("Delete Failed", "Could not delete the record.");
+        showErrorToast(
+          "Gagal menghapus",
+          "Terjadi kesalahan saat menghapus data"
+        );
       }
     };
 
@@ -115,7 +117,7 @@ export default function RecordDetailScreen() {
     return (
       <View className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" color="#4F46E5" />
-        <Text className="mt-2 text-gray-600">Loading record...</Text>
+        <Text className="mt-2 text-gray-600">Memuat Data...</Text>
       </View>
     );
   }
@@ -124,7 +126,9 @@ export default function RecordDetailScreen() {
     // This state should mostly be caught by the useEffect above
     return (
       <View className="flex-1 items-center justify-center p-10">
-        <Text className="text-xl font-bold text-red-500">Record Not Found</Text>
+        <Text className="text-xl font-bold text-red-500">
+          Data Tidak Ditemukan !
+        </Text>
       </View>
     );
   }
@@ -170,9 +174,7 @@ export default function RecordDetailScreen() {
         />
         <DetailCard
           title="Mulai Menghuni Sejak"
-          value={record.dateOccupied.toLocaleDateString("id-ID", {
-            year: "numeric",
-          })}
+          value={formattedOccupiedDate}
           icon="calendar-outline"
         />
         <Text className="mt-5 pt-2 border-t-2 border-gray-200 text-lg font-semibold text-center">

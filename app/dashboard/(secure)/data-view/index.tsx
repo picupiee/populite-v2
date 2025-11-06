@@ -8,7 +8,7 @@ import {
 } from "@/constants/data";
 import { usePopulationRecordsListener } from "@/hooks/usePopulationRecordsListener";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -44,6 +44,7 @@ interface SortState {
 
 // Component to display a single record item
 const RecordItem = ({ record }: { record: PopulationRecord }) => {
+  const router = useRouter();
   const entryDate = record.entryDate.toLocaleDateString();
   const houseStatusColor =
     record.houseStatus === "Kosong"
@@ -53,41 +54,38 @@ const RecordItem = ({ record }: { record: PopulationRecord }) => {
         : "bg-green-100";
 
   return (
-    <Link href={`/dashboard/(secure)/data-view/data/${record.id}`} asChild>
-      <Pressable
-        className={`p-4 mb-3 rounded-xl border border-gray-200 ${houseStatusColor} active:opacity-75`}
-      >
-        <View className="flex-row justify-between items-center">
-          {/* Left Side: Details */}
-          <View className="flex-1">
-            <Text className="text-lg font-bold text-gray-800">
-              {record.name} - {record.houseId} - {record.street}
-            </Text>
-            <Text className="text-sm text-gray-600 mt-1">
-              Status Hunian: {record.houseStatus} | Domisili: {record.domicile}
-            </Text>
-            <Text className="text-xs text-gray-500 mt-1">
-              Adults: {record.adultTotal} | Kids: {record.kidsTotal}
-            </Text>
-          </View>
+    <Pressable
+      className={`p-4 mb-3 rounded-xl border border-gray-200 ${houseStatusColor} active:opacity-75`}
+      onPress={() =>
+        router.push(`/dashboard/(secure)/data-view/data/${record.id}`)
+      }
+    >
+      <View className="flex-row justify-between items-center">
+        {/* Left Side: Details */}
+        <View className="flex-1">
+          <Text className="text-lg font-bold text-gray-800">
+            {record.name} - {record.houseId} - {record.street}
+          </Text>
+          <Text className="text-sm text-gray-600 mt-1">
+            Status Hunian: {record.houseStatus} | Domisili: {record.domicile}
+          </Text>
+          <Text className="text-xs text-gray-500 mt-1">
+            Adults: {record.adultTotal} | Kids: {record.kidsTotal}
+          </Text>
+        </View>
 
-          {/* Right Side: Actions/Info */}
-          <View className="flex-col items-end">
-            <Ionicons
-              name="chevron-forward-outline"
-              size={24}
-              color="#4F46E5"
-            />
-            {/* <Text className="text-xs text-gray-500 mt-1">
+        {/* Right Side: Actions/Info */}
+        <View className="flex-col items-end">
+          <Ionicons name="chevron-forward-outline" size={24} color="#4F46E5" />
+          {/* <Text className="text-xs text-gray-500 mt-1">
               Entry: {entryDate}
             </Text> */}
-          </View>
         </View>
-        <Text className="text-xs text-gray-500 absolute right-2 bottom-2 underline underline-offset-4">
-          Didata Pada: {entryDate}
-        </Text>
-      </Pressable>
-    </Link>
+      </View>
+      <Text className="text-xs text-gray-500 absolute right-2 bottom-2 underline underline-offset-4">
+        Didata Pada: {entryDate}
+      </Text>
+    </Pressable>
   );
 };
 
@@ -122,7 +120,7 @@ export default function DataViewListScreen() {
     return (
       <View className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" color="#4F46E5" />
-        <Text className="mt-2 text-gray-600">Loading data...</Text>
+        <Text className="mt-2 text-gray-600">Memuat Data...</Text>
       </View>
     );
   }
@@ -431,41 +429,8 @@ export default function DataViewListScreen() {
             paddingHorizontal: viewMode === "card" ? 10 : 0,
             paddingBottom: 20,
           }}
-
-          // ... (rest of FlatList props like RefreshControl)
         />
       )}
-
-      {/* Old one, saved for later */}
-      {/* {sortedAndFilterRecords.length === 0 && !loading ? (
-        <View className="flex-1 items-center justify-center p-10">
-          <Ionicons name="search-outline" size={60} color="#9CA3AF" />
-          <Text className="text-xl font-semibold text-gray-500 mt-4">
-            No Data Matches Filters
-          </Text>
-          <Text className="text-gray-400 text-center mt-2">
-            Try adjusting your sorting or filtering criteria.
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          // 💡 Use the sorted and filtered array!
-          data={sortedAndFilterRecords}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) =>
-            viewMode === "card" ? (
-              <RecordItem record={item} /> // Existing, verbose card view
-            ) : (
-              <CompactListItem record={item} /> // New, compact list view
-            )
-          }
-          contentContainerStyle={{
-            paddingHorizontal: viewMode === "card" ? 10 : 0,
-            paddingBottom: 20,
-          }}
-          // ... (rest of FlatList props like RefreshControl)
-        />
-      )} */}
     </View>
   );
 }

@@ -3,10 +3,8 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Keyboard,
-  Pressable,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from "react-native";
 
@@ -14,7 +12,12 @@ import {
 import AppButton from "@/components/ui/AppButton";
 import DatePickerInput from "@/components/ui/DatePickerInput";
 import FormInput from "@/components/ui/FormInput";
-import { PopulationRecord, STREET_OPTIONS } from "@/constants/data";
+import SelectGroup from "@/components/ui/SelectGroup";
+import {
+  GENDER_OPTIONS,
+  PopulationRecord,
+  STREET_OPTIONS,
+} from "@/constants/data";
 import { usePopulationMutations } from "@/hooks/useFirestoreMutations"; // Stable Mutation
 import { usePopulationRecordListener } from "@/hooks/usePopulationRecordListener"; // Stable Read
 import { useToastService } from "@/hooks/useToastService";
@@ -138,77 +141,35 @@ export default function EditRecordScreen() {
       </Text>
       {/* Input: Name */}
       <View className="mb-4">
-        <Text className="text-sm font-medium mb-1 text-gray-700">
-          Nama Lengkap
-        </Text>
-        <TextInput
+        <FormInput
+          label="Nama Lengkap"
           value={formData.name || ""}
           onChangeText={(val) => handleChange("name", val)}
-          className="p-3 border border-gray-300 rounded-lg focus:border-indigo-500"
-          editable={!saving}
+        />
+        <SelectGroup
+          label="Jenis Kelamin"
+          options={GENDER_OPTIONS}
+          selectedValue={formData.gender || ""}
+          onValueChange={(val) => handleChange("gender", val)}
         />
       </View>
       {/* Input: House Status (Use Picker/Dropdown here) */}
-      <View className="mb-4">
-        <Text className="text-sm font-medium mb-1 text-gray-700">
-          Status Hunian
-        </Text>
-        {/* Replace with a standard Picker/Dropdown component */}
-        {/* <TextInput
-          value={formData.houseStatus || ""}
-          onChangeText={(val) => handleChange("houseStatus", val)}
-          className="p-3 border border-gray-300 rounded-lg focus:border-indigo-500"
-          editable={!saving}
-        /> */}
-        <View className="flex-row justify-between mb-4">
-          {["Kosong", "Ditempati", "Sewa"].map((status) => (
-            <Pressable
-              key={status}
-              onPress={() => handleChange("houseStatus", status)}
-              className={`p-3 rounded-lg border flex-1 items-center mx-1 
-            ${formData.houseStatus === status ? "bg-indigo-500 border-indigo-700" : "bg-white border-gray-300"}`}
-            >
-              <Text
-                className={`font-semibold ${formData.houseStatus === status ? "text-white" : "text-gray-700"}`}
-              >
-                {status}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      </View>
-
-      {/* Input: Date Occupied (Requires a DatePicker) */}
-      {/* <View className="mb-6">
-                 <Text className="text-sm font-medium mb-1 text-gray-700">Date Occupied</Text>
-                 <DatePickerComponent 
-                    date={formData.dateOccupied}
-                    onChange={(date) => handleChange('dateOccupied', date)}
-                 />
-            </View>
-            */}
+      <SelectGroup
+        label="Status Hunian"
+        options={["Kosong", "Ditempati", "Sewa"]} // Ensure this list is complete
+        selectedValue={formData.houseStatus || ""}
+        onValueChange={(value) => handleChange("houseStatus", value)}
+        horizontal={true} // Use vertical alignment if it's 3 items wide
+        // Need to provide the SelectGroup component colors for 'Kosong', 'Ditempati', 'Sewa'
+      />
       {/* Street Selector */}
-      <View className="mb-4">
-        <Text className="text-sm font-medium mb-1 text-gray-700">
-          Jalan (Gang)
-        </Text>
-        <View className="flex-row flex-wrap justify-between gap-2">
-          {STREET_OPTIONS.map((streetOption) => (
-            <Pressable
-              key={streetOption}
-              onPress={() => handleChange("street", streetOption)}
-              className={`p-2 rounded-lg border flex-grow items-center ${formData.street === streetOption ? "bg-green-500 border-green-700" : "bg-white border-gray-300"}`}
-              disabled={saving}
-            >
-              <Text
-                className={`font-semibold text-sm ${formData.street === streetOption ? "text-white" : "text-gray-700"}`}
-              >
-                {streetOption}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      </View>
+      <SelectGroup
+        label="Jalan (Gang)"
+        options={STREET_OPTIONS}
+        selectedValue={formData.street || ""}
+        onValueChange={(value) => handleChange("street", value)}
+        horizontal={true}
+      />
       {/* Update Adult / Kids Total */}
       <Text className="text-center font-medium mt-2 border-t-2 border-gray-200 pt-2">
         Perbaharui Jumlah Penghuni

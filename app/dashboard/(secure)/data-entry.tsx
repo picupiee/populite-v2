@@ -9,7 +9,7 @@ import { useToastService } from "@/hooks/useToastService";
 import { checkHouseIdExists } from "@/utils/populationService";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 // Define the initial state structure for the form (excluding id, entryDate)
 const initialFormState: Omit<
@@ -119,8 +119,8 @@ export default function DataEntryScreen() {
       await addRecord(payload);
 
       showSuccessToast(
-        "Success!",
-        `Record for House ID ${combinedHouseId} has been saved.`
+        "Berhasil",
+        `Data Hunian ${combinedHouseId} telah tersimpan.`
       );
 
       // Reset form or navigate away
@@ -129,8 +129,8 @@ export default function DataEntryScreen() {
     } catch (error: any) {
       console.error("Save Error:", error);
       showErrorToast(
-        "Save Failed",
-        "Could not save record to Firestore. Check console for details."
+        "Gagal Menyimpan",
+        "Terjadi kesalahan saat menyimpan data. Hubungi Admin."
       );
     } finally {
       setLoading(false);
@@ -160,7 +160,7 @@ export default function DataEntryScreen() {
           label="Nama Penghuni"
           value={formData.name}
           onChangeText={(value) => handleChange("name", value)}
-          placeholder="e.g., Budi Santoso"
+          placeholder="Contoh: Budi Santoso"
           keyboardType="default"
           // Pass the error string from your validation state
         />
@@ -191,30 +191,28 @@ export default function DataEntryScreen() {
           <View className="flex-1">
             <View className="flex-row justify-start gap-2">
               <View className="w-1/3">
-                <Text className="font-semibold text-gray-700 mt-2 mb-1">
-                  Blok
-                </Text>
-                <TextInput
-                  placeholder="C28"
+                <FormInput
+                  label="Blok"
                   value={formData.housePrefix}
-                  onChangeText={(text) =>
-                    handleChange("housePrefix", text.toUpperCase())
+                  onChangeText={(value) =>
+                    handleChange("housePrefix", value.toUpperCase())
                   }
-                  className="border p-3 rounded-lg border-gray-300"
-                  autoCapitalize="characters"
+                  placeholder="C28"
+                  labelStyle="text-center"
+                  keyboardType="default"
+                  // Pass the error string from your validation state
                 />
               </View>
+              <View className="border border-gray-200" />
               <View className="w-1/3">
-                <Text className="font-semibold text-gray-700 mt-2 mb-1">
-                  Nomor
-                </Text>
-                <TextInput
-                  placeholder="19"
+                <FormInput
+                  label="Nomor"
                   value={formData.houseSuffix}
-                  onChangeText={(text) => handleChange("houseSuffix", text)}
+                  onChangeText={(value) => handleChange("houseSuffix", value)}
+                  placeholder="20"
+                  labelStyle="text-center"
                   keyboardType="decimal-pad"
-                  maxLength={3}
-                  className="border p-3 rounded-lg border-gray-300"
+                  // Pass the error string from your validation state
                 />
               </View>
             </View>
