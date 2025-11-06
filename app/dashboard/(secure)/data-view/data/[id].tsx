@@ -205,7 +205,7 @@ export default function RecordDetailScreen() {
           className="mt-6 flex-row items-center justify-center p-3 bg-red-500 rounded-lg active:opacity-80"
         >
           <Ionicons name="trash-outline" size={20} color="#fff" />
-          <Text className="text-white font-semibold ml-2">Delete Record</Text>
+          <Text className="text-white font-semibold ml-2">Hapus Data</Text>
         </Pressable>
       </ScrollView>
     </View>
