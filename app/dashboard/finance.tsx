@@ -1,11 +1,16 @@
 // app/dashboard/home.tsx
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 
 export default function Finance() {
   return (
     <View className="flex-1 items-center justify-center p-5 bg-white">
-      <Text className="text-3xl font-bold text-indigo-700 mb-4">
+      <View className="flex-row gap-4 items-center mb-4">
+        <Ionicons name="cash-outline" size={40} />
+        <Text className="text-lg font-bold">Keuangan</Text>
+      </View>
+      <Text className="text-2xl font-bold text-indigo-700 mb-4">
         Segera Hadir
       </Text>
       <Text className="text-lg text-gray-600 text-center">

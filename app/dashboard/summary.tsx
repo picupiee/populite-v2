@@ -256,10 +256,20 @@ export default function SummaryScreen() {
           onPress={handleRefresh}
           className="mt-8 p-3 bg-gray-100 rounded-lg active:bg-gray-200"
         >
-          <Text className="text-indigo-600 text-center font-semibold">
+          {isRefreshing ? (
+            <Text className="text-indigo-600 text-center font-semibold opacity-55">
+              Mohon Tunggu...
+            </Text>
+          ) : (
+            <Text className="text-indigo-600 text-center font-semibold">
+              <Ionicons name="refresh-outline" size={16} color="#4F46E5" /> Cek
+              Update Terbaru
+            </Text>
+          )}
+          {/* <Text className="text-indigo-600 text-center font-semibold">
             <Ionicons name="refresh-outline" size={16} color="#4F46E5" />{" "}
             {isRefreshing ? "Mohon Tunggu..." : "Cek Data Terbaru"}
-          </Text>
+          </Text> */}
         </Pressable>
       </ScrollView>
     </View>
