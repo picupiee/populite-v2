@@ -1,4 +1,5 @@
 // components/DrawerContent.tsx
+import { auth } from "@/lib/firebase";
 import {
   DrawerContentComponentProps,
   DrawerContentScrollView,
@@ -10,6 +11,7 @@ import { useAuth } from "../context/AuthProvider"; // Adjust path
 
 export function CustomDrawerContent(props: DrawerContentComponentProps) {
   const { logout } = useAuth();
+  const user = auth.currentUser;
 
   return (
     <View style={{ flex: 1 }}>
@@ -23,6 +25,9 @@ export function CustomDrawerContent(props: DrawerContentComponentProps) {
       </DrawerContentScrollView>
 
       {/* 2. Custom Footer Content (Logout Pressable) */}
+      <Text className="mb-2 text-center font-medium text-sm">
+        {user?.email}
+      </Text>
       <View className="p-4 border-t border-gray-200">
         <Pressable
           onPress={async () => {

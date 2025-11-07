@@ -1,9 +1,10 @@
 import AppButton from "@/components/ui/AppButton";
+import FormInput from "@/components/ui/FormInput";
 import { useAuth } from "@/context/AuthProvider";
 import { useToastService } from "@/hooks/useToastService";
 import { Link, router } from "expo-router";
 import React, { useRef, useState } from "react";
-import { Text, TextInput, View } from "react-native";
+import { Platform, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignIn() {
@@ -30,34 +31,41 @@ export default function SignIn() {
     }
   };
   return (
-    <SafeAreaView className="flex-1">
-      <View className="flex-1 items-center justify-center p-10 md:scale-125 bg-slate-200">
-        <View className="my-10 w-full md:w-1/2">
+    <SafeAreaView className="flex-1 bg-indigo-300">
+      <View
+        className={`min-h-24 items-center justify-center bg-gradient-to-b from-white to-indigo-300 from-30 ${Platform.OS != "web" ? "bg-indigo-200" : ""}`}
+      >
+        <View className="flex-row items-start mt-20">
+          <Text className="text-5xl font-medium">Populite</Text>
+          <Text className="text-sm flex items-center justify-center font-medium border-2 rounded-full h-6 w-6">
+            v2
+          </Text>
+        </View>
+        <Text className="mt-2">Pendataan Warga Jadi Lebih Mudah</Text>
+      </View>
+      <View className="flex-col items-center justify-center p-10 md:scale-125">
+        <View className="my-8 w-full md:w-1/2">
           <Text className="text-2xl mb-5">Masuk</Text>
-          <TextInput
-            placeholder="Alamat Email"
+          <FormInput
+            label=""
             value={email}
-            onChangeText={setEmail}
             keyboardType="email-address"
-            autoCapitalize="none"
-            returnKeyType="next"
-            onSubmitEditing={() => {
+            onChangeText={setEmail}
+            placeholder="Alamat Email"
+            onSubmitEditting={() => {
               if (passwordInputRef.current) {
                 passwordInputRef.current.focus();
               }
             }}
-            className="border-b-2 border-slate-300 outline-none focus:border-slate-500 bg-slate-200 transition-colors ease-out p-3 mb-4"
           />
 
-          <TextInput
-            ref={passwordInputRef}
-            returnKeyType="go"
-            onSubmitEditing={handleLogin}
-            placeholder="Password"
+          <FormInput
+            label=""
             value={password}
             onChangeText={setPassword}
-            secureTextEntry
-            className="border-b-2 border-slate-300 outline-none focus:border-slate-500 bg-slate-200 transition-colors ease-out p-3 mb-4"
+            placeholder="Password"
+            onSubmitEditting={handleLogin}
+            secureTextEntry={true}
           />
           <AppButton title="Masuk" onPress={handleLogin} variant="primary" />
         </View>
@@ -65,13 +73,16 @@ export default function SignIn() {
         {/* Links to other auth pages would go here */}
         <View className="flex-row items-center justify-center mt-4 mb-4 gap-2">
           <Text>Belum Terdaftar ?</Text>
-          <Link href="/(auth)/signUp" className="text-center text-blue-500">
+          <Link
+            href="/(auth)/signUp"
+            className="text-center text-blue-700 underline"
+          >
             Daftar
           </Link>
         </View>
         <Link
           href="/(auth)/reset-password"
-          className="text-center text-blue-500"
+          className="text-center text-blue-800"
         >
           Lupa Password ?
         </Link>

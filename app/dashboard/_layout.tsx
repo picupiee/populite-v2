@@ -9,9 +9,9 @@ export default function DashboardLayout() {
         headerStyle: { backgroundColor: "#4F46E5" },
         headerTintColor: "#fff",
         drawerActiveTintColor: "#4F46E5",
-        drawerStyle: { paddingTop: 40 },
-        drawerLabelStyle: { marginLeft: 5 },
-        drawerItemStyle: { marginVertical: 1 },
+        drawerStyle: { paddingTop: 25 },
+        drawerLabelStyle: { marginLeft: 0 },
+        drawerItemStyle: { marginVertical: 3 },
       }}
       drawerContent={CustomDrawerContent}
     >

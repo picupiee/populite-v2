@@ -1,10 +1,11 @@
 import AppButton from "@/components/ui/AppButton";
+import FormInput from "@/components/ui/FormInput";
 import { useToastService } from "@/hooks/useToastService";
 import { auth } from "@/lib/firebase"; // Direct import of auth instance
 import { Link, useRouter } from "expo-router";
 import { sendPasswordResetEmail } from "firebase/auth";
 import React, { useState } from "react";
-import { Alert, Text, TextInput, View } from "react-native";
+import { Alert, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ResetPasswordScreen() {
@@ -51,20 +52,19 @@ export default function ResetPasswordScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1">
-      <View className="flex-1 items-center justify-center p-10 md:scale-125 bg-slate-200">
+    <SafeAreaView className="flex-1 bg-indigo-300">
+      <View className="flex-1 items-center justify-center p-10 md:scale-125">
         <View className="my-10 w-full md:w-1/2">
           <Text className="text-2xl mb-2 text-center">Reset Password</Text>
-          <Text className="text-xs mb-4 text-gray-600 text-center">
+          <Text className="text-sm mb-4 text-gray-600 text-center">
             Silahkan masukkan alamat email untuk mereset password.
           </Text>
-
-          <TextInput
-            placeholder="Email"
+          <FormInput
+            label=""
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
-            className="border-b-2 border-slate-300 outline-none focus:border-slate-500 bg-slate-200 transition-colors ease-out p-3 mb-4"
+            placeholder="Alamat Email"
           />
 
           <AppButton
@@ -72,12 +72,10 @@ export default function ResetPasswordScreen() {
             loadingText="Mohon Tunggu..."
             onPress={handleReset}
             variant="primary"
+            className="mb-8"
           />
 
-          <Link
-            href="/(auth)/signIn"
-            className="text-center mt-4 text-blue-500"
-          >
+          <Link href="/(auth)/signIn" className="text-center text-black">
             Kembali ke Form Masuk
           </Link>
         </View>

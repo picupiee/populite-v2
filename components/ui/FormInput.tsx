@@ -11,6 +11,8 @@ interface FormInputProps {
   multiline?: boolean;
   className?: string; // Tailwind class for the outer View
   labelStyle?: string;
+  onSubmitEditting?: () => void;
+  secureTextEntry?: boolean;
 }
 
 export default function FormInput({
@@ -23,6 +25,7 @@ export default function FormInput({
   multiline = false,
   className = "",
   labelStyle = "",
+  secureTextEntry = false,
 }: FormInputProps) {
   // Style for the input field itself
   const inputStyle = `
@@ -33,7 +36,9 @@ export default function FormInput({
   return (
     <View className={`mb-4 ${className}`}>
       {/* Label */}
-      <Text className={`text-sm font-medium mb-1 text-gray-700 ${labelStyle}`}>{label}</Text>
+      <Text className={`text-sm font-medium mb-1 text-gray-700 ${labelStyle}`}>
+        {label}
+      </Text>
 
       {/* Input Field */}
       <TextInput
@@ -45,6 +50,7 @@ export default function FormInput({
         style={{ minHeight: multiline ? 80 : undefined }} // Set min height for multiline
         className={inputStyle}
         placeholderTextColor={error ? "#EF4444" : "#9CA3AF"}
+        secureTextEntry={secureTextEntry}
       />
 
       {/* Error Message */}
