@@ -225,7 +225,7 @@ export default function DataEntryScreen() {
               selectedValue={formData.street}
               onValueChange={(value) => handleChange("street", value)}
               horizontal={true} // Horizontal layout is good for forms
-              className="mt-2"
+              
             />
           </View>
           {/* </View> */}
