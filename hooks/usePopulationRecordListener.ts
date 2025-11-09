@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 // Ensure mapDocToRecord and db imports are correct for your structure
 import { db } from "@/lib/firebase";
 import { mapDocToRecord } from "@/utils/firestoreMappers";
+import { useAccess } from "./useAccess";
 
 // Define the interface for clarity and type safety
 interface SingleRecordData {
@@ -20,6 +21,7 @@ const firestore = db; // Assuming db is the Firestore instance
 export const usePopulationRecordListener = (
   id: string | null
 ): SingleRecordData => {
+  const { can, PERMISSIONS } = useAccess();
   const [record, setRecord] = useState<PopulationRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -40,7 +42,13 @@ export const usePopulationRecordListener = (
       docRef,
       (docSnap) => {
         if (docSnap.exists()) {
-          setRecord(mapDocToRecord(docSnap.data(), docSnap.id));
+          const data = mapDocToRecord(docSnap.data(), docSnap.id);
+          let processedRecord = { ...data };
+          if (!can(PERMISSIONS.VIEW_SENSITIVE_NAME)) {
+            const maskedName = processedRecord.name.charAt(-1) + "***********";
+            processedRecord.name = maskedName;
+          }
+          setRecord(processedRecord);
           setError(null);
         } else {
           setRecord(null);
@@ -57,7 +65,7 @@ export const usePopulationRecordListener = (
 
     // 3. Return the CRITICAL cleanup function
     return () => unsubscribe();
-  }, [id]); // Effect re-runs only when the document ID changes
+  }, [id, can]); // Effect re-runs only when the document ID changes
 
   return { record, loading, error };
 };

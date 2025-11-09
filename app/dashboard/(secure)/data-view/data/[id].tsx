@@ -1,8 +1,10 @@
+import AppButton from "@/components/ui/AppButton";
+import { useAccess } from "@/hooks/useAccess";
 import { usePopulationMutations } from "@/hooks/useFirestoreMutations"; // New Mutation Hook
 import { usePopulationRecordListener } from "@/hooks/usePopulationRecordListener"; // New Read Hook
 import { useToastService } from "@/hooks/useToastService";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Link, Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import {
   ActivityIndicator,
@@ -38,23 +40,14 @@ const DetailCard = ({
 export default function RecordDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-
+  const { can, PERMISSIONS } = useAccess();
+  const canDelete = can(PERMISSIONS.DELETE_RECORD);
+  const canEdit = can(PERMISSIONS.UPDATE_RECORD);
   // --- Stable Read ---
   const { record, loading, error } = usePopulationRecordListener(id || null);
-
   // --- Stable Mutation ---
   const { deleteRecord } = usePopulationMutations();
-
   const { showSuccessToast, showErrorToast } = useToastService();
-
-  // 1. Handle Not Found Error
-  // useEffect(() => {
-  //   if (!loading && id && error && error.message === "Record not found") {
-  //     showErrorToast("Not Found", `Record with ID ${id} not found.`);
-  //     router.setParams({ id: "" });
-  //     router.replace("/dashboard/(secure)/data-view");
-  //   }
-  // }, [loading, error, id, router, showErrorToast]); // Stable dependencies: only runs on state change
 
   // 2. Format Dates (safely)
   const formattedDate = record?.entryDate.toLocaleDateString("id-ID", {
@@ -72,10 +65,24 @@ export default function RecordDetailScreen() {
     <Text className="text-gray-400">Belum Diisi</Text>
   );
 
+  // Edit permit logic
+  const navigateToEdit = () => {
+    if (canEdit) {
+      router.push(`/dashboard/(secure)/data-view/edit/${record.id}`);
+    } else {
+      showErrorToast("Tidak Diizinkan", "Anda tidak diizinkan mengedit data!");
+    }
+  };
+
   // 3. Delete Logic
   const handleDelete = async () => {
     // Made async for proper error handling
-    if (!id || !record) return;
+    if (!canDelete || !id || !record) {
+      showErrorToast(
+        "TIDAK DIIZINKAN !",
+        "Hubungi admin untuk info lebih lanjut."
+      );
+    }
 
     const confirmDelete =
       Platform.OS !== "web"
@@ -140,14 +147,17 @@ export default function RecordDetailScreen() {
         options={{
           title: `Penghuni Rumah: ${record.houseId}`,
           headerRight: () => (
-            <Link
-              href={`/dashboard/(secure)/data-view/edit/${record.id}`}
-              asChild
+            <Pressable
+              onPress={navigateToEdit}
+              disabled={!canEdit}
+              className={`mr-3 ${!canEdit ? "opacity-30" : "opacity-100"}`}
             >
-              <Pressable className="mr-3">
-                <Ionicons name="create-outline" size={24} color="#fff" />
-              </Pressable>
-            </Link>
+              <Ionicons
+                name="create-outline"
+                size={24}
+                color={canEdit ? "#fff" : "#A0A0A0"} // White when active, gray when disabled
+              />
+            </Pressable>
           ),
         }}
       />
@@ -200,13 +210,31 @@ export default function RecordDetailScreen() {
           })}
         </Text>
         {/* Delete Button */}
-        <Pressable
-          onPress={handleDelete}
-          className="mt-6 flex-row items-center justify-center p-3 bg-red-500 rounded-lg active:opacity-80"
-        >
-          <Ionicons name="trash-outline" size={20} color="#fff" />
-          <Text className="text-white font-semibold ml-2">Hapus Data</Text>
-        </Pressable>
+        <AppButton
+          title={
+            <Text className="text-white font-semibold ml-2">
+              <Ionicons name="trash-outline" size={20} color="#fff" /> Hapus
+              Data
+            </Text>
+          }
+          variant="danger"
+          onPress={
+            canDelete
+              ? handleDelete
+              : () => {
+                  showErrorToast(
+                    "Hapus Data Ditolak",
+                    "Anda tidak mempunyai izin untuk menghapus."
+                  );
+                }
+          }
+          className={
+            `mt-6 flex-row items-center justify-center p-3 rounded-lg active:opacity-80 
+                    ${canDelete ? "bg-red-500" : "bg-gray-300"} 
+                    ${!canDelete && "opacity-60"}` // Reduce opacity for a "greyed out" effect
+          }
+          disabled={!canDelete}
+        />
       </ScrollView>
     </View>
   );
