@@ -8,7 +8,7 @@ export default function Finance() {
     <View className="flex-1 items-center justify-center p-5 bg-white">
       <View className="flex-row gap-4 items-center mb-4">
         <Ionicons name="cash-outline" size={40} />
-        <Text className="text-lg font-bold">Keuangan</Text>
+        <Text className="text-lg font-bold">Laporan Kas / Keuangan</Text>
       </View>
       <Text className="text-2xl font-bold text-indigo-700 mb-4">
         Segera Hadir

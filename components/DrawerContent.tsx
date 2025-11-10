@@ -25,6 +25,9 @@ export function CustomDrawerContent(props: DrawerContentComponentProps) {
       </DrawerContentScrollView>
 
       {/* 2. Custom Footer Content (Logout Pressable) */}
+      <Text className="text-center text-xs">
+        UID: {user?.uid.slice(0, 12)}**********
+      </Text>
       <Text className="mb-2 text-center font-medium text-sm">
         {user?.email}
       </Text>

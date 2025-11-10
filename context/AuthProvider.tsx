@@ -1,4 +1,5 @@
 import { auth, db } from "@/lib/firebase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   User,
   createUserWithEmailAndPassword,
@@ -24,6 +25,32 @@ interface AuthContextType {
   signup: (email: string, password: string) => Promise<any>;
 }
 
+export const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minute in milliseconds
+const SESSION_KEY = "@session_timestamp";
+
+const updateSessionTimestamp = async () => {
+  try {
+    const now = new Date().getTime().toString();
+    await AsyncStorage.setItem(SESSION_KEY, now);
+  } catch (e) {
+    console.error("Error setting session timestamp: ", e);
+  }
+};
+const isSessionExpired = async (): Promise<boolean> => {
+  try {
+    const storedTime = await AsyncStorage.getItem(SESSION_KEY);
+    if (!storedTime) return true;
+
+    const lastActiveTime = parseInt(storedTime, 1000);
+    const currentTime = new Date().getTime();
+
+    return currentTime - lastActiveTime > SESSION_TIMEOUT_MS;
+  } catch (e) {
+    console.error("Error checking session expiration: ", e);
+    return true;
+  }
+};
+
 export type UserRole = "admin" | "staff" | "viewer" | "unauthenticated";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -47,8 +74,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setLoading(false);
+
       if (firebaseUser) {
-        setUser(firebaseUser);
+        const checkExpirationAndSetUser = async (uid: string) => {
+          const expired = await isSessionExpired();
+
+          if (expired) {
+            console.log("Session expired due to inactivity. Forcing Logout");
+            await signOut(auth);
+          } else {
+            setUser(firebaseUser);
+            updateSessionTimestamp();
+            fetchUserRole(uid);
+          }
+        };
         const fetchUserRole = async (uid: string) => {
           try {
             const userRef = doc(db, "users", uid);
@@ -72,10 +111,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             setRole("viewer");
           }
         };
-        fetchUserRole(firebaseUser.uid);
+        checkExpirationAndSetUser(firebaseUser.uid);
       } else {
         setUser(null);
         setRole("unauthenticated");
+        AsyncStorage.removeItem(SESSION_KEY);
       }
     });
     return unsubscribe;
@@ -86,10 +126,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       user,
       role,
       loading,
-      login: (email, password) => {
-        return signInWithEmailAndPassword(auth, email, password);
+      login: async (email, password) => {
+        const credential = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        await updateSessionTimestamp();
+        return credential;
       },
-      logout: () => signOut(auth),
+      logout: async () => {
+        try {
+          await auth.signOut();
+          setUser(null);
+          setRole("unauthenticated");
+          await AsyncStorage.removeItem(SESSION_KEY);
+        } catch (error) {
+          console.error("Logout error: ", error);
+        }
+      },
       signup: async (email, password) => {
         const userCredential = await createUserWithEmailAndPassword(
           auth,

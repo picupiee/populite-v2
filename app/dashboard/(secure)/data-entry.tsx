@@ -4,10 +4,12 @@ import DatePickerInput from "@/components/ui/DatePickerInput";
 import FormInput from "@/components/ui/FormInput";
 import SelectGroup from "@/components/ui/SelectGroup";
 import { PopulationRecord, STREET_OPTIONS } from "@/constants/data";
+import { useAccess } from "@/hooks/useAccess";
 import { usePopulationMutations } from "@/hooks/useFirestoreMutations";
 import { useToastService } from "@/hooks/useToastService";
 import { checkHouseIdExists } from "@/utils/populationService";
-import { useRouter } from "expo-router";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { Link, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
@@ -39,6 +41,8 @@ const INITIAL_ERRORS = {
   dateOccupied: null,
 };
 
+const SECURE_ROLES: String[] = ["admin", "staff"];
+
 export default function DataEntryScreen() {
   const router = useRouter();
   const { addRecord } = usePopulationMutations();
@@ -46,6 +50,28 @@ export default function DataEntryScreen() {
   const [formData, setFormData] = useState(initialFormState);
   const [errors, setErrors] = useState(INITIAL_ERRORS);
   const [loading, setLoading] = useState(false);
+  const { role } = useAccess();
+
+  if (!SECURE_ROLES.includes(role)) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <View className="flex-row">
+          <Ionicons name="alert-circle-outline" size={60} />
+        </View>
+        <Text className="text-center font-medium text-md p-3">
+          Anda tidak memiliki izin untuk mengakses laman ini
+        </Text>
+        <Text className="text-center font-medium text-md flex items-center gap-1">
+          Silahkan hubungi
+          <Link href="https://wa.me/6285183278726" className="text-blue-500">
+            admin
+          </Link>
+          via <Ionicons name="logo-whatsapp" size={20} color="#075E54" /> untuk
+          info lebih lanjut.
+        </Text>
+      </View>
+    );
+  }
 
   const handleReset = () => {
     setFormData(initialFormState);
@@ -225,7 +251,6 @@ export default function DataEntryScreen() {
               selectedValue={formData.street}
               onValueChange={(value) => handleChange("street", value)}
               horizontal={true} // Horizontal layout is good for forms
-              
             />
           </View>
           {/* </View> */}
