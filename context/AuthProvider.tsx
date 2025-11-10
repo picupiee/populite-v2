@@ -1,4 +1,6 @@
 import { auth, db } from "@/lib/firebase";
+import AsyncStorarge from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 import {
   User,
   createUserWithEmailAndPassword,
@@ -14,6 +16,32 @@ import React, {
   useMemo,
   useState,
 } from "react";
+
+const SESSION_KEY = "@session_timestamp";
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+
+const updateSessionTimestamp = async () => {
+  try {
+    const now = new Date().getTime().toString();
+    await AsyncStorarge.setItem(SESSION_KEY, now);
+  } catch (e) {
+    console.error("Error setting up session timestamp: ", e);
+  }
+};
+
+const isSessionExpired = async (): Promise<boolean> => {
+  try {
+    const storedTime = await AsyncStorarge.getItem(SESSION_KEY);
+    if (!storedTime) return true;
+    const lastActiveTime = parseInt(storedTime, 10);
+    const currentTime = new Date().getTime();
+
+    return currentTime - lastActiveTime > SESSION_TIMEOUT_MS;
+  } catch (e) {
+    console.error("Error checking session expiration:", e);
+    return true; // Assume expired on any storage error
+  }
+};
 
 interface AuthContextType {
   role: UserRole;
@@ -48,7 +76,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setLoading(false);
       if (firebaseUser) {
-        setUser(firebaseUser);
+        const checkExpirationAndSetUser = async (uid: string) => {
+          const expired = await isSessionExpired();
+
+          if (expired) {
+            console.log("Session is Expired due to inactivity");
+            await signOut(auth);
+          } else {
+            setUser(firebaseUser);
+            updateSessionTimestamp();
+            fetchUserRole(uid);
+          }
+        };
         const fetchUserRole = async (uid: string) => {
           try {
             const userRef = doc(db, "users", uid);
@@ -72,10 +111,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             setRole("viewer");
           }
         };
-        fetchUserRole(firebaseUser.uid);
+        checkExpirationAndSetUser(firebaseUser.uid);
       } else {
         setUser(null);
         setRole("unauthenticated");
+        AsyncStorarge.removeItem(SESSION_KEY);
       }
     });
     return unsubscribe;
@@ -86,10 +126,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       user,
       role,
       loading,
-      login: (email, password) => {
-        return signInWithEmailAndPassword(auth, email, password);
+      login: async (email, password) => {
+        const credential = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        await updateSessionTimestamp();
+        return credential;
       },
-      logout: () => signOut(auth),
+      logout: async () => {
+        try {
+          await auth.signOut();
+          setUser(null);
+          setRole("unauthenticated");
+          await AsyncStorarge.removeItem(SESSION_KEY);
+          router.dismissAll;
+          router.replace("/(auth)/signIn");
+        } catch (e) {
+          console.error("Failed to logging out: ", e);
+        }
+      },
       signup: async (email, password) => {
         const userCredential = await createUserWithEmailAndPassword(
           auth,

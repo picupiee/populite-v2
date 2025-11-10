@@ -14,7 +14,7 @@ export default function Settings() {
         <Text className="text-lg text-gray-600 text-center">{user?.email}</Text>
       </View>
       <Text className="mt-2 font-medium text-md">
-        Halaman ini belum tersedia.
+        UID : {user?.uid.slice(0, 8)}********************
       </Text>
       <Pressable className="mt-2" onPress={() => router.back()}>
         <Text className="text-lg text-blue-600 underline">
