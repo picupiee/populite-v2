@@ -41,6 +41,7 @@ function AuthGuard() {
       router.replace("/(auth)/signIn");
     }
   }, [user, loading, inAuthGroup]); // IMPORTANT: useEffect watches the 'user' state
+
   // Optional: Display a loading screen while Firebase initializes
   if (loading) {
     return (

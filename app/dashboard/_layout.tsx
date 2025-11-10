@@ -1,26 +1,8 @@
 import { CustomDrawerContent } from "@/components/DrawerContent";
-import { useAuth } from "@/context/AuthProvider";
-import { useActivityMonitor } from "@/hooks/useActivityMonitor";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Redirect } from "expo-router";
 import { Drawer } from "expo-router/drawer";
-import { ActivityIndicator, View } from "react-native";
 
 export default function DashboardLayout() {
-  const { user, loading } = useAuth();
-
-  useActivityMonitor();
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-  if (!user) {
-    return <Redirect href="/(auth)/signIn" />;
-  }
-
   return (
     <Drawer
       screenOptions={{
@@ -69,7 +51,7 @@ export default function DashboardLayout() {
       <Drawer.Screen
         name="finance"
         options={{
-          title: "Laporan Kas / Keuangan",
+          title: "Keuangan",
           drawerIcon: ({ color }) => (
             <Ionicons name="cash-outline" size={24} color={color} />
           ),
