@@ -32,7 +32,7 @@ const updateSessionTimestamp = async () => {
 const isSessionExpired = async (): Promise<boolean> => {
   try {
     const storedTime = await AsyncStorarge.getItem(SESSION_KEY);
-    if (!storedTime) return true;
+    if (!storedTime) return false;
     const lastActiveTime = parseInt(storedTime, 10);
     const currentTime = new Date().getTime();
 
@@ -133,6 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           password
         );
         await updateSessionTimestamp();
+        console.log("Session Started :", SESSION_KEY);
         return credential;
       },
       logout: async () => {
