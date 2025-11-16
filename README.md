@@ -4,7 +4,14 @@ Aplikasi ini ditujukan untuk melakukan pendataan warga secara mandiri oleh para 
 
 Aplikasi ini bersifat open-source dan dikembangkan dengan bantuan AI. Jadi, jika anda memiliki kritik atau saran mengenai aplikasi ini silahkan beri kontribusi anda atau kirimkan kritik & saran melalui email : picupiee.id@gmail.com
 
-## Mulai mengembangkan aplikasi
+## Akses langsung ke aplikasi
+Untuk melihat isi dari apikasi ini, anda bisa akses melalui :
+
+https://populite-v2.expo.app
+
+Daftarkan diri anda dengan menggunakan email dan password. Verifikasi tidak diperlukan!
+
+## Mulai mengembangkan aplikasi sendiri
 
 1. Inisiasikan penginstallan package sebelum memulai dengan
 
@@ -15,7 +22,7 @@ Aplikasi ini bersifat open-source dan dikembangkan dengan bantuan AI. Jadi, jika
    atau
 
    ```bash
-   npm o
+   npm i
    ```
 
 2. Mulai aplikasi dengan :
@@ -25,5 +32,3 @@ Aplikasi ini bersifat open-source dan dikembangkan dengan bantuan AI. Jadi, jika
    ```
 
    Tambahkan `--clear` setelah "start" untuk menghapus cache sebelumnya.
-
-Untuk menggunakan aplikasi tanpa harus mengembakan terlebih dahulu, anda bisa akses ke : https://populite-v2.expo.app
