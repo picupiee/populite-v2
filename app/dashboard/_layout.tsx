@@ -92,7 +92,13 @@ export default function DashboardLayout() {
         }}
       />
       <Drawer.Screen
-        name="(public)/activities/detail/[id]"
+        name="(public)/activities/[id]/index"
+        options={{
+          drawerItemStyle: { height: 0, overflow: "hidden" },
+        }}
+      />
+      <Drawer.Screen
+        name="(public)/activities/[id]/edit"
         options={{
           drawerItemStyle: { height: 0, overflow: "hidden" },
         }}

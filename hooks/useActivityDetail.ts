@@ -1,5 +1,5 @@
 import { db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { ActivityRecord } from "./useActivitiesListener";
 
@@ -8,6 +8,16 @@ interface ActivityDetailData {
   loading: boolean;
   error: Error | null;
 }
+
+const mapActivityData = (id: string, data: DocumentData): ActivityRecord => ({
+  id: id,
+  title: data.title,
+  shortDescription: data.shortDescription,
+  longDescription: data.longDescription,
+  activityDate: data.activityDate ? new Date(data.activityDate) : new Date(),
+  createdByUid: data.createdByUid,
+  createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
+});
 
 export const useActivityDetail = (activityId: string): ActivityDetailData => {
   const [activity, setActivity] = useState<ActivityRecord | null>(null);
@@ -20,36 +30,32 @@ export const useActivityDetail = (activityId: string): ActivityDetailData => {
       return;
     }
 
-    const fetchActivity = async () => {
-      try {
-        const docRef = doc(db, "activities", activityId);
-        const docSnap = await getDoc(docRef);
+    const docRef = doc(db, "activities", activityId);
 
+    // 🔑 SWITCH to Real-Time Listener (onSnapshot)
+    const unsubscribe = onSnapshot(
+      docRef,
+      (docSnap) => {
         if (docSnap.exists()) {
-          const data = docSnap.data();
-          const fetchedActivity: ActivityRecord = {
-            id: docSnap.id,
-            title: data.title,
-            shortDescription: data.shortDescription,
-            longDescription: data.longDescription,
-            activityDate: data.activityDate
-              ? new Date(data.activityDate)
-              : new Date(),
-            createdByUid: data.createdByUid,
-            createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
-          };
+          const fetchedActivity = mapActivityData(docSnap.id, docSnap.data());
           setActivity(fetchedActivity);
+          setError(null);
         } else {
-          setError(new Error("Kegiatan Tidak Ditemukan !"));
+          setActivity(null);
+          setError(new Error("Kegiatan tidak ditemukan."));
         }
-      } catch (err) {
-        console.error("Error fetching activity detail: ", err);
-        setError(err as Error);
-      } finally {
+        setLoading(false);
+      },
+      // Handle error during initial fetch or subsequent listener errors
+      (err) => {
+        console.error("Error setting up activity listener:", err);
+        setError(err);
         setLoading(false);
       }
-    };
-    fetchActivity();
+    );
+
+    // 🔑 Cleanup function: Stop listening when the component unmounts
+    return () => unsubscribe();
   }, [activityId]);
 
   return { activity, loading, error };

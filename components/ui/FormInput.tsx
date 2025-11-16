@@ -13,6 +13,7 @@ interface FormInputProps {
   labelStyle?: string;
   onSubmitEditting?: () => void;
   secureTextEntry?: boolean;
+  style?: string;
 }
 
 export default function FormInput({

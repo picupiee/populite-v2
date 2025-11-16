@@ -86,7 +86,7 @@ export default function CreateActivityScreen() {
 
       showSuccessToast("Berhasil", `Kegiatan "${title}" berhasil dibuat!`);
       resetForm();
-      router.back();
+      router.replace("/dashboard/(public)/activities");
     } catch (error) {
       console.error("Error creating activity:", error);
       showErrorToast("Gagal", "Gagal menyimpan kegiatan. Coba lagi.");

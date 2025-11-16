@@ -22,11 +22,6 @@ import { usePopulationMutations } from "@/hooks/useFirestoreMutations"; // Stabl
 import { usePopulationRecordListener } from "@/hooks/usePopulationRecordListener"; // Stable Read
 import { useToastService } from "@/hooks/useToastService";
 
-// Assuming you have a standard button component
-// import FormButton from "@/components/ui/FormButton";
-// Assuming a Date Picker component that handles the Date object state
-// import DatePickerComponent from "@/components/forms/DatePickerComponent";
-
 // --- Main Component ---
 
 export default function EditRecordScreen() {

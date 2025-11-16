@@ -35,7 +35,7 @@ const ActivityCard = ({ activity }: { activity: ActivityRecord }) => {
   const textColor = isPast ? "text-gray-500" : "text-gray-800";
 
   return (
-    <Link href={`/dashboard/(public)/activities/detail/${activity.id}`} asChild>
+    <Link href={`/dashboard/(public)/activities/${activity.id}/`} asChild>
       <Pressable
         className={`p-4 mb-3 rounded-xl border-2 ${statusColor}`}
         disabled={isPast}
