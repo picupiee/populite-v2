@@ -1,50 +1,29 @@
-# Welcome to your Expo app 👋
+# Populite - Pendataan Warga Mandiri
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplikasi ini ditujukan untuk melakukan pendataan warga secara mandiri oleh para kepengurusan di tingkat Rukun Tetangga maupun Rukun Warga. Tujuannya agar pendataan warga menjadi lebih mudah dengan parameter seperti jumlah hunian dengan detail tipe hunian (pemilik, penyewa atau kosong), jumlah populasi dan detail populasinya seperti jumlah dewasa dan anak-anak dan masih banyak lagi. Aplikasi ini tidak hanya menyediakan pendataan populasi namun juga memiliki fitur seperti penjadwalan Agenda / Kegiatan, laporan keuangan atau kas RT / RW dan fitur lainnya yang akan disediakan sesuai permintaan.
 
-## Get started
+Aplikasi ini bersifat open-source dan dikembangkan dengan bantuan AI. Jadi, jika anda memiliki kritik atau saran mengenai aplikasi ini silahkan beri kontribusi anda atau kirimkan kritik & saran melalui email : picupiee.id@gmail.com
 
-1. Install dependencies
+## Mulai mengembangkan aplikasi
+
+1. Inisiasikan penginstallan package sebelum memulai dengan
 
    ```bash
    npm install
    ```
 
-2. Start the app
+   atau
+
+   ```bash
+   npm o
+   ```
+
+2. Mulai aplikasi dengan :
 
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+   Tambahkan `--clear` setelah "start" untuk menghapus cache sebelumnya.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Untuk menggunakan aplikasi tanpa harus mengembakan terlebih dahulu, anda bisa akses ke : [https://populite-v2.expo.app]https://populite-v2.expo.app
