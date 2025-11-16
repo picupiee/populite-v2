@@ -9,6 +9,16 @@ import {
 } from "react-native-paper-dates";
 registerTranslation("id", id);
 
+// Old Interface. Saved for later (rollback)
+// interface DatePickerInputProps {
+//   label: string;
+//   value: Date | undefined;
+//   onChange: (date: Date) => void;
+//   error?: string | null;
+//   placeholder?: string;
+//   className?: string;
+// }
+
 interface DatePickerInputProps {
   label: string;
   value: Date | undefined;
@@ -16,6 +26,10 @@ interface DatePickerInputProps {
   error?: string | null;
   placeholder?: string;
   className?: string;
+
+  // 🔑 NEW PROPS for dynamic range control
+  minDate?: Date; // Sets the minimum selectable date (startDate)
+  maxDate?: Date; // Sets the maximum selectable date (endDate)
 }
 
 export default function DatePickerInput({
@@ -25,6 +39,8 @@ export default function DatePickerInput({
   error = null,
   placeholder = "Select Date",
   className = "",
+  minDate,
+  maxDate,
 }: DatePickerInputProps) {
   const [open, setOpen] = useState(false);
 
@@ -45,6 +61,10 @@ export default function DatePickerInput({
   );
 
   const displayValue = value ? value.toLocaleDateString() : placeholder;
+  const validRange = {
+    startDate: minDate,
+    endDate: maxDate,
+  };
 
   return (
     <View className={`mb-4 ${className}`}>
@@ -81,10 +101,7 @@ export default function DatePickerInput({
         // You can set valid range limits here:
         // startDate={new Date(2000, 0, 1)}
         // endDate={new Date()}
-        validRange={{
-          endDate: new Date(), // Prevents selection of future dates
-        }}
-        
+        validRange={validRange}
       />
     </View>
   );

@@ -51,19 +51,23 @@ export default function DashboardLayout() {
       <Drawer.Screen
         name="finance"
         options={{
-          title: "Keuangan",
+          title: "Keuangan (Segera Hadir)",
           drawerIcon: ({ color }) => (
             <Ionicons name="cash-outline" size={24} color={color} />
           ),
+          drawerItemStyle: { opacity: 0.6 },
         }}
       />
       <Drawer.Screen
-        name="agenda"
+        name="(public)/activities/index"
         options={{
           title: "Agenda / Kegiatan",
           drawerIcon: ({ color }) => (
             <Ionicons name="radio-outline" size={24} color={color} />
           ),
+          drawerItemStyle: {
+            backgroundColor: "#c8ffcdff",
+          },
         }}
       />
       <Drawer.Screen
@@ -77,6 +81,18 @@ export default function DashboardLayout() {
       />
       <Drawer.Screen
         name="(secure)/data-view/data/[id]"
+        options={{
+          drawerItemStyle: { height: 0, overflow: "hidden" },
+        }}
+      />
+      <Drawer.Screen
+        name="(public)/activities/create"
+        options={{
+          drawerItemStyle: { height: 0, overflow: "hidden" },
+        }}
+      />
+      <Drawer.Screen
+        name="(public)/activities/detail/[id]"
         options={{
           drawerItemStyle: { height: 0, overflow: "hidden" },
         }}

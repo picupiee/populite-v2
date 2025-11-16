@@ -225,7 +225,6 @@ export default function DataEntryScreen() {
               selectedValue={formData.street}
               onValueChange={(value) => handleChange("street", value)}
               horizontal={true} // Horizontal layout is good for forms
-              
             />
           </View>
           {/* </View> */}
@@ -292,6 +291,7 @@ export default function DataEntryScreen() {
           value={formData.dateOccupied}
           onChange={(date) => handleChange("dateOccupied", date)}
           className="mb-0"
+          maxDate={new Date()}
         />
         <DatePlaceholder />
 

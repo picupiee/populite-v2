@@ -196,9 +196,6 @@ export default function DataViewListScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Configure Stack Header */}
-      {/* <Stack.Screen options={{ title: "Population Records" }} /> */}
-      {/* Header For Add new Entry, Filter and Sort options */}
       <Text className="italic text-xs font-semibold bg-red-100 p-2 rounded-md text-center">
         Data yang ditampilkan adalah <strong>data mockup / tidak asli</strong>.
         Mohon untuk tidak menggunakan data asli sebelum proyek ini sudah dalam
@@ -372,16 +369,8 @@ export default function DataViewListScreen() {
                     <Text className="text-xs font-medium text-indigo-700">
                       {filter}
                     </Text>
-                    {/* Optional: Add a clear button for each filter */}
-                    {/* <Pressable onPress={() => clearFilter(filterKey)} className="ml-1">
-                        <Ionicons name="close-circle" size={14} color="#4F46E5" />
-                    </Pressable> */}
                   </View>
                 ))}
-                {/* Optional: Add a button to reset all filters */}
-                {/* <Pressable onPress={resetFilters} className="ml-2">
-                <Text className="text-xs text-red-500 underline">Clear All</Text>
-            </Pressable> */}
               </View>
             </View>
           )}
