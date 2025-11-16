@@ -26,4 +26,4 @@ Aplikasi ini bersifat open-source dan dikembangkan dengan bantuan AI. Jadi, jika
 
    Tambahkan `--clear` setelah "start" untuk menghapus cache sebelumnya.
 
-Untuk menggunakan aplikasi tanpa harus mengembakan terlebih dahulu, anda bisa akses ke : [https://populite-v2.expo.app]https://populite-v2.expo.app
+Untuk menggunakan aplikasi tanpa harus mengembakan terlebih dahulu, anda bisa akses ke : https://populite-v2.expo.app
