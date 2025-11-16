@@ -6,7 +6,9 @@ Aplikasi ini bersifat open-source dan dikembangkan dengan bantuan AI. Jadi, jika
 
 ## Akses langsung ke aplikasi
 Untuk melihat isi dari apikasi ini, anda bisa akses melalui :
+
 https://populite-v2.expo.app
+
 Daftarkan diri anda dengan menggunakan email dan password. Verifikasi tidak diperlukan!
 
 ## Mulai mengembangkan aplikasi sendiri
