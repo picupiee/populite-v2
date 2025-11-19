@@ -37,7 +37,7 @@ export default function FormInput({
   return (
     <View className={`mb-4 ${className}`}>
       {/* Label */}
-      <Text className={`text-sm font-medium mb-1 text-gray-700 ${labelStyle}`}>
+      <Text className={`text-sm font-bold mb-1 text-gray-700 ${labelStyle}`}>
         {label}
       </Text>
 

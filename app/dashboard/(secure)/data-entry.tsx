@@ -210,7 +210,7 @@ export default function DataEntryScreen() {
                   value={formData.houseSuffix}
                   onChangeText={(value) => handleChange("houseSuffix", value)}
                   placeholder="20"
-                  labelStyle="text-center"
+                  labelStyle="text-center font-bold"
                   keyboardType="decimal-pad"
                   // Pass the error string from your validation state
                 />

@@ -24,7 +24,7 @@ export default function SelectGroup<T extends string>({
 
   return (
     <View className={`mb-4 ${className}`}>
-      <Text className="text-sm font-medium mb-1 text-gray-700">{label}</Text>
+      <Text className="text-sm font-bold mb-1 text-gray-700">{label}</Text>
       <View className={containerClasses}>
         {options.map((option) => (
           <Pressable
