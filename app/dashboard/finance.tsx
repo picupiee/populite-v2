@@ -44,7 +44,7 @@ const getSpendingTypeLabel = (typeId: string): string => {
 
 // 1. Monthly Summary Card
 const SummaryCard: React.FC<{ title: string; amount: number; icon: React.ReactNode; color: string }> = ({ title, amount, icon, color }) => (
-  <View className={`flex-1 p-4 rounded-xl shadow-lg m-1 bg-white border border-${color}-100`}>
+  <View className={`flex-1 p-4 rounded-xl shadow-lg m-1 bg-white border border-${color}-200`}>
     <View className="flex-row items-center justify-between">
       <Text className={`text-xs font-semibold uppercase text-${color}-600`}>{title}</Text>
       {icon}

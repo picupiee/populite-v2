@@ -415,7 +415,7 @@ export default function DataViewListScreen() {
             )
           }
           contentContainerStyle={{
-            paddingHorizontal: viewMode === "card" ? 10 : 0,
+            paddingHorizontal: viewMode === "card" ? 10 : 10,
             paddingBottom: 20,
           }}
         />
