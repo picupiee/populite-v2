@@ -155,7 +155,7 @@ export default function EditRecordScreen() {
         selectedValue={formData.houseStatus || ""}
         onValueChange={(value) => handleChange("houseStatus", value)}
         horizontal={true} // Use vertical alignment if it's 3 items wide
-        // Need to provide the SelectGroup component colors for 'Kosong', 'Ditempati', 'Sewa'
+      // Need to provide the SelectGroup component colors for 'Kosong', 'Ditempati', 'Sewa'
       />
       {/* Street Selector */}
       <SelectGroup
@@ -208,7 +208,7 @@ export default function EditRecordScreen() {
         variant="primary"
       />
       <AppButton
-        onPress={() => router.back()}
+        onPress={() => router.replace(`/dashboard/(secure)/data-view/data/${id}`)}
         title="Batal"
         variant="danger"
         className="mt-3"
