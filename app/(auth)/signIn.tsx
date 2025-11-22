@@ -2,6 +2,7 @@ import AppButton from "@/components/ui/AppButton";
 import FormInput from "@/components/ui/FormInput";
 import { useAuth } from "@/context/AuthProvider";
 import { useToastService } from "@/hooks/useToastService";
+import { LinearGradient } from "expo-linear-gradient";
 import { Link, router } from "expo-router";
 import React, { useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, View } from "react-native";
@@ -43,8 +44,11 @@ export default function SignIn() {
           className="flex-1"
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}
         >
-          <View
-            className={`min-h-24 items-center justify-center bg-gradient-to-b from-white to-indigo-300 from-30 ${Platform.OS != "web" ? "bg-indigo-200" : ""}`}
+          <LinearGradient
+            colors={["#ffffff", "#a5b4fc"]} // white to indigo-300
+            start={{ x: 0.5, y: 0.3 }} // Adjust start point to match "from-30" roughly
+            end={{ x: 0.5, y: 1 }}
+            className="min-h-24 items-center justify-center"
           >
             <View className="flex-row items-start mt-20">
               <Text className="text-5xl font-medium">Populite</Text>
@@ -53,7 +57,7 @@ export default function SignIn() {
               </Text>
             </View>
             <Text className="mt-2">Pendataan Warga Jadi Lebih Mudah</Text>
-          </View>
+          </LinearGradient>
           <View className="flex-col items-center justify-center p-10 md:scale-125">
             <View className="my-8 w-full md:w-1/2">
               <Text className="text-2xl mb-5">Masuk</Text>
