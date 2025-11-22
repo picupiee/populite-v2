@@ -28,6 +28,7 @@ export default function FormInput({
   labelStyle = "",
   secureTextEntry = false,
 }: FormInputProps) {
+  const controlledValue = String(value ?? "")
   // Style for the input field itself
   const inputStyle = `
     border rounded-lg p-3 text-base text-gray-800 
@@ -43,7 +44,7 @@ export default function FormInput({
 
       {/* Input Field */}
       <TextInput
-        value={value}
+        value={controlledValue}
         onChangeText={onChangeText}
         placeholder={placeholder}
         keyboardType={keyboardType}
