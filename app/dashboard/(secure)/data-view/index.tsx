@@ -197,9 +197,9 @@ export default function DataViewListScreen() {
   return (
     <View className="flex-1 bg-white">
       <Text className="italic text-xs font-semibold bg-red-100 p-2 rounded-md text-center">
-        Data yang ditampilkan adalah <strong>data mockup / tidak asli</strong>.
+        Data yang ditampilkan adalah data mockup / tidak asli.
         Mohon untuk tidak menggunakan data asli sebelum proyek ini sudah dalam
-        status <strong>"In-Production"</strong>
+        status "In-Production"
       </Text>
       <View className="p-4 bg-white border-b border-gray-100">
         {/* --- Top Row: Title and Actions (Add Button, View Switcher, Filter Toggle) --- */}
@@ -220,7 +220,7 @@ export default function DataViewListScreen() {
             <View className="flex-row border border-gray-300 rounded-lg overflow-hidden">
               <Pressable
                 onPress={() => setViewMode("list")}
-                className={`p-2 border-l border-gray-300 ${viewMode === "list" ? "bg-indigo-600" : "bg-white"}`}
+                className={`p-2 border-r border-gray-300 ${viewMode === "list" ? "bg-indigo-600" : "bg-white"}`}
               >
                 <Ionicons
                   name="list-outline"
@@ -243,7 +243,7 @@ export default function DataViewListScreen() {
             {/* Filter/Sort Toggle Button */}
             <Pressable
               onPress={() => setIsControlsVisible(!isControlsVisible)}
-              className={`p-2 rounded-lg border flex-row items-center ${isControlsVisible ? "bg-indigo-600 border-indigo-700" : "bg-gray-100 border-gray-300"}`}
+              className={`p-2 border-l rounded-lg border flex-row items-center ${isControlsVisible ? "bg-indigo-600 border-indigo-700" : "bg-gray-100 border-gray-300"}`}
             >
               <Ionicons
                 name={isControlsVisible ? "close-outline" : "filter-outline"}
