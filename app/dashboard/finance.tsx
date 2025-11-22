@@ -66,7 +66,7 @@ const BreakdownCard = ({
 }) => {
   const percentage = total > 0 ? ((amount / total) * 100).toFixed(1) : "0.0";
   return (
-    <View className="flex-row justify-between items-center py-1 border-b border-gray-100">
+    <View className="flex-row justify-between items-center pb-1 border-b border-gray-100">
       <View className="flex-row items-center flex-1">
         <View
           className={`w-3 h-3 rounded-full ${color === "green" ? "bg-green-500" : "bg-red-500"}`}
