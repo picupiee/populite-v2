@@ -14,6 +14,10 @@ export const PERMISSIONS = {
   VIEW_ACTIVITY_DETAIL: "view:activity:detail",
   EDIT_ACTIVITY: "edit:activity",
   DELETE_ACTIVITY: "delete:activity",
+  // Finance Permisisons
+  CREATE_FINANCE_ENTRY: "create:finance:entry",
+  EDIT_FINANCE_ENTRY: "update:finance:entry",
+  DELETE_FINANCE_ENTRY: "delete:finance:entry"
 };
 
 // 2. Define the Access Matrix (The core RBAC logic)
@@ -29,6 +33,9 @@ export const ACCESS_MATRIX: Record<UserRole, string[]> = {
     PERMISSIONS.VIEW_ACTIVITY_DETAIL,
     PERMISSIONS.EDIT_ACTIVITY,
     PERMISSIONS.DELETE_ACTIVITY,
+    PERMISSIONS.CREATE_FINANCE_ENTRY,
+    PERMISSIONS.EDIT_FINANCE_ENTRY,
+    PERMISSIONS.DELETE_FINANCE_ENTRY
   ],
 
   // Can view, create, and update, but NOT delete
@@ -40,6 +47,7 @@ export const ACCESS_MATRIX: Record<UserRole, string[]> = {
     PERMISSIONS.CREATE_ACTIVITY,
     PERMISSIONS.VIEW_ACTIVITY_DETAIL,
     PERMISSIONS.EDIT_ACTIVITY,
+    PERMISSIONS.CREATE_FINANCE_ENTRY,
   ],
 
   // Can only view
