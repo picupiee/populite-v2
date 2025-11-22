@@ -51,11 +51,10 @@ export default function DashboardLayout() {
       <Drawer.Screen
         name="finance"
         options={{
-          title: "Keuangan (Segera Hadir)",
+          title: "Keuangan",
           drawerIcon: ({ color }) => (
             <Ionicons name="cash-outline" size={24} color={color} />
           ),
-          drawerItemStyle: { opacity: 0.6 },
         }}
       />
       <Drawer.Screen
@@ -105,6 +104,18 @@ export default function DashboardLayout() {
       />
       <Drawer.Screen
         name="(secure)/data-view/edit/[id]"
+        options={{
+          drawerItemStyle: { height: 0, overflow: "hidden" },
+        }}
+      />
+      <Drawer.Screen
+        name="(secure)/(finance)/create-income"
+        options={{
+          drawerItemStyle: { height: 0, overflow: "hidden" },
+        }}
+      />
+      <Drawer.Screen
+        name="(secure)/(finance)/create-spending"
         options={{
           drawerItemStyle: { height: 0, overflow: "hidden" },
         }}
