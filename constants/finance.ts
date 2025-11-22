@@ -1,10 +1,9 @@
 export const FINANCE_INCOME_SOURCES = [
   {
     id: "disposal_fee",
-    label: "Iuran Kebersihan",
-    note: "Iuran bulanan layanan sampah",
+    label: "Iuran Sampah & Kas",
+    note: "Iuran Sampah & Kas RT",
   },
-  { id: "rt_fee", label: "Iuran Kas RT", note: "Iuran bulanan kas lingkungan" },
   {
     id: "donation_general",
     label: "Donasi Umum",
@@ -13,7 +12,7 @@ export const FINANCE_INCOME_SOURCES = [
   {
     id: "other_income",
     label: "Lain-lain",
-    note: "Sumber Penerimaan non-rutin (Rincikan sumber dananya)",
+    note: "Sumber Penerimaan non-rutin",
   },
 ];
 
@@ -31,7 +30,7 @@ export const FINANCE_SPENDING_TYPES = [
   {
     id: "maintenance_general",
     label: "Biaya Operasional",
-    note: "ATK, Listrik, Kebutuhan Umum Lainnya, dll. (Mohon Dirincikan!)",
+    note: "ATK, Listrik, Kebutuhan Umum Lainnya, dll.",
   },
   {
     id: "event_budget",
