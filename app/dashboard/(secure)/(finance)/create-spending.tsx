@@ -8,7 +8,7 @@ import { useFinanceMutations } from "@/hooks/useFinanceMutations";
 import { useToastService } from "@/hooks/useToastService";
 import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Keyboard, ScrollView, Text, View } from "react-native";
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
 
 interface SpendingFormData {
     date: Date | undefined;
@@ -35,7 +35,7 @@ export default function SpendingForm() {
 
     const [formData, setFormData] = useState<SpendingFormData>(INITIAL_FORM);
     const [saving, setSaving] = useState(false);
-    const [errors, setErrors] = useState<Partial<SpendingFormData>>({});
+    const [errors, setErrors] = useState<Partial<Record<keyof SpendingFormData, string>>>({});
 
     // Input handle function
     const handleChange = (key: keyof SpendingFormData, value: any) => {
@@ -48,7 +48,7 @@ export default function SpendingForm() {
 
     // Validation Logic
     const validate = () => {
-        const newErrors: Partial<SpendingFormData> = {};
+        const newErrors: Partial<Record<keyof SpendingFormData, string>> = {};
         const amount = parseFloat(formData.amount);
         const quantity = parseInt(formData.quantity);
 
@@ -105,84 +105,93 @@ export default function SpendingForm() {
     const spendingOptions = FINANCE_SPENDING_TYPES.map(s => s.label);
     const selectedTypeLabel = FINANCE_SPENDING_TYPES.find(s => s.id === formData.type)?.label || "Tipe Pengeluaran";
 
+    const keyboardVerticalOffset = Platform.OS === "android" ? 75 : 100;
+
     // -- Render Form --
     return (
-        <ScrollView className="flex-1 p-6 bg-white">
-            <Stack.Screen options={{ title: "Catat Pengeluaran Kas" }} />
+        <KeyboardAvoidingView
+            behavior="height"
+            style={{ flex: 1, paddingBottom: 0 }}
+            keyboardVerticalOffset={keyboardVerticalOffset}
+        >
+            <ScrollView
+                className="flex-1 bg-white"
+                contentContainerStyle={{ padding: 24, paddingBottom: 100 }}
+            >
+                <Stack.Screen options={{ title: "Catat Pengeluaran Kas" }} />
 
-            <Text className="text-2xl font-bold mb-6 text-gray-800">
-                Pencatatan Pengeluaran Kas
-            </Text>
+                <Text className="text-2xl font-bold mb-6 text-gray-800">
+                    Pencatatan Pengeluaran Kas
+                </Text>
 
-            {/* Date Input */}
-            <DatePickerInput
-                label="Tanggal Pengeluaran"
-                value={formData.date}
-                onChange={(date) => handleChange("date", date)}
-                error={errors.date}
-                maxDate={new Date()} // Income should be today or a past date
-            />
+                {/* Date Input */}
+                <DatePickerInput
+                    label="Tanggal Pengeluaran"
+                    value={formData.date}
+                    onChange={(date) => handleChange("date", date)}
+                    error={errors.date}
+                    maxDate={new Date()} // Income should be today or a past date
+                />
 
-            {/* Select Group: Source of Income */}
-            <SelectGroup
-                label="Tipe Pengeluaran"
-                options={spendingOptions}
-                selectedValue={selectedTypeLabel}
-                onValueChange={(label) => {
-                    // Map label back to its ID for storage
-                    const id = FINANCE_SPENDING_TYPES.find(s => s.label === label)?.id || label;
-                    handleChange("type", id);
-                }}
-                className="mb-4"
-                horizontal={false} // Use vertical layout for better readability
-            />
+                {/* Select Group: Source of Income */}
+                <SelectGroup
+                    label="Tipe Pengeluaran"
+                    options={spendingOptions}
+                    selectedValue={selectedTypeLabel}
+                    onValueChange={(label) => {
+                        // Map label back to its ID for storage
+                        const id = FINANCE_SPENDING_TYPES.find(s => s.label === label)?.id || label;
+                        handleChange("type", id);
+                    }}
+                    className="mb-4"
+                    horizontal={false} // Use vertical layout for better readability
+                />
 
-            {/* Input: Quantity of Spendings */}
-            <FormInput
-                label="Jumlah Satuan"
-                value={formData.quantity}
-                onChangeText={(text) => handleChange("quantity", text.replace(/[^0-9]/g, ''))} // Allow only numbers
-                placeholder="e.g., 50"
-                keyboardType="numeric"
-                error={errors.quantity}
-            />
+                {/* Input: Quantity of Spendings */}
+                <FormInput
+                    label="Jumlah Satuan"
+                    value={formData.quantity}
+                    onChangeText={(text) => handleChange("quantity", text.replace(/[^0-9]/g, ''))} // Allow only numbers
+                    placeholder="e.g., 50"
+                    keyboardType="numeric"
+                    error={errors.quantity}
+                />
 
-            {/* Input: Amount */}
-            <FormInput
-                label="Jumlah Uang Dikeluarkan (Rp)"
-                value={formData.amount}
-                onChangeText={(text) => handleChange("amount", text.replace(/[^0-9.]/g, ''))} // Allow numbers and dot
-                placeholder="e.g., 500000"
-                keyboardType="numeric"
-                error={errors.amount}
-            />
+                {/* Input: Amount */}
+                <FormInput
+                    label="Jumlah Uang Dikeluarkan (Rp)"
+                    value={formData.amount}
+                    onChangeText={(text) => handleChange("amount", text.replace(/[^0-9.]/g, ''))} // Allow numbers and dot
+                    placeholder="e.g., 500000"
+                    keyboardType="numeric"
+                    error={errors.amount}
+                />
 
-            {/* Input: Note/Description */}
-            <FormInput
-                label="Keterangan Tambahan (Opsional)"
-                value={formData.note}
-                onChangeText={(text) => handleChange("note", text)}
-                placeholder="Contoh: Kas RT + Sampah bulan Mei"
-                multiline
-            />
+                {/* Input: Note/Description */}
+                <FormInput
+                    label="Keterangan Tambahan (Opsional)"
+                    value={formData.note}
+                    onChangeText={(text) => handleChange("note", text)}
+                    placeholder="Contoh: Kas RT + Sampah bulan Mei"
+                    multiline
+                />
 
-            {/* Submit Button */}
-            <AppButton
-                onPress={handleSubmit}
-                title="Catat Pengeluaran"
-                loadingText="Mencatat..."
-                variant="primary"
-                isLoading={saving}
-                className="mt-6"
-            />
-            <AppButton
-                onPress={() => router.back()}
-                title="Batal"
-                variant="secondary"
-                className="mt-3"
-            />
-
-            <View style={{ height: 50 }} />
-        </ScrollView>
+                {/* Submit Button */}
+                <AppButton
+                    onPress={handleSubmit}
+                    title="Catat Pengeluaran"
+                    loadingText="Mencatat..."
+                    variant="primary"
+                    isLoading={saving}
+                    className="mt-6"
+                />
+                <AppButton
+                    onPress={() => router.back()}
+                    title="Batal"
+                    variant="secondary"
+                    className="mt-3"
+                />
+            </ScrollView>
+        </KeyboardAvoidingView>
     )
 }

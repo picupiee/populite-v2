@@ -8,7 +8,7 @@ import { useFinanceMutations } from "@/hooks/useFinanceMutations";
 import { useToastService } from "@/hooks/useToastService";
 import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Keyboard, ScrollView, Text, View } from "react-native";
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
 
 interface IncomeFormData {
     date: Date | undefined;
@@ -37,7 +37,7 @@ export default function IncomeForm() {
 
     const [formData, setFormData] = useState<IncomeFormData>(INITIAL_FORM);
     const [saving, setSaving] = useState(false);
-    const [errors, setErrors] = useState<Partial<IncomeFormData>>({});
+    const [errors, setErrors] = useState<Partial<Record<keyof IncomeFormData, string>>>({});
 
     const requireFamilyCount = formData.source === TARGET_SOURCE_ID
 
@@ -52,7 +52,7 @@ export default function IncomeForm() {
 
     // Validation Logic
     const validate = () => {
-        const newErrors: Partial<IncomeFormData> = {};
+        const newErrors: Partial<Record<keyof IncomeFormData, string>> = {};
         const amount = parseFloat(formData.amount);
         const familyCount = parseInt(formData.familyCount || "0");
 
@@ -112,86 +112,95 @@ export default function IncomeForm() {
     const incomeOptions = FINANCE_INCOME_SOURCES.map(s => s.label);
     const selectedSourceLabel = FINANCE_INCOME_SOURCES.find(s => s.id === formData.source)?.label || "Pilih Sumber";
 
+    const keyboardVerticalOffset = Platform.OS === "android" ? 75 : 100;
+
     // -- Render Form --
     return (
-        <ScrollView className="flex-1 p-6 bg-white">
-            <Stack.Screen options={{ title: "Catat Penerimaan Kas" }} />
+        <KeyboardAvoidingView
+            behavior="height"
+            style={{ flex: 1, paddingBottom: 0 }}
+            keyboardVerticalOffset={keyboardVerticalOffset}
+        >
+            <ScrollView
+                className="flex-1 bg-white"
+                contentContainerStyle={{ padding: 24, paddingBottom: 100 }}
+            >
+                <Stack.Screen options={{ title: "Catat Penerimaan Kas" }} />
 
-            <Text className="text-2xl font-bold mb-6 text-gray-800">
-                Pencatatan Penerimaan Kas
-            </Text>
+                <Text className="text-2xl font-bold mb-6 text-gray-800">
+                    Pencatatan Penerimaan Kas
+                </Text>
 
-            {/* Date Input */}
-            <DatePickerInput
-                label="Tanggal Penerimaan"
-                value={formData.date}
-                onChange={(date) => handleChange("date", date)}
-                error={errors.date}
-                maxDate={new Date()} // Income should be today or a past date
-            />
-
-            {/* Select Group: Source of Income */}
-            <SelectGroup
-                label="Sumber Penerimaan"
-                options={incomeOptions}
-                selectedValue={selectedSourceLabel}
-                onValueChange={(label) => {
-                    // Map label back to its ID for storage
-                    const id = FINANCE_INCOME_SOURCES.find(s => s.label === label)?.id || label;
-                    handleChange("source", id);
-                }}
-                className="mb-4"
-                horizontal={false} // Use vertical layout for better readability
-            />
-
-            {/* Input: Total Family Paid */}
-            {requireFamilyCount && (
-                <FormInput
-                    label="Jumlah Keluarga (KK) Membayar"
-                    value={formData.familyCount}
-                    onChangeText={(text) => handleChange("familyCount", text.replace(/[^0-9]/g, ''))} // Allow only numbers
-                    placeholder="e.g., 50"
-                    keyboardType="numeric"
-                    error={errors.familyCount}
+                {/* Date Input */}
+                <DatePickerInput
+                    label="Tanggal Penerimaan"
+                    value={formData.date}
+                    onChange={(date) => handleChange("date", date)}
+                    error={errors.date}
+                    maxDate={new Date()} // Income should be today or a past date
                 />
-            )}
 
-            {/* Input: Amount */}
-            <FormInput
-                label="Jumlah Uang Diterima (Rp)"
-                value={formData.amount}
-                onChangeText={(text) => handleChange("amount", text.replace(/[^0-9.]/g, ''))} // Allow numbers and dot
-                placeholder="e.g., 500000"
-                keyboardType="numeric"
-                error={errors.amount}
-            />
+                {/* Select Group: Source of Income */}
+                <SelectGroup
+                    label="Sumber Penerimaan"
+                    options={incomeOptions}
+                    selectedValue={selectedSourceLabel}
+                    onValueChange={(label) => {
+                        // Map label back to its ID for storage
+                        const id = FINANCE_INCOME_SOURCES.find(s => s.label === label)?.id || label;
+                        handleChange("source", id);
+                    }}
+                    className="mb-4"
+                    horizontal={false} // Use vertical layout for better readability
+                />
 
-            {/* Input: Note/Description */}
-            <FormInput
-                label="Keterangan Tambahan (Opsional)"
-                value={formData.note}
-                onChangeText={(text) => handleChange("note", text)}
-                placeholder="Contoh: Kas RT + Sampah bulan Mei"
-                multiline
-            />
+                {/* Input: Total Family Paid */}
+                {requireFamilyCount && (
+                    <FormInput
+                        label="Jumlah Keluarga (KK) Membayar"
+                        value={formData.familyCount}
+                        onChangeText={(text) => handleChange("familyCount", text.replace(/[^0-9]/g, ''))} // Allow only numbers
+                        placeholder="e.g., 50"
+                        keyboardType="numeric"
+                        error={errors.familyCount}
+                    />
+                )}
 
-            {/* Submit Button */}
-            <AppButton
-                onPress={handleSubmit}
-                title="Catat Penerimaan"
-                loadingText="Mencatat..."
-                variant="primary"
-                isLoading={saving}
-                className="mt-6"
-            />
-            <AppButton
-                onPress={() => router.back()}
-                title="Batal"
-                variant="secondary"
-                className="mt-3"
-            />
+                {/* Input: Amount */}
+                <FormInput
+                    label="Jumlah Uang Diterima (Rp)"
+                    value={formData.amount}
+                    onChangeText={(text) => handleChange("amount", text.replace(/[^0-9.]/g, ''))} // Allow numbers and dot
+                    placeholder="e.g., 500000"
+                    keyboardType="numeric"
+                    error={errors.amount}
+                />
 
-            <View style={{ height: 50 }} />
-        </ScrollView>
+                {/* Input: Note/Description */}
+                <FormInput
+                    label="Keterangan Tambahan (Opsional)"
+                    value={formData.note}
+                    onChangeText={(text) => handleChange("note", text)}
+                    placeholder="Contoh: Kas RT + Sampah bulan Mei"
+                    multiline
+                />
+
+                {/* Submit Button */}
+                <AppButton
+                    onPress={handleSubmit}
+                    title="Catat Penerimaan"
+                    loadingText="Mencatat..."
+                    variant="primary"
+                    isLoading={saving}
+                    className="mt-6"
+                />
+                <AppButton
+                    onPress={() => router.back()}
+                    title="Batal"
+                    variant="secondary"
+                    className="mt-3"
+                />
+            </ScrollView>
+        </KeyboardAvoidingView>
     )
 }

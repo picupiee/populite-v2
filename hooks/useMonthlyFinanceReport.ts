@@ -48,6 +48,7 @@ export interface DailySummary {
 }
 
 // Structure for the entire monthly report
+// Structure for the entire monthly report
 export interface MonthlyReport {
     monthYear: string; // e.g., "November 2025"
     totalIncome: number;
@@ -55,9 +56,12 @@ export interface MonthlyReport {
     netBalance: number;
     dailySummaries: DailySummary[]; // Sorted by date ASC
     lastUpdated: Date;
-    // 🔑 ADDED: Categorical Breakdowns
-    incomeBySource: { [source: string]: number };
-    spendingByType: { [type: string]: number };
+    // 🔑 ADDED: Categorical Breakdowns with Notes
+    incomeBySource: { [source: string]: { amount: number; notes: string[] } };
+    spendingByType: { [type: string]: { amount: number; notes: string[] } };
+    // 🔑 ADDED: Raw Transaction Lists
+    allIncomes: IncomeRecord[];
+    allSpendings: SpendingRecord[];
 }
 
 interface UseMonthlyFinanceReport {
@@ -89,8 +93,10 @@ const aggregateAndCalculate = (
 ): MonthlyReport => {
     // 1. Group records by date (YYYY-MM-DD)
     const dailyMap = new Map<string, DailySummary>();
-    const incomeBySource: { [source: string]: number } = {};
-    const spendingByType: { [type: string]: number } = {};
+    const incomeBySource: { [source: string]: { amount: number; notes: string[] } } = {};
+    const spendingByType: { [type: string]: { amount: number; notes: string[] } } = {};
+    const allIncomes: IncomeRecord[] = [];
+    const allSpendings: SpendingRecord[] = [];
 
     // Sort records by date for accurate chronological cumulative calculation
     allRecords.sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -110,25 +116,42 @@ const aggregateAndCalculate = (
         };
 
         const amount = safeNumber(record.amount);
+        const note = record.note ? record.note.trim() : "";
 
         // Income logic
         if ('source' in record) {
+            const incomeRecord = record as IncomeRecord;
             daily.totalIncome += amount;
             // 🔑 ADDED: Cast and include familyCount
-            daily.transactions.push({ ...record, type: 'income', familyCount: (record as IncomeRecord).familyCount || 0 });
+            daily.transactions.push({ ...incomeRecord, type: 'income', familyCount: incomeRecord.familyCount || 0 });
+            allIncomes.push(incomeRecord);
 
             // Aggregate by Source
-            const source = (record as IncomeRecord).source || 'Lainnya';
-            incomeBySource[source] = (incomeBySource[source] || 0) + amount;
+            const source = incomeRecord.source || 'Lainnya';
+            if (!incomeBySource[source]) {
+                incomeBySource[source] = { amount: 0, notes: [] };
+            }
+            incomeBySource[source].amount += amount;
+            if (note && !incomeBySource[source].notes.includes(note)) {
+                incomeBySource[source].notes.push(note);
+            }
         }
         // Spending logic
         else if ('category' in record) {
+            const spendingRecord = record as SpendingRecord;
             daily.totalSpending += amount;
-            daily.transactions.push({ ...record, category: 'spending' });
+            daily.transactions.push({ ...spendingRecord, category: 'spending' });
+            allSpendings.push(spendingRecord);
 
             // Aggregate by Type
-            const type = (record as SpendingRecord).type || 'Lainnya';
-            spendingByType[type] = (spendingByType[type] || 0) + amount;
+            const type = spendingRecord.type || 'Lainnya';
+            if (!spendingByType[type]) {
+                spendingByType[type] = { amount: 0, notes: [] };
+            }
+            spendingByType[type].amount += amount;
+            if (note && !spendingByType[type].notes.includes(note)) {
+                spendingByType[type].notes.push(note);
+            }
         }
 
         dailyMap.set(dateKey, daily);
@@ -163,6 +186,8 @@ const aggregateAndCalculate = (
         lastUpdated: new Date(),
         incomeBySource,
         spendingByType,
+        allIncomes,
+        allSpendings,
     };
 };
 

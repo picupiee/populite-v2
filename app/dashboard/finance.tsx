@@ -4,7 +4,7 @@ import React, { useCallback } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 // Hooks & Types
-import { FINANCE_SPENDING_TYPES } from '@/constants/finance';
+import { FINANCE_INCOME_SOURCES, FINANCE_SPENDING_TYPES } from '@/constants/finance';
 import { useAccess } from '@/hooks/useAccess';
 import { useMonthlyFinanceReport } from '@/hooks/useMonthlyFinanceReport';
 
@@ -55,11 +55,13 @@ const SummaryCard: React.FC<{ title: string; amount: number; icon: React.ReactNo
 // 2. Breakdown Card (Similar to StatusCard in Population Summary)
 const BreakdownCard = ({
   label,
+  note,
   amount,
   total,
   color,
 }: {
   label: string;
+  note?: string;
   amount: number;
   total: number;
   color: string;
@@ -71,9 +73,18 @@ const BreakdownCard = ({
         <View
           className={`w-3 h-3 rounded-full ${color === "green" ? "bg-green-500" : "bg-red-500"}`}
         />
-        <Text className="ml-3 text-md text-gray-700 font-medium">{label}</Text>
+        <View className="flex-col ml-3 flex-1">
+          <Text className="text-md text-gray-700 font-medium">{label}</Text>
+          {note &&
+            <View className='flex-row'>
+              <Text className="text-xs text-gray-400">
+                <Ionicons name="caret-forward-outline" size={10} color="gray" />  {note}
+              </Text>
+            </View>
+          }
+        </View>
       </View>
-      <View className="items-end">
+      <View className="items-end pl-2">
         <Text className={`text-base font-semibold ${color === "green" ? "text-green-700" : "text-red-700"}`}>
           {formatRupiah(amount)}
         </Text>
@@ -95,6 +106,8 @@ export default function FinanceReportScreen() {
   const navigateMonth = useCallback((direction: 'prev' | 'next') => {
     setCurrentDate(prev => direction === 'next' ? addMonths(prev, 1) : subMonths(prev, 1));
   }, [setCurrentDate]);
+
+  // ...
 
   // Handle data loading state
   if (loading && !report) {
@@ -143,7 +156,6 @@ export default function FinanceReportScreen() {
         />
       }
     >
-
       {/* --- Month Navigation and Title --- */}
       <View className="bg-white p-5 shadow-sm border-b border-gray-200">
         <Text className="text-xl font-extrabold text-gray-900 mb-3">
@@ -212,18 +224,26 @@ export default function FinanceReportScreen() {
         <Text className="text-lg font-bold text-gray-800 mb-4 pt-2 border-b border-gray-100 pb-2">
           Rincian Pemasukan
         </Text>
-        {Object.keys(report.incomeBySource).length === 0 ? (
+        {report.allIncomes.length === 0 ? (
           <Text className="text-gray-500 italic">Belum ada data pemasukan.</Text>
         ) : (
-          Object.entries(report.incomeBySource).map(([source, amount]) => (
-            <BreakdownCard
-              key={source}
-              label={source}
-              amount={amount}
-              total={report.totalIncome}
-              color="green"
-            />
-          ))
+          report.allIncomes.map((record) => {
+            // Lookup details
+            const details = FINANCE_INCOME_SOURCES.find(s => s.id === record.source);
+            const label = details?.label || record.source;
+            const note = record.note;
+
+            return (
+              <BreakdownCard
+                key={record.id}
+                label={label}
+                note={note}
+                amount={record.amount}
+                total={report.totalIncome}
+                color="green"
+              />
+            );
+          })
         )}
       </View>
 
@@ -232,18 +252,26 @@ export default function FinanceReportScreen() {
         <Text className="text-lg font-bold text-gray-800 mb-4 pt-2 border-b border-gray-100 pb-2">
           Rincian Pengeluaran
         </Text>
-        {Object.keys(report.spendingByType).length === 0 ? (
+        {report.allSpendings.length === 0 ? (
           <Text className="text-gray-500 italic">Belum ada data pengeluaran.</Text>
         ) : (
-          Object.entries(report.spendingByType).map(([typeId, amount]) => (
-            <BreakdownCard
-              key={typeId}
-              label={getSpendingTypeLabel(typeId)}
-              amount={amount}
-              total={report.totalSpending}
-              color="red"
-            />
-          ))
+          report.allSpendings.map((record) => {
+            // Lookup details
+            const details = FINANCE_SPENDING_TYPES.find(s => s.id === record.type);
+            const label = details?.label || record.type;
+            const note = record.note;
+
+            return (
+              <BreakdownCard
+                key={record.id}
+                label={label}
+                note={note}
+                amount={record.amount}
+                total={report.totalSpending}
+                color="red"
+              />
+            );
+          })
         )}
       </View>
 

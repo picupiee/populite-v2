@@ -13,6 +13,8 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -121,75 +123,86 @@ export default function EditActivityScreen() {
     return null;
   }
 
+  const keyboardVerticalOffset = Platform.OS === "android" ? 75 : 100;
+
   // --- Render Form ---
   return (
-    <ScrollView className="flex-1 p-6 bg-white">
-      <Stack.Screen
-        options={{
-          title: `Ubah Kegiatan : ${activity.title}`,
-          headerTitleStyle: { fontSize: 16 },
-          headerLeft: () => (
-            <Pressable onPress={navigateBack} className="p-2 ml-3">
-              <Ionicons name="arrow-back-outline" size={20} color="white" />
-            </Pressable>
-          ),
-        }}
-      />
+    <KeyboardAvoidingView
+      behavior="height"
+      style={{ flex: 1, paddingBottom: 0 }}
+      keyboardVerticalOffset={keyboardVerticalOffset}
+    >
+      <ScrollView
+        className="flex-1 bg-white"
+        contentContainerStyle={{ padding: 24, paddingBottom: 100 }}
+      >
+        <Stack.Screen
+          options={{
+            title: `Ubah Kegiatan : ${activity.title}`,
+            headerTitleStyle: { fontSize: 16 },
+            headerLeft: () => (
+              <Pressable onPress={navigateBack} className="p-2 ml-3">
+                <Ionicons name="arrow-back-outline" size={20} color="white" />
+              </Pressable>
+            ),
+          }}
+        />
 
-      <Text className="text-2xl font-bold mb-6 text-gray-800">
-        Ubah Detail Kegiatan
-      </Text>
+        <Text className="text-2xl font-bold mb-6 text-gray-800">
+          Ubah Detail Kegiatan
+        </Text>
 
-      {/* Input: Title */}
-      <FormInput
-        label="Judul Kegiatan"
-        value={formData.title || ""}
-        onChangeText={(val) => handleChange("title", val)}
-        placeholder="Kerja Bakti Warga"
-      />
+        {/* Input: Title */}
+        <FormInput
+          label="Judul Kegiatan"
+          value={formData.title || ""}
+          onChangeText={(val) => handleChange("title", val)}
+          placeholder="Kerja Bakti Warga"
+        />
 
-      {/* Date Picker Input (Future/Present Range) */}
-      <DatePickerInput
-        label="Tanggal Kegiatan"
-        value={formData.activityDate}
-        onChange={(date) => handleChange("activityDate", date)}
-        minDate={new Date()} // Enforce today or future date
-      />
+        {/* Date Picker Input (Future/Present Range) */}
+        <DatePickerInput
+          label="Tanggal Kegiatan"
+          value={formData.activityDate}
+          onChange={(date) => handleChange("activityDate", date)}
+          minDate={new Date()} // Enforce today or future date
+        />
 
-      {/* Short Description Input */}
-      <FormInput
-        label="Deskripsi Singkat"
-        value={formData.shortDescription || ""}
-        onChangeText={(val) => handleChange("shortDescription", val)}
-        placeholder="Muncul di daftar kegiatan"
-        multiline
-      />
+        {/* Short Description Input */}
+        <FormInput
+          label="Deskripsi Singkat"
+          value={formData.shortDescription || ""}
+          onChangeText={(val) => handleChange("shortDescription", val)}
+          placeholder="Muncul di daftar kegiatan"
+          multiline
+        />
 
-      {/* Long Description Input */}
-      <FormInput
-        label="Deskripsi Lengkap"
-        value={formData.longDescription || ""}
-        onChangeText={(val) => handleChange("longDescription", val)}
-        placeholder="Detail lengkap kegiatan"
-        multiline
-      />
+        {/* Long Description Input */}
+        <FormInput
+          label="Deskripsi Lengkap"
+          value={formData.longDescription || ""}
+          onChangeText={(val) => handleChange("longDescription", val)}
+          placeholder="Detail lengkap kegiatan"
+          multiline
+        />
 
-      {/* Save Button */}
-      <AppButton
-        onPress={handleUpdate}
-        title="Simpan Perubahan"
-        loadingText="Menyimpan..."
-        variant="primary"
-        className="mt-6"
-      />
-      <AppButton
-        onPress={() =>
-          router.replace(`/dashboard/(public)/activities/${activityId}`)
-        }
-        title="Batal"
-        variant="danger"
-        className="mt-3"
-      />
-    </ScrollView>
+        {/* Save Button */}
+        <AppButton
+          onPress={handleUpdate}
+          title="Simpan Perubahan"
+          loadingText="Menyimpan..."
+          variant="primary"
+          className="mt-6"
+        />
+        <AppButton
+          onPress={() =>
+            router.replace(`/dashboard/(public)/activities/${activityId}`)
+          }
+          title="Batal"
+          variant="danger"
+          className="mt-3"
+        />
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

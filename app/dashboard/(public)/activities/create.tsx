@@ -8,7 +8,7 @@ import { auth, db } from "@/lib/firebase";
 import { router, Stack } from "expo-router";
 import { addDoc, collection } from "firebase/firestore";
 import React, { useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
 
 // 🔑 CORRECT IMPORT: Use your toast service hook
 import { useToastService } from "@/hooks/useToastService";
@@ -114,71 +114,82 @@ export default function CreateActivityScreen() {
     );
   }
 
+  const keyboardVerticalOffset = Platform.OS === "android" ? 75 : 100;
+
   return (
-    <ScrollView className="flex-1 p-5 bg-white">
-      <Stack.Screen
-        options={{
-          title: "Buat Kegiatan",
-          headerLeft: () => (
-            <Pressable
-              onPress={() => router.replace("/dashboard/(public)/activities")}
-              className="p-2 ml-3"
-            >
-              <Ionicons name="arrow-back-outline" size={20} color="white" />
-            </Pressable>
-          ),
-        }}
-      />
+    <KeyboardAvoidingView
+      behavior="height"
+      style={{ flex: 1, paddingBottom: 0 }}
+      keyboardVerticalOffset={keyboardVerticalOffset}
+    >
+      <ScrollView
+        className="flex-1 bg-white"
+        contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
+      >
+        <Stack.Screen
+          options={{
+            title: "Buat Kegiatan",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => router.replace("/dashboard/(public)/activities")}
+                className="p-2 ml-3"
+              >
+                <Ionicons name="arrow-back-outline" size={20} color="white" />
+              </Pressable>
+            ),
+          }}
+        />
 
-      {/* Title Input */}
-      <FormInput
-        label="Judul Kegiatan"
-        value={title}
-        onChangeText={setTitle}
-        placeholder="Kerja Bakti Warga"
-        error={errors.title}
-        className="mb-4"
-      />
+        {/* Title Input */}
+        <FormInput
+          label="Judul Kegiatan"
+          value={title}
+          onChangeText={setTitle}
+          placeholder="Kerja Bakti Warga"
+          error={errors.title}
+          className="mb-4"
+        />
 
-      {/* Date Picker Input */}
-      <DatePickerInput
-        label="Tanggal Kegiatan"
-        value={activityDate}
-        onChange={setActivityDate}
-        error={errors.activityDate}
-        className="mb-4"
-        minDate={new Date()}
-      />
+        {/* Date Picker Input */}
+        <DatePickerInput
+          label="Tanggal Kegiatan"
+          value={activityDate}
+          onChange={setActivityDate}
+          error={errors.activityDate}
+          className="mb-4"
+          minDate={new Date()}
+        />
 
-      {/* Short Description Input */}
-      <FormInput
-        label="Deskripsi Singkat"
-        value={shortDescription}
-        onChangeText={setShortDescription}
-        placeholder="Kegiatan tentang..."
-        error={errors.shortDescription}
-        multiline
-        className="mb-4"
-      />
+        {/* Short Description Input */}
+        <FormInput
+          label="Deskripsi Singkat"
+          value={shortDescription}
+          onChangeText={setShortDescription}
+          placeholder="Kegiatan tentang..."
+          error={errors.shortDescription}
+          multiline
+          className="mb-4"
+        />
 
-      {/* Long Description Input (Optional Field) */}
-      <FormInput
-        label="Deskripsi Lengkap"
-        value={longDescription}
-        onChangeText={setLongDescription}
-        placeholder="Tulis secara lengkap tentang kegiatan ini"
-        multiline
-        className="mb-6"
-      />
+        {/* Long Description Input (Optional Field) */}
+        <FormInput
+          label="Deskripsi Lengkap"
+          value={longDescription}
+          onChangeText={setLongDescription}
+          placeholder="Tulis secara lengkap tentang kegiatan ini"
+          multiline
+          className="mb-6"
+        />
 
-      {/* AppButton for Submission */}
-      <AppButton
-        title="Simpan Kegiatan"
-        onPress={handleCreateActivity}
-        isLoading={isLoading}
-        variant="primary"
-        className="mt-4"
-      />
-    </ScrollView>
+        {/* AppButton for Submission */}
+        <AppButton
+          title="Simpan Kegiatan"
+          onPress={handleCreateActivity}
+          isLoading={isLoading}
+          variant="primary"
+          className="mt-4"
+        />
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

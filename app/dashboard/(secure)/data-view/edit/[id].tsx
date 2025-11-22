@@ -39,13 +39,14 @@ export default function EditRecordScreen() {
   const [formData, setFormData] = useState<Partial<PopulationRecord>>({});
   const [saving, setSaving] = useState(false);
 
-  // State to track if the form has been initialized once
-  const [isInitialized, setIsInitialized] = useState(false);
+  // State to track the ID of the currently initialized record
+  const [initializedId, setInitializedId] = useState<string | null>(null);
 
   // --- Effect 1: Initialize Form Data ---
   useEffect(() => {
-    // Run ONLY when a stable 'record' loads successfully and hasn't initialized yet
-    if (record && !isInitialized) {
+    // Run ONLY when a stable 'record' loads successfully and matches the current ID,
+    // AND we haven't initialized this specific ID yet.
+    if (record && record.id === id && initializedId !== id) {
       setFormData({
         houseId: record.houseId,
         street: record.street,
@@ -58,10 +59,10 @@ export default function EditRecordScreen() {
         // dateOccupied is a Date object from the listener mapper
         dateOccupied: record.dateOccupied,
       });
-      setIsInitialized(true);
+      setInitializedId(id);
     }
-  }, [record, isInitialized]);
-  // This stable dependency array ensures initialization happens exactly once per ID.
+  }, [record, id, initializedId]);
+  // This ensures initialization happens exactly once per new ID.
 
   // --- Effect 2: Handle Errors (e.g., Record Not Found) ---
   useEffect(() => {
@@ -107,7 +108,7 @@ export default function EditRecordScreen() {
   };
 
   // --- Loading/Error UI ---
-  if (loading || !id || !isInitialized) {
+  if (loading || !id || initializedId !== id) {
     return (
       <View className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" color="#4F46E5" />

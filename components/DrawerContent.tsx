@@ -14,7 +14,7 @@ export function CustomDrawerContent(props: DrawerContentComponentProps) {
   const user = auth.currentUser;
 
   return (
-    <View style={{ flex: 1 }} className="bg-gray-100">
+    <View style={{ flex: 1 }}>
       {/* 1. Scrollable area for default navigation items */}
       <DrawerContentScrollView
         {...props}

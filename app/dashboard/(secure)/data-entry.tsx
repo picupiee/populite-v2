@@ -9,25 +9,25 @@ import { useToastService } from "@/hooks/useToastService";
 import { checkHouseIdExists } from "@/utils/populationService";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
 
 // Define the initial state structure for the form (excluding id, entryDate)
 const initialFormState: Omit<
   PopulationRecord,
   "id" | "entryDate" | "dateOccupied"
 > & { dateOccupied?: Date | string; housePrefix: string; houseSuffix: string } =
-  {
-    name: "",
-    gender: "Pria", // Default to Male
-    housePrefix: "",
-    houseSuffix: "",
-    street: STREET_OPTIONS[0],
-    domicile: "Gunung Sari", // Default to Gunung Sari
-    houseStatus: "Ditempati", // Default to Ditempati
-    kidsTotal: 0,
-    adultTotal: 0, // Default to 1 adult if Ditempati
-    dateOccupied: undefined, // Will be set only if status is Ditempati/Sewa
-  };
+{
+  name: "",
+  gender: "Pria", // Default to Male
+  housePrefix: "",
+  houseSuffix: "",
+  street: STREET_OPTIONS[0],
+  domicile: "Gunung Sari", // Default to Gunung Sari
+  houseStatus: "Ditempati", // Default to Ditempati
+  kidsTotal: 0,
+  adultTotal: 0, // Default to 1 adult if Ditempati
+  dateOccupied: undefined, // Will be set only if status is Ditempati/Sewa
+};
 const INITIAL_ERRORS = {
   name: null,
   gender: null,
@@ -105,10 +105,12 @@ export default function DataEntryScreen() {
         adultTotal: formData.adultTotal,
         kidsTotal: formData.kidsTotal,
         houseId: combinedHouseId,
+        housePrefix: housePrefix,
+        houseSuffix: houseSuffix,
         dateOccupied:
           formData.dateOccupied instanceof Date
             ? formData.dateOccupied
-            : undefined,
+            : undefined as any,
 
         // ...formData,
         // // Ensure dateOccupied is a Date object if present, otherwise omit it from the payload type
@@ -144,192 +146,200 @@ export default function DataEntryScreen() {
     </Text>
   );
 
+  const keyboardVerticalOffset = Platform.OS === "android" ? 75 : 100;
+
   return (
-    <View className="flex-1 bg-white">
-      {/* Configure Stack Header for this specific screen group */}
-      {/* <Stack.Screen options={{ title: "New Population Data Entry" }} /> */}
+    <KeyboardAvoidingView
+      behavior="height"
+      style={{ flex: 1, paddingBottom: 0 }}
+      keyboardVerticalOffset={keyboardVerticalOffset}
+    >
+      <View className="flex-1 bg-white">
+        {/* Configure Stack Header for this specific screen group */}
+        {/* <Stack.Screen options={{ title: "New Population Data Entry" }} /> */}
 
-      <ScrollView contentContainerStyle={{ padding: 20 }}>
-        <Text className="text-2xl font-bold">Form Pendataan Warga</Text>
-        <Text className="text-xs mb-2 pb-2 border-b-2 border-gray-200">
-          Mohon isi data sebenar-benarnya dengan lengkap dan akurat.
-        </Text>
+        <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 100 }}>
+          <Text className="text-2xl font-bold">Form Pendataan Warga</Text>
+          <Text className="text-xs mb-2 pb-2 border-b-2 border-gray-200">
+            Mohon isi data sebenar-benarnya dengan lengkap dan akurat.
+          </Text>
 
-        {/* Name */}
-        <FormInput
-          label="Nama Penghuni"
-          value={formData.name}
-          onChangeText={(value) => handleChange("name", value)}
-          placeholder="Contoh: Budi Santoso"
-          keyboardType="default"
+          {/* Name */}
+          <FormInput
+            label="Nama Penghuni"
+            value={formData.name}
+            onChangeText={(value) => handleChange("name", value)}
+            placeholder="Contoh: Budi Santoso"
+            keyboardType="default"
           // Pass the error string from your validation state
-        />
+          />
 
-        {/* House Status Selector */}
-        <Text className="font-semibold text-gray-700 mt-4 mb-1">
-          Status Hunian
-        </Text>
-        <View className="flex-row justify-between mb-4">
-          {["Kosong", "Ditempati", "Sewa"].map((status) => (
-            <Pressable
-              key={status}
-              onPress={() => handleChange("houseStatus", status)}
-              className={`p-3 rounded-lg border flex-1 items-center mx-1 
+          {/* House Status Selector */}
+          <Text className="font-semibold text-gray-700 mt-4 mb-1">
+            Status Hunian
+          </Text>
+          <View className="flex-row justify-between mb-4">
+            {["Kosong", "Ditempati", "Sewa"].map((status) => (
+              <Pressable
+                key={status}
+                onPress={() => handleChange("houseStatus", status)}
+                className={`p-3 rounded-lg border flex-1 items-center mx-1 
                 ${formData.houseStatus === status ? "bg-indigo-500 border-indigo-700" : "bg-white border-gray-300"}`}
-            >
-              <Text
-                className={`font-semibold ${formData.houseStatus === status ? "text-white" : "text-gray-700"}`}
               >
-                {status}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-
-        {/* House ID & Street */}
-        <View className="flex-row justify-between gap-3">
-          <View className="flex-1">
-            <View className="flex-row justify-start gap-2">
-              <View className="w-1/3">
-                <FormInput
-                  label="Blok"
-                  value={formData.housePrefix}
-                  onChangeText={(value) =>
-                    handleChange("housePrefix", value.toUpperCase())
-                  }
-                  placeholder="C28"
-                  labelStyle="text-center"
-                  keyboardType="default"
-                  // Pass the error string from your validation state
-                />
-              </View>
-              <View className="border border-gray-200" />
-              <View className="w-1/3">
-                <FormInput
-                  label="Nomor"
-                  value={formData.houseSuffix}
-                  onChangeText={(value) => handleChange("houseSuffix", value)}
-                  placeholder="20"
-                  labelStyle="text-center font-bold"
-                  keyboardType="decimal-pad"
-                  // Pass the error string from your validation state
-                />
-              </View>
-            </View>
-          </View>
-          {/* Street Pick */}
-          <View className="flex-1">
-            <SelectGroup
-              label="Jalan (Gang)"
-              options={STREET_OPTIONS}
-              selectedValue={formData.street}
-              onValueChange={(value) => handleChange("street", value)}
-              horizontal={true} // Horizontal layout is good for forms
-            />
-          </View>
-          {/* </View> */}
-        </View>
-
-        {/* Gender Selector (Only for Ditempati/Sewa) */}
-        {(formData.houseStatus === "Ditempati" ||
-          formData.houseStatus === "Sewa") && (
-          <>
-            <Text className="font-semibold text-gray-700 mt-4 mb-1">
-              Jenis Kelamin Penghuni
-            </Text>
-            <View className="flex-row justify-between gap-4 mb-4">
-              {["Pria", "Wanita"].map((gender) => (
-                <Pressable
-                  key={gender}
-                  onPress={() => handleChange("gender", gender)}
-                  className={`flex-1 p-3 rounded-lg border items-center
-                              ${formData.gender === gender ? "bg-indigo-500 border-indigo-700" : "bg-white border-gray-300"}`}
+                <Text
+                  className={`font-semibold ${formData.houseStatus === status ? "text-white" : "text-gray-700"}`}
                 >
-                  <Text
-                    className={`font-semibold ${formData.gender === gender ? "text-white" : "text-gray-700"}`}
-                  >
-                    {gender}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
+                  {status}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
 
-            {/* Totals */}
-            <Text className="text-center mt-3 font-semibold border-b-2 border-gray-200 pb-2">
-              Total Penghuni Rumah
-            </Text>
-            <View className="flex-row justify-between gap-3 mt-2">
-              <View className="flex-1">
-                <FormInput
-                  label="Dewasa"
-                  value={formData.adultTotal}
-                  onChangeText={(value) => handleChange("adultTotal", value)}
-                  placeholder="0"
-                  keyboardType="default"
-                  labelStyle="text-center"
+          {/* House ID & Street */}
+          <View className="flex-row justify-between gap-3">
+            <View className="flex-1">
+              <View className="flex-row justify-start gap-2">
+                <View className="w-1/3">
+                  <FormInput
+                    label="Blok"
+                    value={formData.housePrefix}
+                    onChangeText={(value) =>
+                      handleChange("housePrefix", value.toUpperCase())
+                    }
+                    placeholder="C28"
+                    labelStyle="text-center"
+                    keyboardType="default"
                   // Pass the error string from your validation state
-                />
-              </View>
-              <View className="flex-1">
-                <FormInput
-                  label="Anak-anak"
-                  value={formData.kidsTotal}
-                  onChangeText={(value) => handleChange("kidsTotal", value)}
-                  placeholder="0"
-                  keyboardType="default"
-                  labelStyle="text-center"
+                  />
+                </View>
+                <View className="border border-gray-200" />
+                <View className="w-1/3">
+                  <FormInput
+                    label="Nomor"
+                    value={formData.houseSuffix}
+                    onChangeText={(value) => handleChange("houseSuffix", value)}
+                    placeholder="20"
+                    labelStyle="text-center font-bold"
+                    keyboardType="decimal-pad"
                   // Pass the error string from your validation state
-                />
+                  />
+                </View>
               </View>
             </View>
-          </>
-        )}
+            {/* Street Pick */}
+            <View className="flex-1">
+              <SelectGroup
+                label="Jalan (Gang)"
+                options={STREET_OPTIONS}
+                selectedValue={formData.street}
+                onValueChange={(value) => handleChange("street", value)}
+                horizontal={true} // Horizontal layout is good for forms
+              />
+            </View>
+            {/* </View> */}
+          </View>
 
-        {/* Date Occupied Input (Optional, requires conversion) */}
-        <DatePickerInput
-          label="Tanggal Hunian Ditempati"
-          value={formData.dateOccupied}
-          onChange={(date) => handleChange("dateOccupied", date)}
-          className="mb-0"
-          maxDate={new Date()}
-        />
-        <DatePlaceholder />
+          {/* Gender Selector (Only for Ditempati/Sewa) */}
+          {(formData.houseStatus === "Ditempati" ||
+            formData.houseStatus === "Sewa") && (
+              <>
+                <Text className="font-semibold text-gray-700 mt-4 mb-1">
+                  Jenis Kelamin Penghuni
+                </Text>
+                <View className="flex-row justify-between gap-4 mb-4">
+                  {["Pria", "Wanita"].map((gender) => (
+                    <Pressable
+                      key={gender}
+                      onPress={() => handleChange("gender", gender)}
+                      className={`flex-1 p-3 rounded-lg border items-center
+                              ${formData.gender === gender ? "bg-indigo-500 border-indigo-700" : "bg-white border-gray-300"}`}
+                    >
+                      <Text
+                        className={`font-semibold ${formData.gender === gender ? "text-white" : "text-gray-700"}`}
+                      >
+                        {gender}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
 
-        {/* Domicile Selector */}
-        <Text className="font-semibold text-gray-700 mt-4 mb-1">
-          Domisili KTP
-        </Text>
-        <View className="flex-row justify-start mb-4">
-          {["Gunung Sari", "Lainnya"].map((domicileStatus) => (
-            <Pressable
-              key={domicileStatus}
-              onPress={() => handleChange("domicile", domicileStatus)}
-              className={`p-3 rounded-lg border w-36 items-center mr-3
+                {/* Totals */}
+                <Text className="text-center mt-3 font-semibold border-b-2 border-gray-200 pb-2">
+                  Total Penghuni Rumah
+                </Text>
+                <View className="flex-row justify-between gap-3 mt-2">
+                  <View className="flex-1">
+                    <FormInput
+                      label="Dewasa"
+                      value={String(formData.adultTotal)}
+                      onChangeText={(value) => handleChange("adultTotal", value)}
+                      placeholder="0"
+                      keyboardType="default"
+                      labelStyle="text-center"
+                    // Pass the error string from your validation state
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <FormInput
+                      label="Anak-anak"
+                      value={String(formData.kidsTotal)}
+                      onChangeText={(value) => handleChange("kidsTotal", value)}
+                      placeholder="0"
+                      keyboardType="default"
+                      labelStyle="text-center"
+                    // Pass the error string from your validation state
+                    />
+                  </View>
+                </View>
+              </>
+            )}
+
+          {/* Date Occupied Input (Optional, requires conversion) */}
+          <DatePickerInput
+            label="Tanggal Hunian Ditempati"
+            value={formData.dateOccupied instanceof Date ? formData.dateOccupied : undefined}
+            onChange={(date) => handleChange("dateOccupied", date)}
+            className="mb-0"
+            maxDate={new Date()}
+          />
+          <DatePlaceholder />
+
+          {/* Domicile Selector */}
+          <Text className="font-semibold text-gray-700 mt-4 mb-1">
+            Domisili KTP
+          </Text>
+          <View className="flex-row justify-start mb-4">
+            {["Gunung Sari", "Lainnya"].map((domicileStatus) => (
+              <Pressable
+                key={domicileStatus}
+                onPress={() => handleChange("domicile", domicileStatus)}
+                className={`p-3 rounded-lg border w-36 items-center mr-3
                       ${formData.domicile === domicileStatus ? "bg-indigo-500 border-indigo-700" : "bg-white border-gray-300"}`}
-            >
-              <Text
-                className={`font-semibold ${formData.domicile === domicileStatus ? "text-white" : "text-gray-700"}`}
               >
-                {domicileStatus}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-        <AppButton
-          onPress={handleSave}
-          title="Simpan Data"
-          loadingText="Menyimpan..."
-          variant="primary"
-        />
-        <AppButton
-          onPress={handleReset}
-          title="Batal"
-          variant="danger"
-          className="mt-3"
-        />
+                <Text
+                  className={`font-semibold ${formData.domicile === domicileStatus ? "text-white" : "text-gray-700"}`}
+                >
+                  {domicileStatus}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+          <AppButton
+            onPress={handleSave}
+            title="Simpan Data"
+            loadingText="Menyimpan..."
+            variant="primary"
+          />
+          <AppButton
+            onPress={handleReset}
+            title="Batal"
+            variant="danger"
+            className="mt-3"
+          />
 
-        <View className="h-10" />
-      </ScrollView>
-    </View>
+          <View className="h-10" />
+        </ScrollView>
+      </View>
+    </KeyboardAvoidingView>
   );
 }

@@ -31,7 +31,7 @@ export default function FormInput({
   const controlledValue = String(value ?? "")
   // Style for the input field itself
   const inputStyle = `
-    border rounded-lg p-3 text-base text-gray-800 
+    border rounded-lg p-3 text-base text-gray-800 items-start
     ${error ? "border-red-500 bg-red-50" : "border-gray-300 bg-white"}
   `;
 

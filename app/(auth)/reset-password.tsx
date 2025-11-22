@@ -5,7 +5,7 @@ import { auth } from "@/lib/firebase"; // Direct import of auth instance
 import { Link, useRouter } from "expo-router";
 import { sendPasswordResetEmail } from "firebase/auth";
 import React, { useState } from "react";
-import { Alert, Text, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ResetPasswordScreen() {
@@ -51,35 +51,48 @@ export default function ResetPasswordScreen() {
     }
   };
 
+  const keyboardVerticalOffset = Platform.OS === "android" ? 75 : 100;
+
   return (
     <SafeAreaView className="flex-1 bg-indigo-300">
-      <View className="flex-1 items-center justify-center p-10 md:scale-125">
-        <View className="my-10 w-full md:w-1/2">
-          <Text className="text-2xl mb-2 text-center">Reset Password</Text>
-          <Text className="text-sm mb-4 text-gray-600 text-center">
-            Silahkan masukkan alamat email untuk mereset password.
-          </Text>
-          <FormInput
-            label=""
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            placeholder="Alamat Email"
-          />
+      <KeyboardAvoidingView
+        behavior="height"
+        style={{ flex: 1, paddingBottom: 0 }}
+        keyboardVerticalOffset={keyboardVerticalOffset}
+      >
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}
+        >
+          <View className="flex-1 items-center justify-center p-10 md:scale-125">
+            <View className="my-10 w-full md:w-1/2">
+              <Text className="text-2xl mb-2 text-center">Reset Password</Text>
+              <Text className="text-sm mb-4 text-gray-600 text-center">
+                Silahkan masukkan alamat email untuk mereset password.
+              </Text>
+              <FormInput
+                label=""
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                placeholder="Alamat Email"
+              />
 
-          <AppButton
-            title="Reset Password"
-            loadingText="Mohon Tunggu..."
-            onPress={handleReset}
-            variant="primary"
-            className="mb-8"
-          />
+              <AppButton
+                title="Reset Password"
+                loadingText="Mohon Tunggu..."
+                onPress={handleReset}
+                variant="primary"
+                className="mb-8"
+              />
 
-          <Link href="/(auth)/signIn" className="text-center text-black">
-            Kembali ke Form Masuk
-          </Link>
-        </View>
-      </View>
+              <Link href="/(auth)/signIn" className="text-center text-black">
+                Kembali ke Form Masuk
+              </Link>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
