@@ -8,10 +8,13 @@ export default function DashboardLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: "#4F46E5" },
         headerTintColor: "#fff",
+        headerShadowVisible: false,
         drawerActiveTintColor: "#4F46E5",
-        drawerStyle: { paddingTop: 25 },
-        drawerLabelStyle: { marginLeft: 0 },
-        drawerItemStyle: { marginVertical: 3 },
+        drawerActiveBackgroundColor: "#EEF2FF",
+        drawerInactiveTintColor: "#6B7280",
+        drawerStyle: { width: '80%' },
+        drawerLabelStyle: { marginLeft: -10, fontWeight: '600' },
+        drawerItemStyle: { marginVertical: 4, borderRadius: 12, paddingHorizontal: 4 },
       }}
       drawerContent={CustomDrawerContent}
     >
