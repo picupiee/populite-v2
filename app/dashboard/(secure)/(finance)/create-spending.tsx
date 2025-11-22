@@ -186,9 +186,9 @@ export default function SpendingForm() {
                     className="mt-6"
                 />
                 <AppButton
-                    onPress={() => router.back()}
+                    onPress={() => router.replace("/dashboard/finance")}
                     title="Batal"
-                    variant="secondary"
+                    variant="danger"
                     className="mt-3"
                 />
             </ScrollView>
