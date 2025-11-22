@@ -7,9 +7,12 @@ import { PopulationRecord, STREET_OPTIONS } from "@/constants/data";
 import { usePopulationMutations } from "@/hooks/useFirestoreMutations";
 import { useToastService } from "@/hooks/useToastService";
 import { checkHouseIdExists } from "@/utils/populationService";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 // Define the initial state structure for the form (excluding id, entryDate)
 const initialFormState: Omit<
@@ -111,11 +114,6 @@ export default function DataEntryScreen() {
           formData.dateOccupied instanceof Date
             ? formData.dateOccupied
             : undefined as any,
-
-        // ...formData,
-        // // Ensure dateOccupied is a Date object if present, otherwise omit it from the payload type
-        // kidsTotal: Number(formData.kidsTotal || 0),
-        // adultTotal: Number(formData.adultTotal || 0),
       };
 
       await addRecord(payload);
@@ -141,8 +139,8 @@ export default function DataEntryScreen() {
 
   // Helper for Date input (we'll simplify this for now without a date picker)
   const DatePlaceholder = () => (
-    <Text className="text-gray-500 italic mt-2 text-sm">
-      Pilih tanggal sesuai perkiraan penghuni masuk atau tinggal didalam hunian.
+    <Text className="text-gray-400 italic mt-2 text-xs ml-1">
+      * Pilih tanggal sesuai perkiraan penghuni masuk.
     </Text>
   );
 
@@ -151,193 +149,236 @@ export default function DataEntryScreen() {
   return (
     <KeyboardAvoidingView
       behavior="height"
-      style={{ flex: 1, paddingBottom: 0 }}
+      style={{ flex: 1 }}
       keyboardVerticalOffset={keyboardVerticalOffset}
     >
-      <View className="flex-1 bg-white">
-        {/* Configure Stack Header for this specific screen group */}
-        {/* <Stack.Screen options={{ title: "New Population Data Entry" }} /> */}
-
-        <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 100 }}>
-          <Text className="text-2xl font-bold">Form Pendataan Warga</Text>
-          <Text className="text-xs mb-2 pb-2 border-b-2 border-gray-200">
-            Mohon isi data sebenar-benarnya dengan lengkap dan akurat.
-          </Text>
-
-          {/* Name */}
-          <FormInput
-            label="Nama Penghuni"
-            value={formData.name}
-            onChangeText={(value) => handleChange("name", value)}
-            placeholder="Contoh: Budi Santoso"
-            keyboardType="default"
-          // Pass the error string from your validation state
-          />
-
-          {/* House Status Selector */}
-          <Text className="font-semibold text-gray-700 mt-4 mb-1">
-            Status Hunian
-          </Text>
-          <View className="flex-row justify-between mb-4">
-            {["Kosong", "Ditempati", "Sewa"].map((status) => (
-              <Pressable
-                key={status}
-                onPress={() => handleChange("houseStatus", status)}
-                className={`p-3 rounded-lg border flex-1 items-center mx-1 
-                ${formData.houseStatus === status ? "bg-indigo-500 border-indigo-700" : "bg-white border-gray-300"}`}
-              >
-                <Text
-                  className={`font-semibold ${formData.houseStatus === status ? "text-white" : "text-gray-700"}`}
-                >
-                  {status}
+      <View className="flex-1 bg-gray-50">
+        <ScrollView 
+          contentContainerStyle={{ paddingBottom: 100, alignItems: 'center' }}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header Gradient */}
+          <LinearGradient
+            colors={["#4F46E5", "#818CF8"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            className="w-full pt-12 pb-16 px-6 rounded-b-[40px] shadow-xl shadow-indigo-200 mb-[-40px] z-0"
+          >
+            <View className="flex-row items-center justify-between">
+              <View>
+                <Text className="text-indigo-100 font-medium text-lg">Input Data Baru</Text>
+                <Text className="text-3xl font-extrabold text-white mt-1">
+                  Pendataan Warga
                 </Text>
-              </Pressable>
-            ))}
-          </View>
+              </View>
+              <View className="bg-white/20 p-3 rounded-full backdrop-blur-md">
+                <Ionicons name="create-outline" size={28} color="white" />
+              </View>
+            </View>
+          </LinearGradient>
 
-          {/* House ID & Street */}
-          <View className="flex-row justify-between gap-3">
-            <View className="flex-1">
-              <View className="flex-row justify-start gap-2">
-                <View className="w-1/3">
-                  <FormInput
-                    label="Blok"
-                    value={formData.housePrefix}
-                    onChangeText={(value) =>
-                      handleChange("housePrefix", value.toUpperCase())
-                    }
-                    placeholder="C28"
-                    labelStyle="text-center"
-                    keyboardType="default"
-                  // Pass the error string from your validation state
-                  />
+          {/* Main Form Card */}
+          <Animated.View 
+            entering={FadeInDown.delay(200).duration(600).springify()}
+            className="w-full max-w-lg px-4 z-10"
+          >
+            <View className="bg-white rounded-3xl shadow-lg shadow-gray-200 p-6 mb-6">
+              <Text className="text-xs text-gray-500 mb-6 pb-4 border-b border-gray-100 text-center">
+                Mohon isi data sebenar-benarnya dengan lengkap dan akurat.
+              </Text>
+
+              {/* Name */}
+              <FormInput
+                label="Nama Penghuni"
+                value={formData.name}
+                onChangeText={(value) => handleChange("name", value)}
+                placeholder="Contoh: Budi Santoso"
+                keyboardType="default"
+                icon={<Ionicons name="person-outline" size={20} color="#6B7280" />}
+              />
+
+              {/* House Status Selector */}
+              <Text className="font-semibold text-gray-700 mt-4 mb-3 ml-1">
+                Status Hunian
+              </Text>
+              <View className="flex-row justify-between gap-2 mb-4">
+                {["Kosong", "Ditempati", "Sewa"].map((status) => (
+                  <Pressable
+                    key={status}
+                    onPress={() => handleChange("houseStatus", status)}
+                    className={`flex-1 p-3 rounded-xl border items-center justify-center shadow-sm
+                    ${formData.houseStatus === status 
+                      ? "bg-indigo-600 border-indigo-600 shadow-indigo-200" 
+                      : "bg-white border-gray-200"}`}
+                  >
+                    <Text
+                      className={`font-bold text-sm ${formData.houseStatus === status ? "text-white" : "text-gray-600"}`}
+                    >
+                      {status}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              {/* House ID & Street */}
+              <View className="flex-row gap-3">
+                <View className="flex-1">
+                  <View className="flex-row gap-2">
+                    <View className="flex-1">
+                      <FormInput
+                        label="Blok"
+                        value={formData.housePrefix}
+                        onChangeText={(value) =>
+                          handleChange("housePrefix", value.toUpperCase())
+                        }
+                        placeholder="C28"
+                        labelStyle="text-center"
+                        keyboardType="default"
+                        style="text-center"
+                      />
+                    </View>
+                    <View className="flex-1">
+                      <FormInput
+                        label="Nomor"
+                        value={formData.houseSuffix}
+                        onChangeText={(value) => handleChange("houseSuffix", value)}
+                        placeholder="20"
+                        labelStyle="text-center"
+                        keyboardType="decimal-pad"
+                        style="text-center"
+                      />
+                    </View>
+                  </View>
                 </View>
-                <View className="border border-gray-200" />
-                <View className="w-1/3">
-                  <FormInput
-                    label="Nomor"
-                    value={formData.houseSuffix}
-                    onChangeText={(value) => handleChange("houseSuffix", value)}
-                    placeholder="20"
-                    labelStyle="text-center font-bold"
-                    keyboardType="decimal-pad"
-                  // Pass the error string from your validation state
+                
+                {/* Street Pick */}
+                <View className="flex-1">
+                  <SelectGroup
+                    label="Jalan (Gang)"
+                    options={STREET_OPTIONS}
+                    selectedValue={formData.street}
+                    onValueChange={(value) => handleChange("street", value)}
+                    horizontal={true}
                   />
                 </View>
               </View>
-            </View>
-            {/* Street Pick */}
-            <View className="flex-1">
-              <SelectGroup
-                label="Jalan (Gang)"
-                options={STREET_OPTIONS}
-                selectedValue={formData.street}
-                onValueChange={(value) => handleChange("street", value)}
-                horizontal={true} // Horizontal layout is good for forms
-              />
-            </View>
-            {/* </View> */}
-          </View>
 
-          {/* Gender Selector (Only for Ditempati/Sewa) */}
-          {(formData.houseStatus === "Ditempati" ||
-            formData.houseStatus === "Sewa") && (
-              <>
-                <Text className="font-semibold text-gray-700 mt-4 mb-1">
-                  Jenis Kelamin Penghuni
-                </Text>
-                <View className="flex-row justify-between gap-4 mb-4">
-                  {["Pria", "Wanita"].map((gender) => (
-                    <Pressable
-                      key={gender}
-                      onPress={() => handleChange("gender", gender)}
-                      className={`flex-1 p-3 rounded-lg border items-center
-                              ${formData.gender === gender ? "bg-indigo-500 border-indigo-700" : "bg-white border-gray-300"}`}
-                    >
-                      <Text
-                        className={`font-semibold ${formData.gender === gender ? "text-white" : "text-gray-700"}`}
-                      >
-                        {gender}
+              {/* Conditional Logic: Only show Gender/Totals if NOT Kosong */}
+              {(formData.houseStatus === "Ditempati" ||
+                formData.houseStatus === "Sewa") && (
+                  <Animated.View entering={FadeInDown.duration(400)}>
+                    <Text className="font-semibold text-gray-700 mt-4 mb-3 ml-1">
+                      Jenis Kelamin Penghuni
+                    </Text>
+                    <View className="flex-row gap-3 mb-6">
+                      {["Pria", "Wanita"].map((gender) => (
+                        <Pressable
+                          key={gender}
+                          onPress={() => handleChange("gender", gender)}
+                          className={`flex-1 p-4 rounded-xl border flex-row items-center justify-center gap-2
+                                  ${formData.gender === gender ? "bg-indigo-50 border-indigo-500" : "bg-white border-gray-200"}`}
+                        >
+                          <Ionicons 
+                            name={gender === "Pria" ? "male" : "female"} 
+                            size={18} 
+                            color={formData.gender === gender ? "#4F46E5" : "#6B7280"} 
+                          />
+                          <Text
+                            className={`font-semibold ${formData.gender === gender ? "text-indigo-700" : "text-gray-600"}`}
+                          >
+                            {gender}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
+
+                    {/* Totals */}
+                    <View className="bg-gray-50 p-4 rounded-2xl border border-gray-100 mb-4">
+                      <Text className="text-center font-bold text-gray-700 mb-4">
+                        Total Penghuni Rumah
                       </Text>
-                    </Pressable>
-                  ))}
-                </View>
+                      <View className="flex-row gap-4">
+                        <View className="flex-1">
+                          <FormInput
+                            label="Dewasa"
+                            value={String(formData.adultTotal)}
+                            onChangeText={(value) => handleChange("adultTotal", value)}
+                            placeholder="0"
+                            keyboardType="numeric"
+                            labelStyle="text-center"
+                            style="text-center bg-white"
+                          />
+                        </View>
+                        <View className="flex-1">
+                          <FormInput
+                            label="Anak-anak"
+                            value={String(formData.kidsTotal)}
+                            onChangeText={(value) => handleChange("kidsTotal", value)}
+                            placeholder="0"
+                            keyboardType="numeric"
+                            labelStyle="text-center"
+                            style="text-center bg-white"
+                          />
+                        </View>
+                      </View>
+                    </View>
+                  </Animated.View>
+                )}
 
-                {/* Totals */}
-                <Text className="text-center mt-3 font-semibold border-b-2 border-gray-200 pb-2">
-                  Total Penghuni Rumah
-                </Text>
-                <View className="flex-row justify-between gap-3 mt-2">
-                  <View className="flex-1">
-                    <FormInput
-                      label="Dewasa"
-                      value={String(formData.adultTotal)}
-                      onChangeText={(value) => handleChange("adultTotal", value)}
-                      placeholder="0"
-                      keyboardType="default"
-                      labelStyle="text-center"
-                    // Pass the error string from your validation state
+              {/* Date Occupied Input */}
+              <View className="mt-2">
+                <DatePickerInput
+                  label="Tanggal Hunian Ditempati"
+                  value={formData.dateOccupied instanceof Date ? formData.dateOccupied : undefined}
+                  onChange={(date) => handleChange("dateOccupied", date)}
+                  className="mb-0"
+                  maxDate={new Date()}
+                />
+                <DatePlaceholder />
+              </View>
+
+              {/* Domicile Selector */}
+              <Text className="font-semibold text-gray-700 mt-6 mb-3 ml-1">
+                Domisili KTP
+              </Text>
+              <View className="flex-row flex-wrap gap-3 mb-8">
+                {["Gunung Sari", "Lainnya"].map((domicileStatus) => (
+                  <Pressable
+                    key={domicileStatus}
+                    onPress={() => handleChange("domicile", domicileStatus)}
+                    className={`px-4 py-3 rounded-xl border flex-row items-center gap-2
+                          ${formData.domicile === domicileStatus ? "bg-indigo-600 border-indigo-600" : "bg-white border-gray-200"}`}
+                  >
+                    <Ionicons 
+                      name={domicileStatus === "Gunung Sari" ? "location" : "map"} 
+                      size={16} 
+                      color={formData.domicile === domicileStatus ? "white" : "#6B7280"} 
                     />
-                  </View>
-                  <View className="flex-1">
-                    <FormInput
-                      label="Anak-anak"
-                      value={String(formData.kidsTotal)}
-                      onChangeText={(value) => handleChange("kidsTotal", value)}
-                      placeholder="0"
-                      keyboardType="default"
-                      labelStyle="text-center"
-                    // Pass the error string from your validation state
-                    />
-                  </View>
-                </View>
-              </>
-            )}
+                    <Text
+                      className={`font-semibold ${formData.domicile === domicileStatus ? "text-white" : "text-gray-700"}`}
+                    >
+                      {domicileStatus}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
 
-          {/* Date Occupied Input (Optional, requires conversion) */}
-          <DatePickerInput
-            label="Tanggal Hunian Ditempati"
-            value={formData.dateOccupied instanceof Date ? formData.dateOccupied : undefined}
-            onChange={(date) => handleChange("dateOccupied", date)}
-            className="mb-0"
-            maxDate={new Date()}
-          />
-          <DatePlaceholder />
-
-          {/* Domicile Selector */}
-          <Text className="font-semibold text-gray-700 mt-4 mb-1">
-            Domisili KTP
-          </Text>
-          <View className="flex-row justify-start mb-4">
-            {["Gunung Sari", "Lainnya"].map((domicileStatus) => (
-              <Pressable
-                key={domicileStatus}
-                onPress={() => handleChange("domicile", domicileStatus)}
-                className={`p-3 rounded-lg border w-36 items-center mr-3
-                      ${formData.domicile === domicileStatus ? "bg-indigo-500 border-indigo-700" : "bg-white border-gray-300"}`}
-              >
-                <Text
-                  className={`font-semibold ${formData.domicile === domicileStatus ? "text-white" : "text-gray-700"}`}
-                >
-                  {domicileStatus}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-          <AppButton
-            onPress={handleSave}
-            title="Simpan Data"
-            loadingText="Menyimpan..."
-            variant="primary"
-          />
-          <AppButton
-            onPress={handleReset}
-            title="Batal"
-            variant="danger"
-            className="mt-3"
-          />
-
-          <View className="h-10" />
+              {/* Action Buttons */}
+              <View className="gap-3">
+                <AppButton
+                  onPress={handleSave}
+                  title="Simpan Data"
+                  loadingText="Menyimpan..."
+                  variant="primary"
+                />
+                <AppButton
+                  onPress={handleReset}
+                  title="Batal"
+                  variant="danger"
+                />
+              </View>
+            </View>
+          </Animated.View>
         </ScrollView>
       </View>
     </KeyboardAvoidingView>
