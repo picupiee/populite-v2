@@ -64,9 +64,6 @@ export default function DashboardLayout() {
           drawerIcon: ({ color }) => (
             <Ionicons name="radio-outline" size={24} color={color} />
           ),
-          drawerItemStyle: {
-            backgroundColor: "#c8ffcdff",
-          },
         }}
       />
       <Drawer.Screen
