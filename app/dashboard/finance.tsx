@@ -1,7 +1,9 @@
 import { addMonths, subMonths } from 'date-fns';
+import * as Print from 'expo-print';
 import { useRouter } from 'expo-router';
-import React, { useCallback } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import * as Sharing from 'expo-sharing';
+import React, { useCallback, useState } from 'react';
+import { ActivityIndicator, Alert, Platform, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 // Hooks & Types
 import { FINANCE_INCOME_SOURCES, FINANCE_SPENDING_TYPES } from '@/constants/finance';
@@ -10,6 +12,7 @@ import { useMonthlyFinanceReport } from '@/hooks/useMonthlyFinanceReport';
 
 // UI Components
 import AppButton from '@/components/ui/AppButton';
+import { generateFinanceReportHtml } from '@/utils/financePdf';
 import Ionicons from '@expo/vector-icons/Ionicons';
 // import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Scale } from 'lucide-react-native';
 
@@ -107,6 +110,69 @@ export default function FinanceReportScreen() {
     setCurrentDate(prev => direction === 'next' ? addMonths(prev, 1) : subMonths(prev, 1));
   }, [setCurrentDate]);
 
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportPdf = async () => {
+    if (!report) return;
+
+    setIsExporting(true);
+    try {
+      console.log("Generating HTML...");
+      // 1. Generate HTML
+      const html = generateFinanceReportHtml(report);
+      console.log("HTML Generated, length:", html.length);
+
+      if (Platform.OS === "web") {
+        // On Web, use srcdoc to load HTML safely and print when ready
+        const iframe = document.createElement('iframe');
+        iframe.style.height = '0';
+        iframe.style.visibility = 'hidden';
+        iframe.style.width = '0';
+        iframe.style.position = 'absolute';
+        
+        // Use srcdoc for modern, clean HTML injection
+        iframe.srcdoc = html;
+
+        document.body.appendChild(iframe);
+
+        // Wait for the iframe to fully load before printing
+        iframe.onload = () => {
+            // Add a small delay to ensure styles are fully applied and layout is settled
+            // This prevents "Layout was forced before the page was fully loaded" warning
+            setTimeout(() => {
+                if (iframe.contentWindow) {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                }
+                
+                // Cleanup after a delay to ensure print dialog has opened
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                }, 1000);
+            }, 100);
+        };
+      } else {
+        // On Native, generate PDF file and share it
+        const { uri } = await Print.printToFileAsync({
+          html,
+          base64: false,
+        });
+        console.log("PDF Generated at:", uri);
+
+        await Sharing.shareAsync(uri, {
+          UTI: '.pdf',
+          mimeType: 'application/pdf',
+          dialogTitle: `Laporan Keuangan - ${report.monthYear}`,
+        });
+      }
+    } catch (error: any) {
+      console.error("Export PDF Error:", error);
+      Alert.alert("Gagal Ekspor", `Terjadi kesalahan: ${error.message}`);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   // ...
 
   // Handle data loading state
@@ -158,9 +224,22 @@ export default function FinanceReportScreen() {
     >
       {/* --- Month Navigation and Title --- */}
       <View className="bg-white p-5 shadow-sm border-b border-gray-200">
-        <Text className="text-xl font-extrabold text-gray-900 mb-3">
-          Laporan Kas RT (Bulanan)
-        </Text>
+        <View className="flex-row justify-between items-center mb-3">
+          <Text className="text-xl font-extrabold text-gray-900">
+            Laporan Kas RT (Bulanan)
+          </Text>
+          <TouchableOpacity
+            onPress={handleExportPdf}
+            disabled={isExporting}
+            className="bg-indigo-50 p-2 rounded-full"
+          >
+            {isExporting ? (
+              <ActivityIndicator size="small" color="#4F46E5" />
+            ) : (
+              <Ionicons name="print-outline" size={24} color="#4F46E5" />
+            )}
+          </TouchableOpacity>
+        </View>
 
         <View className="flex-row items-center justify-between bg-gray-100 rounded-lg p-2">
           <TouchableOpacity onPress={() => navigateMonth('prev')} className="p-2">
