@@ -83,18 +83,18 @@ const Card = ({
     entering={FadeInDown.delay(delay).duration(600).springify()}
     style={{ width: '100%' }}
   >
-    <View className={`flex-row items-center p-5 mb-4 rounded-2xl justify-between shadow-lg shadow-indigo-100 ${color}`}>
-      <View className="flex-row items-center gap-3">
+    <View className={`flex-row items-center py-5 px-2 mb-4 rounded-2xl justify-between shadow-lg shadow-indigo-100 ${color}`}>
+      <View className="flex-row items-center">
         <View className="bg-white/20 p-2 rounded-full">
           <Ionicons name={icon as any} size={24} color={iconColor} />
         </View>
         <Text
-          className={`text-sm font-semibold ${iconColor === "#fff" ? "text-white" : "text-gray-700"}`}
+          className={`text-sm font-semibold ml-2 ${iconColor === "#fff" ? "text-white" : "text-gray-700"}`}
         >
           {title}
         </Text>
       </View>
-      <Text className={`text-2xl font-bold ${iconColor === "#fff" ? "text-white" : "text-gray-800"}`}>{value}</Text>
+      <Text className={`text-2xl font-bold mr-2 ${iconColor === "#fff" ? "text-white" : "text-gray-800"}`}>{value}</Text>
     </View>
   </Animated.View>
 );
