@@ -19,7 +19,7 @@ import React, {
 import { AppState, Platform } from "react-native";
 
 const SESSION_KEY = "@session_timestamp";
-const SESSION_TIMEOUT_MS = 1 * 60 * 1000; // 1 minute for testing
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 
 const updateSessionTimestamp = async () => {
   try {
@@ -168,15 +168,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         if (auth.currentUser) {
           await updateSessionTimestamp();
         }
-      }, 30 * 1000); // Update every 30 seconds for testing
+      }, 5 * 60 * 1000); // Update every 5 minutes
     } else {
       // --- WEB LOGIC ---
 
       // Function to handle user activity
       handleUserActivity = () => {
         const now = Date.now();
-        // Throttle updates: only update if > 30 seconds since last update
-        if (now - lastActivityTime > 30 * 1000) {
+        // Throttle updates: only update if > 1 minute since last update
+        if (now - lastActivityTime > 60 * 1000) {
           lastActivityTime = now;
           if (auth.currentUser) {
             updateSessionTimestamp();
@@ -200,7 +200,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
              await signOut(auth);
           }
         }
-      }, 30 * 1000); // Check every 30 seconds
+      }, 60 * 1000); // Check every 1 minute
     }
 
     return () => {
