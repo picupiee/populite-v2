@@ -14,9 +14,9 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 
 // Data and Hooks
 import { PopulationRecord } from "@/constants/data";
+import { useAuth } from "@/context/AuthProvider";
 import { usePopulationRecordsListener } from "@/hooks/usePopulationRecordsListener"; // Stable List Listener
 import { useToastService } from "@/hooks/useToastService";
-import { auth } from "@/lib/firebase";
 
 // --- Interfaces and Calculation Logic ---
 
@@ -163,7 +163,7 @@ export default function SummaryScreen() {
   const { records, loading, error } = usePopulationRecordsListener();
   const { showErrorToast } = useToastService();
   const router = useRouter();
-  const user = auth.currentUser;
+  const {userProfile} = useAuth()
 
   const [summary, setSummary] = useState<SummaryData | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -233,16 +233,16 @@ export default function SummaryScreen() {
         <View className="w-full max-w-4xl">
           {/* Welcome Header */}
           <LinearGradient
-            colors={["#4F46E5", "#818CF8"]}
+            colors={["#4F46E5", "#b5bdffff"]}
             start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+            end={{ x: 0, y: 1 }}
             className="pt-8 pb-12 px-6 rounded-b-[40px] shadow-xl shadow-indigo-200"
           >
             <View className="flex-row justify-between items-start">
               <View>
                 <Text className="text-indigo-100 font-medium text-lg">Selamat Datang,</Text>
                 <Text className="text-3xl font-extrabold text-white mt-1">
-                  {user?.email?.split('@')[0] || 'User'}
+                  {userProfile?.fullName || 'User'}
                 </Text>
               </View>
               <View className="bg-white/20 p-2 rounded-full backdrop-blur-md">

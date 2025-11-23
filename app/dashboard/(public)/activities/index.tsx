@@ -109,9 +109,9 @@ export default function ActivitiesListScreen() {
     <View className="flex-1 bg-gray-50">
        {/* Header */}
        <LinearGradient
-          colors={["#4F46E5", "#818CF8"]}
+          colors={["#4F46E5", "#b5bdffff"]}
           start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+          end={{ x: 0, y: 1 }}
           className="pt-12 pb-6 px-6 rounded-b-[32px] shadow-xl shadow-indigo-200 z-10"
         >
           <View className="flex-row justify-between items-center mb-4">

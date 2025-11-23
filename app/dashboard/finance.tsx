@@ -215,9 +215,9 @@ export default function FinanceReportScreen() {
       >
         {/* --- Header & Month Navigation --- */}
         <LinearGradient
-            colors={["#4F46E5", "#818CF8"]}
+            colors={["#4F46E5", "#b5bdffff"]}
             start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+            end={{ x: 0, y: 1 }}
             className="pt-12 pb-16 px-6 rounded-b-[40px] shadow-xl shadow-indigo-200"
           >
             <View className="flex-row justify-between items-start mb-6">
