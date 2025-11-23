@@ -1,9 +1,11 @@
 import { addMonths, subMonths } from 'date-fns';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Print from 'expo-print';
 import { useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, Platform, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 // Hooks & Types
 import { FINANCE_INCOME_SOURCES, FINANCE_SPENDING_TYPES } from '@/constants/finance';
@@ -14,7 +16,6 @@ import { useMonthlyFinanceReport } from '@/hooks/useMonthlyFinanceReport';
 import AppButton from '@/components/ui/AppButton';
 import { generateFinanceReportHtml } from '@/utils/financePdf';
 import Ionicons from '@expo/vector-icons/Ionicons';
-// import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Scale } from 'lucide-react-native';
 
 // --- UTILITY FUNCTIONS ---
 
@@ -29,30 +30,32 @@ const formatRupiah = (amount: number): string => {
   return 'Rp ' + cleanAmount.toLocaleString('id-ID', { minimumFractionDigits: 0 });
 };
 
-/**
- * Retrieves the display label for a spending type ID.
- * @param typeId - The spending type ID from the record.
- * @returns The label or the raw ID if not found.
- */
-const getSpendingTypeLabel = (typeId: string): string => {
-  return FINANCE_SPENDING_TYPES.find(t => t.id === typeId)?.label || typeId;
-};
-
-// --- REPORT SCREEN COMPONENTS ---
-
 // --- REPORT SCREEN COMPONENTS ---
 
 // 1. Monthly Summary Card
-const SummaryCard: React.FC<{ title: string; amount: number; icon: React.ReactNode; color: string }> = ({ title, amount, icon, color }) => (
-  <View className={`flex-1 p-4 rounded-xl shadow-lg m-1 bg-white border border-${color}-200`}>
-    <View className="flex-row items-center justify-between">
-      <Text className={`text-xs font-semibold uppercase text-${color}-600`}>{title}</Text>
-      {icon}
+const SummaryCard: React.FC<{ 
+  title: string; 
+  amount: number; 
+  icon: React.ReactNode; 
+  color: string;
+  delay?: number;
+}> = ({ title, amount, icon, color, delay = 0 }) => (
+  <Animated.View 
+    entering={FadeInDown.delay(delay).duration(600).springify()}
+    style={{ flex: 1 }}
+  >
+    <View className={`flex-1 p-5 rounded-2xl shadow-lg m-1 bg-white border border-${color}-100`}>
+      <View className="flex-row items-center justify-between mb-3">
+        <View className={`p-2 rounded-full bg-${color}-50`}>
+          {icon}
+        </View>
+      </View>
+      <Text className="text-xs font-semibold uppercase text-gray-500 mb-1">{title}</Text>
+      <Text className={`text-lg font-bold text-gray-900`}>
+        {formatRupiah(amount)}
+      </Text>
     </View>
-    <Text className={`text-xl font-bold mt-1 text-gray-800`}>
-      {formatRupiah(amount)}
-    </Text>
-  </View>
+  </Animated.View>
 );
 
 // 2. Breakdown Card (Similar to StatusCard in Population Summary)
@@ -62,38 +65,42 @@ const BreakdownCard = ({
   amount,
   total,
   color,
+  delay = 0,
 }: {
   label: string;
   note?: string;
   amount: number;
   total: number;
   color: string;
+  delay?: number;
 }) => {
   const percentage = total > 0 ? ((amount / total) * 100).toFixed(1) : "0.0";
   return (
-    <View className="flex-row justify-between items-center pb-1 border-b border-gray-100">
-      <View className="flex-row items-center flex-1">
-        <View
-          className={`w-3 h-3 rounded-full ${color === "green" ? "bg-green-500" : "bg-red-500"}`}
-        />
-        <View className="flex-col ml-3 flex-1">
-          <Text className="text-md text-gray-700 font-medium">{label}</Text>
-          {note &&
-            <View className='flex-row'>
-              <Text className="text-xs text-gray-400">
-                <Ionicons name="caret-forward-outline" size={10} color="gray" />  {note}
+    <Animated.View 
+      entering={FadeInDown.delay(delay).duration(600).springify()}
+    >
+      <View className="flex-row justify-between items-center py-3 border-b border-gray-50 last:border-0">
+        <View className="flex-row items-center flex-1 mr-4">
+          <View
+            className={`w-3 h-3 rounded-full ${color === "green" ? "bg-emerald-500" : "bg-rose-500"}`}
+          />
+          <View className="flex-col ml-3 flex-1">
+            <Text className="text-base text-gray-800 font-medium">{label}</Text>
+            {note && (
+              <Text className="text-xs text-gray-400 mt-0.5" numberOfLines={1}>
+                {note}
               </Text>
-            </View>
-          }
+            )}
+          </View>
+        </View>
+        <View className="items-end">
+          <Text className={`text-base font-bold ${color === "green" ? "text-emerald-600" : "text-rose-600"}`}>
+            {formatRupiah(amount)}
+          </Text>
+          <Text className="text-xs text-gray-400 font-medium">{percentage}%</Text>
         </View>
       </View>
-      <View className="items-end pl-2">
-        <Text className={`text-base font-semibold ${color === "green" ? "text-green-700" : "text-red-700"}`}>
-          {formatRupiah(amount)}
-        </Text>
-        <Text className="text-xs text-gray-500">{percentage}%</Text>
-      </View>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -117,48 +124,33 @@ export default function FinanceReportScreen() {
 
     setIsExporting(true);
     try {
-      console.log("Generating HTML...");
-      // 1. Generate HTML
       const html = generateFinanceReportHtml(report);
-      console.log("HTML Generated, length:", html.length);
 
       if (Platform.OS === "web") {
-        // On Web, use srcdoc to load HTML safely and print when ready
         const iframe = document.createElement('iframe');
         iframe.style.height = '0';
         iframe.style.visibility = 'hidden';
         iframe.style.width = '0';
         iframe.style.position = 'absolute';
-        
-        // Use srcdoc for modern, clean HTML injection
         iframe.srcdoc = html;
-
         document.body.appendChild(iframe);
 
-        // Wait for the iframe to fully load before printing
         iframe.onload = () => {
-            // Add a small delay to ensure styles are fully applied and layout is settled
-            // This prevents "Layout was forced before the page was fully loaded" warning
             setTimeout(() => {
                 if (iframe.contentWindow) {
                     iframe.contentWindow.focus();
                     iframe.contentWindow.print();
                 }
-                
-                // Cleanup after a delay to ensure print dialog has opened
                 setTimeout(() => {
                     document.body.removeChild(iframe);
                 }, 1000);
             }, 100);
         };
       } else {
-        // On Native, generate PDF file and share it
         const { uri } = await Print.printToFileAsync({
           html,
           base64: false,
         });
-        console.log("PDF Generated at:", uri);
-
         await Sharing.shareAsync(uri, {
           UTI: '.pdf',
           mimeType: 'application/pdf',
@@ -166,21 +158,18 @@ export default function FinanceReportScreen() {
         });
       }
     } catch (error: any) {
-      console.error("Export PDF Error:", error);
       Alert.alert("Gagal Ekspor", `Terjadi kesalahan: ${error.message}`);
     } finally {
       setIsExporting(false);
     }
   };
 
-  // ...
-
   // Handle data loading state
   if (loading && !report) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
         <ActivityIndicator size="large" color="#4F46E5" />
-        <Text className="mt-4 text-gray-600">Memuat data keuangan bulanan...</Text>
+        <Text className="mt-4 text-gray-500 font-medium">Memuat Data Keuangan...</Text>
       </View>
     );
   }
@@ -188,22 +177,24 @@ export default function FinanceReportScreen() {
   // Handle error state
   if (error) {
     return (
-      <View className="flex-1 justify-center items-center p-5 bg-white">
-        <Text className="text-xl font-bold text-red-500">Kesalahan Data</Text>
-        <Text className="text-center text-gray-600 mt-2">{error.message}</Text>
-        <AppButton title="Muat Ulang" onPress={() => setCurrentDate(new Date())} variant="primary" className="mt-4" />
+      <View className="flex-1 justify-center items-center p-10 bg-white">
+        <Ionicons name="warning-outline" size={60} color="#EF4444" />
+        <Text className="text-xl font-bold text-gray-800 mt-4 text-center">Kesalahan Data</Text>
+        <Text className="text-center text-gray-500 mt-2 mb-6">{error.message}</Text>
+        <AppButton title="Muat Ulang" onPress={() => setCurrentDate(new Date())} variant="primary" />
       </View>
     );
   }
 
-  // Check if the report is null (should only happen during initial load/error, but defensive check)
+  // Check if the report is null
   if (!report) {
     return (
-      <View className="flex-1 justify-center items-center p-5 bg-white">
-        <Text className="text-xl font-bold text-gray-800">Tidak Ada Data</Text>
-        <Text className="text-center text-gray-600 mt-2">Tidak ada data transaksi yang ditemukan untuk bulan ini.</Text>
+      <View className="flex-1 justify-center items-center p-10 bg-white">
+        <Ionicons name="document-text-outline" size={60} color="#9CA3AF" />
+        <Text className="text-xl font-bold text-gray-800 mt-4">Tidak Ada Data</Text>
+        <Text className="text-center text-gray-500 mt-2 mb-6">Tidak ada data transaksi yang ditemukan untuk bulan ini.</Text>
         {canCreate && (
-          <AppButton title="Catat Pemasukan/Pengeluaran" onPress={() => router.push('/dashboard/(secure)/(finance)/create-income')} variant="primary" className="mt-4" />
+          <AppButton title="Catat Transaksi Baru" onPress={() => router.push('/dashboard/(secure)/(finance)/create-income')} variant="primary" />
         )}
       </View>
     );
@@ -211,150 +202,173 @@ export default function FinanceReportScreen() {
 
   // --- MAIN RENDER ---
   return (
-    <ScrollView
-      className="flex-1 bg-gray-50"
-      refreshControl={
-        // Simple refresh control to force data reload by resetting date state to current value
-        <RefreshControl
-          refreshing={loading}
-          onRefresh={() => setCurrentDate(new Date(currentDate.getTime()))}
-          colors={['#4F46E5']}
-        />
-      }
-    >
-      {/* --- Month Navigation and Title --- */}
-      <View className="bg-white p-5 shadow-sm border-b border-gray-200">
-        <View className="flex-row justify-between items-center mb-3">
-          <Text className="text-xl font-extrabold text-gray-900">
-            Laporan Kas RT (Bulanan)
-          </Text>
-          <TouchableOpacity
-            onPress={handleExportPdf}
-            disabled={isExporting}
-            className="bg-indigo-50 p-2 rounded-full"
+    <View className="flex-1 bg-gray-50">
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 100 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={loading}
+            onRefresh={() => setCurrentDate(new Date(currentDate.getTime()))}
+            tintColor="#4F46E5"
+          />
+        }
+      >
+        {/* --- Header & Month Navigation --- */}
+        <LinearGradient
+            colors={["#4F46E5", "#818CF8"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            className="pt-12 pb-16 px-6 rounded-b-[40px] shadow-xl shadow-indigo-200"
           >
-            {isExporting ? (
-              <ActivityIndicator size="small" color="#4F46E5" />
+            <View className="flex-row justify-between items-start mb-6">
+              <View>
+                <Text className="text-indigo-100 font-medium text-lg">Laporan Keuangan</Text>
+                <Text className="text-3xl font-extrabold text-white mt-1">
+                   Kas RT
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={handleExportPdf}
+                disabled={isExporting}
+                className="bg-white/20 p-2 rounded-full backdrop-blur-md"
+              >
+                {isExporting ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Ionicons name="print-outline" size={24} color="#fff" />
+                )}
+              </TouchableOpacity>
+            </View>
+
+            {/* Month Navigator */}
+            <View className="bg-white/10 p-2 rounded-2xl backdrop-blur-md border border-white/10 flex-row items-center justify-between">
+               <TouchableOpacity onPress={() => navigateMonth('prev')} className="p-2 bg-white/10 rounded-xl">
+                 <Ionicons name="chevron-back" size={20} color="#fff" />
+               </TouchableOpacity>
+               <Text className="text-white font-bold text-lg">
+                 {report.monthYear}
+               </Text>
+               <TouchableOpacity onPress={() => navigateMonth('next')} className="p-2 bg-white/10 rounded-xl">
+                 <Ionicons name="chevron-forward" size={20} color="#fff" />
+               </TouchableOpacity>
+            </View>
+        </LinearGradient>
+
+        <View className="px-6 -mt-10">
+          {/* --- Net Balance Card --- */}
+          <Animated.View 
+            entering={FadeInDown.delay(100).duration(600).springify()}
+          >
+            <View className="bg-white p-6 rounded-3xl shadow-lg shadow-indigo-100 mb-6">
+               <Text className="text-sm font-medium text-gray-500 mb-1 text-center uppercase tracking-wider">Saldo Bersih Bulan Ini</Text>
+               <Text className={`text-3xl font-extrabold text-center ${report.netBalance >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                  {formatRupiah(report.netBalance)}
+               </Text>
+            </View>
+          </Animated.View>
+
+          {/* --- Summary Cards --- */}
+          <View className="flex-row gap-4 mb-6">
+            <SummaryCard
+              title="Pemasukan"
+              amount={report.totalIncome}
+              icon={<Ionicons name="arrow-up" size={20} color="#10B981" />}
+              color="emerald"
+              delay={200}
+            />
+            <SummaryCard
+              title="Pengeluaran"
+              amount={report.totalSpending}
+              icon={<Ionicons name='arrow-down' size={20} color="#F43F5E" />}
+              color="rose"
+              delay={300}
+            />
+          </View>
+
+          {/* --- Action Buttons --- */}
+          {canCreate && (
+            <Animated.View 
+              entering={FadeInDown.delay(400).duration(600).springify()}
+            >
+              <View className="flex-row mb-8">
+                <AppButton
+                  title="Pemasukan"
+                  onPress={() => router.push('/dashboard/(secure)/(finance)/create-income')}
+                  variant="primary"
+                  className="flex-1 mr-2 shadow-indigo-200"
+                  // icon={<Ionicons name="add-circle" size={18} color="white" />} // Assuming AppButton supports icon or we just use text
+                />
+                <AppButton
+                  title="Pengeluaran"
+                  onPress={() => router.push('/dashboard/(secure)/(finance)/create-spending')}
+                  variant="danger"
+                  className="flex-1 ml-2 shadow-rose-200"
+                />
+              </View>
+            </Animated.View>
+          )}
+
+          {/* --- Income Breakdown --- */}
+          <View className="bg-white p-6 rounded-3xl shadow-sm shadow-gray-200 mb-6">
+            <View className="flex-row items-center mb-4 border-b border-gray-100 pb-2">
+               <View className="bg-emerald-100 p-1.5 rounded-lg mr-3">
+                  <Ionicons name="wallet-outline" size={18} color="#10B981" />
+               </View>
+               <Text className="text-lg font-bold text-gray-800">Rincian Pemasukan</Text>
+            </View>
+            
+            {report.allIncomes.length === 0 ? (
+              <Text className="text-gray-400 italic text-center py-4">Belum ada data pemasukan.</Text>
             ) : (
-              <Ionicons name="print-outline" size={24} color="#4F46E5" />
+              report.allIncomes.map((record, index) => {
+                const details = FINANCE_INCOME_SOURCES.find(s => s.id === record.source);
+                const label = details?.label || record.source;
+                return (
+                  <BreakdownCard
+                    key={record.id}
+                    label={label}
+                    note={record.note}
+                    amount={record.amount}
+                    total={report.totalIncome}
+                    color="green"
+                    delay={500 + (index * 100)}
+                  />
+                );
+              })
             )}
-          </TouchableOpacity>
+          </View>
+
+          {/* --- Spending Breakdown --- */}
+          <View className="bg-white p-6 rounded-3xl shadow-sm shadow-gray-200 mb-8">
+             <View className="flex-row items-center mb-4 border-b border-gray-100 pb-2">
+               <View className="bg-rose-100 p-1.5 rounded-lg mr-3">
+                  <Ionicons name="cart-outline" size={18} color="#F43F5E" />
+               </View>
+               <Text className="text-lg font-bold text-gray-800">Rincian Pengeluaran</Text>
+            </View>
+
+            {report.allSpendings.length === 0 ? (
+              <Text className="text-gray-400 italic text-center py-4">Belum ada data pengeluaran.</Text>
+            ) : (
+              report.allSpendings.map((record, index) => {
+                const details = FINANCE_SPENDING_TYPES.find(s => s.id === record.type);
+                const label = details?.label || record.type;
+                return (
+                  <BreakdownCard
+                    key={record.id}
+                    label={label}
+                    note={record.note}
+                    amount={record.amount}
+                    total={report.totalSpending}
+                    color="red"
+                    delay={600 + (index * 100)}
+                  />
+                );
+              })
+            )}
+          </View>
         </View>
-
-        <View className="flex-row items-center justify-between bg-gray-100 rounded-lg p-2">
-          <TouchableOpacity onPress={() => navigateMonth('prev')} className="p-2">
-            <Ionicons name="chevron-back" size={24} color="#4F46E5" />
-          </TouchableOpacity>
-          <Text className="text-lg font-bold text-gray-800">
-            {report.monthYear}
-          </Text>
-          <TouchableOpacity onPress={() => navigateMonth('next')} className="p-2">
-            <Ionicons name="chevron-forward" size={24} color="#4F46E5" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-
-      {/* --- Summary Cards --- */}
-      <View className="px-4 pt-4">
-        <View className="flex-row mb-2">
-          <SummaryCard
-            title="Total Pemasukan"
-            amount={report.totalIncome}
-            icon={
-              <Ionicons name="trending-up" size={20} color="#10B981" />}
-            color="green"
-          />
-          <SummaryCard
-            title="Total Pengeluaran"
-            amount={report.totalSpending}
-            icon={<Ionicons name='trending-down' size={20} color="#EF4444" />}
-            color="red"
-          />
-        </View>
-        <SummaryCard
-          title="Saldo Bersih Bulan Ini"
-          amount={report.netBalance}
-          icon={<Ionicons name={report.netBalance >= 0 ? "trending-up" : "trending-down"} size={20} color={report.netBalance >= 0 ? "#10B981" : "#EF4444"} />}
-          color={report.netBalance >= 0 ? "green" : "red"}
-        />
-      </View>
-
-      {/* --- Action Buttons (Quick Entry) --- */}
-      {canCreate && (
-        <View className="flex-row p-4 pt-2">
-          <AppButton
-            title="Catat Pemasukan"
-            onPress={() => router.push('/dashboard/(secure)/(finance)/create-income')}
-            variant="primary"
-            className="flex-1 mr-2"
-          />
-          <AppButton
-            title="Catat Pengeluaran"
-            onPress={() => router.push('/dashboard/(secure)/(finance)/create-spending')}
-            variant="danger"
-            className="flex-1 ml-2"
-          />
-        </View>
-      )}
-
-      {/* --- Income Breakdown --- */}
-      <View className="p-4 pt-0 bg-white mt-4 mx-4 rounded-xl shadow-sm border border-gray-100">
-        <Text className="text-lg font-bold text-gray-800 mb-4 pt-2 border-b border-gray-100 pb-2">
-          Rincian Pemasukan
-        </Text>
-        {report.allIncomes.length === 0 ? (
-          <Text className="text-gray-500 italic">Belum ada data pemasukan.</Text>
-        ) : (
-          report.allIncomes.map((record) => {
-            // Lookup details
-            const details = FINANCE_INCOME_SOURCES.find(s => s.id === record.source);
-            const label = details?.label || record.source;
-            const note = record.note;
-
-            return (
-              <BreakdownCard
-                key={record.id}
-                label={label}
-                note={note}
-                amount={record.amount}
-                total={report.totalIncome}
-                color="green"
-              />
-            );
-          })
-        )}
-      </View>
-
-      {/* --- Spending Breakdown --- */}
-      <View className="p-4 pt-0 bg-white mt-4 mx-4 rounded-xl shadow-sm border border-gray-100 mb-8">
-        <Text className="text-lg font-bold text-gray-800 mb-4 pt-2 border-b border-gray-100 pb-2">
-          Rincian Pengeluaran
-        </Text>
-        {report.allSpendings.length === 0 ? (
-          <Text className="text-gray-500 italic">Belum ada data pengeluaran.</Text>
-        ) : (
-          report.allSpendings.map((record) => {
-            // Lookup details
-            const details = FINANCE_SPENDING_TYPES.find(s => s.id === record.type);
-            const label = details?.label || record.type;
-            const note = record.note;
-
-            return (
-              <BreakdownCard
-                key={record.id}
-                label={label}
-                note={note}
-                amount={record.amount}
-                total={report.totalSpending}
-                color="red"
-              />
-            );
-          })
-        )}
-      </View>
-
-      <View style={{ height: 100 }} />
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
