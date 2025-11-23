@@ -1,25 +1,24 @@
 import { auth, db } from "@/lib/firebase";
 import AsyncStorarge from "@react-native-async-storage/async-storage";
-import { router, usePathname } from "expo-router";
+import { router } from "expo-router";
 import {
-  User,
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut,
+    User,
+    createUserWithEmailAndPassword,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    signOut,
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
+    createContext,
+    useContext,
+    useEffect,
+    useMemo,
+    useState,
 } from "react";
-import { AppState, Platform } from "react-native";
 
 const SESSION_KEY = "@session_timestamp";
-const SESSION_TIMEOUT_MS = 1 * 60 * 1000; // 1 minute for testing
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 
 const updateSessionTimestamp = async () => {
   try {
@@ -80,7 +79,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [role, setRole] = useState<UserRole>("unauthenticated");
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const pathname = usePathname();
 
   const fetchUserProfileAndRole = async (uid: string) => {
     try {
@@ -137,94 +135,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         AsyncStorarge.removeItem(SESSION_KEY);
       }
     });
-
-    let appStateSubscription: any;
-    let heartbeat: ReturnType<typeof setInterval> | undefined;
-    let webActivityInterval: ReturnType<typeof setInterval> | undefined;
-    let lastActivityTime = Date.now();
-    let handleUserActivity: (() => void) | undefined;
-
-    if (Platform.OS !== 'web') {
-      // --- NATIVE LOGIC ---
-      
-      // AppState Listener for background checks
-      appStateSubscription = AppState.addEventListener(
-        "change",
-        async (nextAppState) => {
-          if (nextAppState === "active") {
-            const expired = await isSessionExpired();
-            if (expired) {
-              console.log("Session expired while in background");
-              await signOut(auth);
-            } else {
-              await updateSessionTimestamp();
-            }
-          }
-        }
-      );
-
-      // Heartbeat to keep session alive while app is open
-      heartbeat = setInterval(async () => {
-        if (auth.currentUser) {
-          await updateSessionTimestamp();
-        }
-      }, 30 * 1000); // Update every 30 seconds for testing
-    } else {
-      // --- WEB LOGIC ---
-
-      // Function to handle user activity
-      handleUserActivity = () => {
-        const now = Date.now();
-        // Throttle updates: only update if > 30 seconds since last update
-        if (now - lastActivityTime > 30 * 1000) {
-          lastActivityTime = now;
-          if (auth.currentUser) {
-            updateSessionTimestamp();
-          }
-        }
-      };
-
-      // Listen for common user interactions
-      window.addEventListener('mousemove', handleUserActivity);
-      window.addEventListener('keydown', handleUserActivity);
-      window.addEventListener('click', handleUserActivity);
-      window.addEventListener('scroll', handleUserActivity);
-      window.addEventListener('touchstart', handleUserActivity);
-
-      // Polling to check for expiration (Idle Check)
-      webActivityInterval = setInterval(async () => {
-        if (auth.currentUser) {
-          const expired = await isSessionExpired();
-          if (expired) {
-             console.log("Session expired due to inactivity (Web)");
-             await signOut(auth);
-          }
-        }
-      }, 30 * 1000); // Check every 30 seconds
-    }
-
-    return () => {
-      unsubscribe();
-      if (appStateSubscription) appStateSubscription.remove();
-      if (heartbeat) clearInterval(heartbeat);
-      if (webActivityInterval) clearInterval(webActivityInterval);
-      
-      if (Platform.OS === 'web' && handleUserActivity) {
-        window.removeEventListener('mousemove', handleUserActivity);
-        window.removeEventListener('keydown', handleUserActivity);
-        window.removeEventListener('click', handleUserActivity);
-        window.removeEventListener('scroll', handleUserActivity);
-        window.removeEventListener('touchstart', handleUserActivity);
-      }
-    };
+    return unsubscribe;
   }, []);
-
-  // Web-specific: Update session on navigation (Keep this as extra safety)
-  useEffect(() => {
-    if (Platform.OS === 'web' && auth.currentUser) {
-      updateSessionTimestamp();
-    }
-  }, [pathname]);
 
   const value: AuthContextType = useMemo(
     () => ({
