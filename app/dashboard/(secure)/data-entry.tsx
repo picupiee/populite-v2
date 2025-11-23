@@ -178,10 +178,11 @@ export default function DataEntryScreen() {
           </LinearGradient>
 
           {/* Main Form Card */}
-          <Animated.View 
-            entering={FadeInDown.delay(200).duration(600).springify()}
-            className="w-full max-w-lg px-4 z-10"
-          >
+          <View className="w-full max-w-lg self-center px-4 z-10">
+            <Animated.View 
+              entering={FadeInDown.delay(200).duration(600).springify()}
+              className="w-full"
+            >
             <View className="bg-white rounded-3xl shadow-lg shadow-gray-200 p-6 mb-6">
               <Text className="text-xs text-gray-500 mb-6 pb-4 border-b border-gray-100 text-center">
                 Mohon isi data sebenar-benarnya dengan lengkap dan akurat.
@@ -378,7 +379,8 @@ export default function DataEntryScreen() {
                 />
               </View>
             </View>
-          </Animated.View>
+            </Animated.View>
+          </View>
         </ScrollView>
       </View>
     </KeyboardAvoidingView>
