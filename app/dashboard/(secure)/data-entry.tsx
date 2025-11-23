@@ -54,7 +54,7 @@ export default function DataEntryScreen() {
     setFormData(initialFormState);
     setErrors(INITIAL_ERRORS);
     router.back();
-    console.log("Form Resetted !");
+    // console.log("Form Resetted !");
   };
 
   const handleChange = (key: keyof typeof initialFormState, value: any) => {

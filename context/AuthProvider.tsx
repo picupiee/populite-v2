@@ -121,7 +121,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           const expired = await isSessionExpired();
 
           if (expired) {
-            console.log("Session is Expired due to inactivity");
             await signOut(auth);
           } else {
             setUser(firebaseUser);
@@ -154,7 +153,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           if (nextAppState === "active") {
             const expired = await isSessionExpired();
             if (expired) {
-              console.log("Session expired while in background");
               await signOut(auth);
             } else {
               await updateSessionTimestamp();
@@ -196,7 +194,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         if (auth.currentUser) {
           const expired = await isSessionExpired();
           if (expired) {
-             console.log("Session expired due to inactivity (Web)");
              await signOut(auth);
           }
         }
@@ -239,7 +236,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           password
         );
         await updateSessionTimestamp();
-        console.log("Session Started :", SESSION_KEY);
         return credential;
       },
       logout: async () => {
