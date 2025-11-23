@@ -2,19 +2,19 @@ import { auth, db } from "@/lib/firebase";
 import AsyncStorarge from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import {
-  User,
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut,
+    User,
+    createUserWithEmailAndPassword,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    signOut,
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
+    createContext,
+    useContext,
+    useEffect,
+    useMemo,
+    useState,
 } from "react";
 
 const SESSION_KEY = "@session_timestamp";
@@ -43,16 +43,23 @@ const isSessionExpired = async (): Promise<boolean> => {
   }
 };
 
+export type UserRole = "admin" | "staff" | "viewer" | "unauthenticated";
+
+export interface UserProfile {
+  fullName?: string;
+  username?: string;
+}
+
 interface AuthContextType {
   role: UserRole;
   user: User | null;
+  userProfile: UserProfile | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<any>;
   logout: () => Promise<void>;
   signup: (email: string, password: string) => Promise<any>;
+  refreshProfile: () => Promise<void>;
 }
-
-export type UserRole = "admin" | "staff" | "viewer" | "unauthenticated";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -70,7 +77,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<UserRole>("unauthenticated");
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const fetchUserProfileAndRole = async (uid: string) => {
+    try {
+      const userRef = doc(db, "users", uid);
+      const docSnap = await getDoc(userRef);
+
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        const userRole = userData.role as UserRole;
+
+        if (["admin", "staff", "viewer"].includes(userRole)) {
+          setRole(userRole);
+        } else {
+          setRole("viewer");
+        }
+
+        setUserProfile({
+          fullName: userData.fullName || "",
+          username: userData.username || "",
+        });
+      } else {
+        console.warn(`User document not found for UID: ${uid}`);
+        setRole("viewer");
+        setUserProfile(null);
+      }
+    } catch (error) {
+      console.error("Error fetching user role/profile: ", error);
+      setRole("viewer");
+      setUserProfile(null);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -85,36 +124,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           } else {
             setUser(firebaseUser);
             updateSessionTimestamp();
-            fetchUserRole(uid);
-          }
-        };
-        const fetchUserRole = async (uid: string) => {
-          try {
-            const userRef = doc(db, "users", uid);
-            const docSnap = await getDoc(userRef);
-
-            if (docSnap.exists()) {
-              const userData = docSnap.data();
-              const userRole = userData.role as UserRole;
-
-              if (["admin", "staff", "viewer"].includes(userRole)) {
-                setRole(userRole);
-              } else {
-                setRole("viewer");
-              }
-            } else {
-              console.warn(`User document not found for UID: ${uid}`);
-              setRole("viewer");
-            }
-          } catch (error) {
-            console.error("Error fetching user role: ", error);
-            setRole("viewer");
+            fetchUserProfileAndRole(uid);
           }
         };
         checkExpirationAndSetUser(firebaseUser.uid);
       } else {
         setUser(null);
         setRole("unauthenticated");
+        setUserProfile(null);
         AsyncStorarge.removeItem(SESSION_KEY);
       }
     });
@@ -125,6 +142,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     () => ({
       user,
       role,
+      userProfile,
       loading,
       login: async (email, password) => {
         const credential = await signInWithEmailAndPassword(
@@ -141,6 +159,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           await auth.signOut();
           setUser(null);
           setRole("unauthenticated");
+          setUserProfile(null);
           await AsyncStorarge.removeItem(SESSION_KEY);
           router.dismissAll;
           router.replace("/(auth)/signIn");
@@ -168,8 +187,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
         return userCredential;
       },
+      refreshProfile: async () => {
+        if (user) {
+          await fetchUserProfileAndRole(user.uid);
+        }
+      },
     }),
-    [user, role, loading]
+    [user, role, userProfile, loading]
   );
   return (
     <AuthContext.Provider value={value}>

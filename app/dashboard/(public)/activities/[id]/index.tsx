@@ -5,8 +5,8 @@ import { useToastService } from "@/hooks/useToastService";
 import { db } from "@/lib/firebase";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { deleteDoc, doc } from "firebase/firestore";
-import React from "react";
+import { deleteDoc, doc, getDoc } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -50,12 +50,18 @@ export default function ActivityDetailScreen() {
   const canEdit = can(PERMISSIONS.EDIT_ACTIVITY);
   const canDelete = can(PERMISSIONS.DELETE_ACTIVITY);
 
+  const [creatorName, setCreatorName] = useState<string>("Memuat...");
+
   // --- Handlers ---
 
   const navigateToEdit = () => {
     if (canEdit && activityId) {
       router.push(`/dashboard/(public)/activities/${activityId}/edit`);
     }
+  };
+
+  const navigateBack = () => {
+    router.replace("/dashboard/(public)/activities");
   };
 
   const handleDelete = () => {
@@ -84,6 +90,37 @@ export default function ActivityDetailScreen() {
     }
   };
 
+  useEffect(() => {
+    const fetchCreatorName = async () => {
+      if (activity?.createdByUid) {
+        try {
+          const userRef = doc(db, "users", activity.createdByUid);
+          const userSnap = await getDoc(userRef);
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+            // Prioritize username, then fullName, then fallback to "Unknown"
+            if (userData.username) {
+              setCreatorName(`@${userData.username}`);
+            } else if (userData.fullName) {
+              setCreatorName(userData.fullName);
+            } else {
+              setCreatorName("Tanpa Nama");
+            }
+          } else {
+            setCreatorName("User Tidak Dikenal");
+          }
+        } catch (error) {
+          console.error("Error fetching creator:", error);
+          setCreatorName("Error Memuat");
+        }
+      }
+    };
+
+    if (activity) {
+      fetchCreatorName();
+    }
+  }, [activity]);
+
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
@@ -110,10 +147,6 @@ export default function ActivityDetailScreen() {
       </View>
     );
   }
-
-  const navigateBack = () => {
-    router.replace("/dashboard/(public)/activities");
-  };
 
   const formattedDate = activity.activityDate.toLocaleDateString("id-ID", {
     weekday: "long",
@@ -172,7 +205,7 @@ export default function ActivityDetailScreen() {
            />
            <ActivityDetailCard
              title="Dibuat Oleh"
-             value={activity.createdByUid} // Consider fetching user name if possible, or keep ID
+             value={creatorName}
              icon="person"
            />
            <ActivityDetailCard
