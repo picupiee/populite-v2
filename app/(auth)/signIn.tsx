@@ -99,6 +99,7 @@ export default function SignIn() {
                   icon={<Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" />}
                   onSubmitEditing={handleLogin}
                   secureTextEntry={true}
+                  inputStyle="text-black"
                 />
 
                 <View className="items-end mb-6">

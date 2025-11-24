@@ -15,6 +15,7 @@ interface FormInputProps {
   secureTextEntry?: boolean;
   style?: string;
   icon?: React.ReactNode; // New icon prop
+  inputStyle?: string;
 }
 
 export default function FormInput({
@@ -30,6 +31,7 @@ export default function FormInput({
   secureTextEntry = false,
   icon,
   onSubmitEditing,
+  inputStyle = "",
 }: FormInputProps) {
   const controlledValue = String(value ?? "")
   
@@ -63,6 +65,7 @@ export default function FormInput({
           placeholderTextColor={error ? "#EF4444" : "#9CA3AF"}
           secureTextEntry={secureTextEntry}
           onSubmitEditing={onSubmitEditing}
+          className={inputStyle}
         />
       </View>
 
