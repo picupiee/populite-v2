@@ -2,6 +2,7 @@ import AppButton from "@/components/ui/AppButton";
 import FormInput from "@/components/ui/FormInput";
 import { useAuth } from "@/context/AuthProvider";
 import { useToastService } from "@/hooks/useToastService";
+import { getFirebaseErrorMessage } from "@/utils/firebaseErrorParser";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, router } from "expo-router";
@@ -29,8 +30,9 @@ export default function SignIn() {
       await login(email, password);
       router.push("/dashboard/home");
     } catch (error: any) {
-      showErrorToast("Gagal Masuk !", `${error.message}`);
-      console.error(error.message);
+      const friendlyMessage = getFirebaseErrorMessage(error);
+      showErrorToast("Gagal Masuk", friendlyMessage);
+      // console.error(error.message); // Removed for security
     }
   };
   const keyboardVerticalOffset = Platform.OS === "android" ? 75 : 100;

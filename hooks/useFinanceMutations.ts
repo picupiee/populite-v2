@@ -45,7 +45,7 @@ export const useFinanceMutations = () => {
         try {
             // 🔑 CRITICAL FIX: Use the simple root collection name
             const docRef = await addDoc(collection(db, INCOME_COLLECTION), entryData);
-            console.log("Income added to root collection with ID: ", docRef.id)
+            // console.log("Income added to root collection with ID: ", docRef.id)
             return docRef;
         } catch (e) {
             console.error("Error adding income document: ", e)
@@ -72,7 +72,7 @@ export const useFinanceMutations = () => {
         try {
             // 🔑 CRITICAL FIX: Use the simple root collection name
             const docRef = await addDoc(collection(db, SPENDING_COLLECTION), entryData);
-            console.log("Spending added to root collection with ID: ", docRef.id)
+            // console.log("Spending added to root collection with ID: ", docRef.id)
             return docRef;
         } catch (e) {
             console.error("Error adding spending document: ", e);

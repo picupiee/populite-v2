@@ -68,7 +68,7 @@ export function CustomDrawerContent(props: DrawerContentComponentProps) {
             Populite v2.0.1
           </Text>
           <Text className="text-[10px] text-gray-300 mt-1">
-            Built with ❤️ by PicuPiee
+            Built with 🧠 + 🤖 by PicuPiee
           </Text>
         </View>
       </View>

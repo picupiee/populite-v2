@@ -8,6 +8,7 @@ interface AppButtonProps {
   variant: "primary" | "secondary" | "danger";
   className?: string;
   loadingText?: string;
+  disabled?: boolean;
 }
 
 const getVariantStyle = (variant: AppButtonProps["variant"]) => {
@@ -37,15 +38,17 @@ export default function AppButton({
   variant = "primary",
   className = "",
   loadingText = "Loading . . .",
+  disabled = false,
 }: AppButtonProps) {
   const styles = getVariantStyle(variant);
-  const disableStyle = isLoading || variant === "secondary" ? "opacity-60" : "";
+  const isDisabled = isLoading || disabled;
+  const disableStyle = isDisabled ? "opacity-60" : "";
   const textColor = styles.text;
 
   return (
     <Pressable
       onPress={onPress}
-      disabled={isLoading}
+      disabled={isDisabled}
       className={`p-2 rounded-lg shadow-md flex-row justify-center items-center ${styles.button} ${disableStyle} ${className}`}
     >
       {isLoading ? (

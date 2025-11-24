@@ -2,6 +2,7 @@ import AppButton from "@/components/ui/AppButton";
 import FormInput from "@/components/ui/FormInput";
 import { useToastService } from "@/hooks/useToastService";
 import { auth } from "@/lib/firebase"; // Direct import of auth instance
+import { getFirebaseErrorMessage } from "@/utils/firebaseErrorParser";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, useRouter } from "expo-router";
@@ -33,8 +34,8 @@ export default function ResetPasswordScreen() {
       showSuccessToast("Berhasil Reset Password", "Cek email sekarang", {
         onPress() {
           Alert.alert(
-            "Success",
-            "Password reset link sent! Check your email.",
+            "Berhasil",
+            "Link reset password telah dikirim! Silakan cek email anda.",
             [
               {
                 text: "OK",
@@ -48,7 +49,8 @@ export default function ResetPasswordScreen() {
         },
       });
     } catch (error: any) {
-      Alert.alert("Reset Failed", error.message);
+      const friendlyMessage = getFirebaseErrorMessage(error);
+      Alert.alert("Gagal Reset", friendlyMessage);
     } finally {
       setLoading(false);
     }
