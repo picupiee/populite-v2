@@ -1,5 +1,6 @@
 import AppButton from "@/components/ui/AppButton";
 import { useAuth } from "@/context/AuthProvider";
+import { useActivityLog } from "@/hooks/useActivityLog";
 import { useToastService } from "@/hooks/useToastService";
 import { db } from "@/lib/firebase";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -12,12 +13,13 @@ import {
   ScrollView,
   Text,
   TextInput,
-  View
+  View,
 } from "react-native";
 
 export default function Settings() {
-  const { user, userProfile, refreshProfile } = useAuth();
+  const { user, userProfile, refreshProfile, role } = useAuth();
   const { showSuccessToast, showErrorToast } = useToastService();
+  const { logActivity } = useActivityLog();
 
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
@@ -48,7 +50,24 @@ export default function Settings() {
         fullName: fullName.trim(),
         username: username.trim().replace(/\s+/g, "").toLowerCase(), // Simple username formatting
       });
-      
+
+      await logActivity(
+        "UPDATE",
+        "USER_PROFILE",
+        `Updated profile for user: ${user.email}`,
+        user.uid,
+        {
+          before: {
+            fullName: userProfile?.fullName,
+            username: userProfile?.username,
+          },
+          after: {
+            fullName: fullName.trim(),
+            username: username.trim().replace(/\s+/g, "").toLowerCase(),
+          },
+        }
+      );
+
       await refreshProfile();
       showSuccessToast("Berhasil", "Profil berhasil diperbarui.");
     } catch (error) {
@@ -69,7 +88,9 @@ export default function Settings() {
           <View className="bg-indigo-100 p-4 rounded-full mb-4">
             <Ionicons name="person" size={40} color="#4F46E5" />
           </View>
-          <Text className="text-2xl font-bold text-gray-900">{userProfile?.fullName}</Text>
+          <Text className="text-2xl font-bold text-gray-900">
+            {userProfile?.fullName}
+          </Text>
           <Text className="text-gray-500 mt-1">{user?.email}</Text>
         </View>
 
@@ -114,13 +135,23 @@ export default function Settings() {
               disabled={isSaving}
             />
           </View>
-          
-           <AppButton
-              title="Kembali ke Dashboard"
-              onPress={() => router.back()}
+
+          <AppButton
+            title="Kembali ke Dashboard"
+            onPress={() => router.back()}
+            variant="secondary"
+            className="mt-2"
+          />
+
+          {role === "admin" && (
+            <AppButton
+              title="Activity Log"
+              onPress={() => router.push("/dashboard/activity-log" as any)}
               variant="secondary"
-              className="mt-2"
+              className="mt-2 border-indigo-200 bg-indigo-50"
+              textClassName="text-indigo-600"
             />
+          )}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

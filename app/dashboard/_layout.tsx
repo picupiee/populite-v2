@@ -12,9 +12,13 @@ export default function DashboardLayout() {
         drawerActiveTintColor: "#4F46E5",
         drawerActiveBackgroundColor: "#EEF2FF",
         drawerInactiveTintColor: "#6B7280",
-        drawerStyle: { width: '80%' },
-        drawerLabelStyle: { marginLeft: -10, fontWeight: '600' },
-        drawerItemStyle: { marginVertical: 4, borderRadius: 12, paddingHorizontal: 4 },
+        drawerStyle: { width: "80%" },
+        drawerLabelStyle: { marginLeft: -10, fontWeight: "600" },
+        drawerItemStyle: {
+          marginVertical: 4,
+          borderRadius: 12,
+          paddingHorizontal: 4,
+        },
       }}
       drawerContent={CustomDrawerContent}
     >
@@ -116,6 +120,18 @@ export default function DashboardLayout() {
       />
       <Drawer.Screen
         name="(secure)/(finance)/create-spending"
+        options={{
+          drawerItemStyle: { height: 0, overflow: "hidden" },
+        }}
+      />
+      <Drawer.Screen
+        name="(admin)/activity-log/index"
+        options={{
+          drawerItemStyle: { height: 0, overflow: "hidden" },
+        }}
+      />
+      <Drawer.Screen
+        name="(admin)/activity-log/[id]"
         options={{
           drawerItemStyle: { height: 0, overflow: "hidden" },
         }}

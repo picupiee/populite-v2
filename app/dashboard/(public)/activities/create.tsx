@@ -8,15 +8,24 @@ import { auth, db } from "@/lib/firebase";
 import { router, Stack } from "expo-router";
 import { addDoc, collection } from "firebase/firestore";
 import React, { useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
 // 🔑 CORRECT IMPORT: Use your toast service hook
+import { useActivityLog } from "@/hooks/useActivityLog";
 import { useToastService } from "@/hooks/useToastService";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
 export default function CreateActivityScreen() {
   // 🔑 HOOK CALL: Get the toast functions
   const { showErrorToast, showSuccessToast } = useToastService();
+  const { logActivity } = useActivityLog();
   const { can, PERMISSIONS } = useAccess();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -82,7 +91,15 @@ export default function CreateActivityScreen() {
         createdAt: new Date().toISOString(),
       };
 
-      await addDoc(collection(db, "activities"), newActivity);
+      const docRef = await addDoc(collection(db, "activities"), newActivity);
+
+      await logActivity(
+        "CREATE",
+        "ACTIVITY",
+        `Created activity: ${title}`,
+        docRef.id,
+        newActivity
+      );
 
       showSuccessToast("Berhasil", `Kegiatan "${title}" berhasil dibuat!`);
       resetForm();

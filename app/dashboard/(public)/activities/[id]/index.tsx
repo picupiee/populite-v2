@@ -1,6 +1,7 @@
 import AppButton from "@/components/ui/AppButton";
 import { useAccess } from "@/hooks/useAccess";
 import { useActivityDetail } from "@/hooks/useActivityDetail";
+import { useActivityLog } from "@/hooks/useActivityLog";
 import { useToastService } from "@/hooks/useToastService";
 import { db } from "@/lib/firebase";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -30,11 +31,13 @@ const ActivityDetailCard = ({
   <View className="flex-row justify-between items-start py-4 border-b border-gray-100 last:border-0">
     <View className="flex-row items-center mr-4">
       <View className="bg-indigo-50 p-2 rounded-lg">
-         <Ionicons name={icon as any} size={18} color="#4F46E5" />
+        <Ionicons name={icon as any} size={18} color="#4F46E5" />
       </View>
       <Text className="ml-3 text-sm font-medium text-gray-500">{title}</Text>
     </View>
-    <Text className="text-base font-semibold text-gray-900 flex-1 text-right">{value}</Text>
+    <Text className="text-base font-semibold text-gray-900 flex-1 text-right">
+      {value}
+    </Text>
   </View>
 );
 
@@ -46,6 +49,7 @@ export default function ActivityDetailScreen() {
   const { activity, loading, error } = useActivityDetail(activityId || "");
   const { can, PERMISSIONS } = useAccess();
   const { showSuccessToast, showErrorToast } = useToastService();
+  const { logActivity } = useActivityLog();
 
   const canEdit = can(PERMISSIONS.EDIT_ACTIVITY);
   const canDelete = can(PERMISSIONS.DELETE_ACTIVITY);
@@ -69,6 +73,15 @@ export default function ActivityDetailScreen() {
       if (!activityId) return;
       try {
         await deleteDoc(doc(db, "activities", activityId));
+
+        await logActivity(
+          "DELETE",
+          "ACTIVITY",
+          `Deleted activity: ${activity?.title}`,
+          activityId,
+          { deletedActivity: activity }
+        );
+
         showSuccessToast("Dihapus", "Kegiatan berhasil dihapus.");
         router.replace("/dashboard/(public)/activities");
       } catch (e) {
@@ -133,9 +146,11 @@ export default function ActivityDetailScreen() {
     return (
       <View className="flex-1 justify-center items-center p-6 bg-white">
         <View className="bg-red-50 p-4 rounded-full mb-4">
-           <Ionicons name="alert-circle-outline" size={32} color="#EF4444" />
+          <Ionicons name="alert-circle-outline" size={32} color="#EF4444" />
         </View>
-        <Text className="text-lg font-bold text-gray-900">Terjadi Kesalahan</Text>
+        <Text className="text-lg font-bold text-gray-900">
+          Terjadi Kesalahan
+        </Text>
         <Text className="text-center text-gray-500 mt-2 mb-6">
           {error?.message || "Kegiatan tidak ditemukan."}
         </Text>
@@ -161,70 +176,83 @@ export default function ActivityDetailScreen() {
         options={{
           title: "Detail Kegiatan",
           headerShadowVisible: false,
-          headerStyle: { backgroundColor: 'white' },
-          headerTitleStyle: { color: '#1F2937', fontWeight: '600' },
-          headerTintColor: '#4F46E5',
+          headerStyle: { backgroundColor: "white" },
+          headerTitleStyle: { color: "#1F2937", fontWeight: "600" },
+          headerTintColor: "#4F46E5",
           headerLeft: () => (
-            <Pressable onPress={navigateBack} className="p-2 rounded-full active:bg-gray-100">
+            <Pressable
+              onPress={navigateBack}
+              className="p-2 rounded-full active:bg-gray-100"
+            >
               <Ionicons name="arrow-back" size={24} color="#1F2937" />
             </Pressable>
           ),
-          headerRight: () => canEdit ? (
-            <View style={{ flexDirection: 'row', marginRight: Platform.OS === 'web' ? 16 : 10 }}>
-              <Pressable
-                onPress={navigateToEdit}
-                className="p-2 bg-indigo-50 rounded-full active:bg-indigo-100"
+          headerRight: () =>
+            canEdit ? (
+              <View
+                style={{
+                  flexDirection: "row",
+                  marginRight: Platform.OS === "web" ? 16 : 10,
+                }}
               >
-                <Ionicons name="create-outline" size={20} color="#4F46E5" />
-              </Pressable>
-            </View>
-          ) : null,
+                <Pressable
+                  onPress={navigateToEdit}
+                  className="p-2 bg-indigo-50 rounded-full active:bg-indigo-100"
+                >
+                  <Ionicons name="create-outline" size={20} color="#4F46E5" />
+                </Pressable>
+              </View>
+            ) : null,
         }}
       />
 
       <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 100 }}>
         {/* Title Section */}
         <View className="mb-8">
-           <Text className="text-2xl font-bold text-gray-900 leading-tight mb-2">
-             {activity.title}
-           </Text>
-           <View className="flex-row items-center">
-              <Ionicons name="calendar-outline" size={16} color="#6B7280" />
-              <Text className="text-base font-medium text-gray-500 ml-2">
-                {formattedDate}
-              </Text>
-           </View>
+          <Text className="text-2xl font-bold text-gray-900 leading-tight mb-2">
+            {activity.title}
+          </Text>
+          <View className="flex-row items-center">
+            <Ionicons name="calendar-outline" size={16} color="#6B7280" />
+            <Text className="text-base font-medium text-gray-500 ml-2">
+              {formattedDate}
+            </Text>
+          </View>
         </View>
 
         {/* Info Cards */}
         <View className="bg-gray-50 rounded-2xl p-4 mb-8 border border-gray-100">
-           <ActivityDetailCard
-             title="Tanggal"
-             value={formattedDate}
-             icon="calendar"
-           />
-           <ActivityDetailCard
-             title="Dibuat Oleh"
-             value={creatorName}
-             icon="person"
-           />
-           <ActivityDetailCard
-             title="Dibuat Pada"
-             value={activity.createdAt.toLocaleDateString("id-ID", { dateStyle: "medium" })}
-             icon="time"
-           />
+          <ActivityDetailCard
+            title="Tanggal"
+            value={formattedDate}
+            icon="calendar"
+          />
+          <ActivityDetailCard
+            title="Dibuat Oleh"
+            value={creatorName}
+            icon="person"
+          />
+          <ActivityDetailCard
+            title="Dibuat Pada"
+            value={activity.createdAt.toLocaleDateString("id-ID", {
+              dateStyle: "medium",
+            })}
+            icon="time"
+          />
         </View>
 
         {/* Description Section */}
         <View className="mb-8">
-          <Text className="text-lg font-bold text-gray-900 mb-3">Deskripsi</Text>
-          
+          <Text className="text-lg font-bold text-gray-900 mb-3">
+            Deskripsi
+          </Text>
+
           <Text className="text-base text-gray-600 leading-relaxed mb-4 font-medium">
             {activity.shortDescription}
           </Text>
-          
+
           <View className="h-px bg-gray-100 my-4" />
-          
+
           <Text className="text-base text-gray-600 leading-relaxed" selectable>
             {activity.longDescription || "Tidak ada deskripsi lengkap."}
           </Text>

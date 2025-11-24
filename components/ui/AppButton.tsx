@@ -9,6 +9,7 @@ interface AppButtonProps {
   className?: string;
   loadingText?: string;
   disabled?: boolean;
+  textClassName?: string;
 }
 
 const getVariantStyle = (variant: AppButtonProps["variant"]) => {
@@ -39,6 +40,7 @@ export default function AppButton({
   className = "",
   loadingText = "Loading . . .",
   disabled = false,
+  textClassName = "",
 }: AppButtonProps) {
   const styles = getVariantStyle(variant);
   const isDisabled = isLoading || disabled;
@@ -57,12 +59,14 @@ export default function AppButton({
             color={textColor === "text-white" ? "#fff" : "#4F46E5"}
             className="mr-2"
           />
-          <Text className={`font-bold text-lg ${textColor}`}>
+          <Text className={`font-bold text-lg ${textColor} ${textClassName}`}>
             {loadingText}
           </Text>
         </View>
       ) : (
-        <Text className={`font-bold text-base ${textColor}`}>{title}</Text>
+        <Text className={`font-bold text-base ${textColor} ${textClassName}`}>
+          {title}
+        </Text>
       )}
     </Pressable>
   );

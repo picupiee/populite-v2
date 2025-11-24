@@ -1,5 +1,6 @@
 import AppButton from "@/components/ui/AppButton";
 import { useAccess } from "@/hooks/useAccess";
+import { useActivityLog } from "@/hooks/useActivityLog";
 import { usePopulationMutations } from "@/hooks/useFirestoreMutations"; // New Mutation Hook
 import { usePopulationRecordListener } from "@/hooks/usePopulationRecordListener"; // New Read Hook
 import { useToastService } from "@/hooks/useToastService";
@@ -47,6 +48,7 @@ export default function RecordDetailScreen() {
   const { record, loading, error } = usePopulationRecordListener(id || null);
   // --- Stable Mutation ---
   const { deleteRecord } = usePopulationMutations();
+  const { logActivity } = useActivityLog();
   const { showSuccessToast, showErrorToast } = useToastService();
 
   // 2. Format Dates (safely)
@@ -68,7 +70,7 @@ export default function RecordDetailScreen() {
   // Edit permit logic
   const navigateToEdit = () => {
     if (canEdit) {
-      router.push(`/dashboard/(secure)/data-view/edit/${record.id}`);
+      router.push(`/dashboard/(secure)/data-view/edit/${record?.id}`);
     } else {
       showErrorToast("Tidak Diizinkan", "Anda tidak diizinkan mengedit data!");
     }
@@ -87,26 +89,39 @@ export default function RecordDetailScreen() {
     const confirmDelete =
       Platform.OS !== "web"
         ? () =>
-          Alert.alert(
-            "Konfirmasi",
-            `Yakin ingin menghapus data ${record?.houseId}?`,
-            [
-              { text: "Batal", style: "cancel" },
-              { text: "Hapus", style: "destructive", onPress: runDelete },
-            ]
-          )
+            Alert.alert(
+              "Konfirmasi",
+              `Yakin ingin menghapus data ${record?.houseId}?`,
+              [
+                { text: "Batal", style: "cancel" },
+                { text: "Hapus", style: "destructive", onPress: runDelete },
+              ]
+            )
         : () => {
-          if (
-            window.confirm(`Yakin ingin menghapus data ${record?.houseId}?`)
-          ) {
-            runDelete();
-            router.replace("/dashboard/(secure)/data-view");
-          }
-        };
+            if (
+              window.confirm(`Yakin ingin menghapus data ${record?.houseId}?`)
+            ) {
+              runDelete();
+              router.replace("/dashboard/(secure)/data-view");
+            }
+          };
 
     const runDelete = async () => {
       try {
         await deleteRecord(id);
+
+        if (record) {
+          await logActivity(
+            "DELETE",
+            "RECORD",
+            `Deleted record: ${record.houseId} - ${record.name}`,
+            id,
+            {
+              deletedRecord: record,
+            }
+          );
+        }
+
         showSuccessToast("Sukses Dihapus!", "Data Berhasil Dihapus");
       } catch (err) {
         showErrorToast(
@@ -164,13 +179,9 @@ export default function RecordDetailScreen() {
               onPress={() => router.replace("/dashboard/(secure)/data-view")}
               className="p-2"
             >
-              <Ionicons
-                name="chevron-back"
-                size={24}
-                color="#fff"
-              />
+              <Ionicons name="chevron-back" size={24} color="#fff" />
             </Pressable>
-          )
+          ),
         }}
       />
 
@@ -196,7 +207,11 @@ export default function RecordDetailScreen() {
         />
         <DetailCard
           title="Mulai Menghuni Sejak"
-          value={formattedOccupiedDate}
+          value={
+            typeof formattedOccupiedDate === "string"
+              ? formattedOccupiedDate
+              : "Belum Diisi"
+          }
           icon="calendar-outline"
         />
         <Text className="mt-5 pt-2 border-t-2 border-gray-200 text-lg font-semibold text-center">
@@ -204,12 +219,12 @@ export default function RecordDetailScreen() {
         </Text>
         <DetailCard
           title="Dewasa"
-          value={record.adultTotal}
+          value={String(record.adultTotal)}
           icon="woman-outline"
         />
         <DetailCard
           title="Anak-anak"
-          value={record.kidsTotal}
+          value={String(record.kidsTotal)}
           icon="people-outline"
         />
         <Text className="mt-4 text-xs font-normal text-gray-400">
@@ -223,22 +238,17 @@ export default function RecordDetailScreen() {
         </Text>
         {/* Delete Button */}
         <AppButton
-          title={
-            <Text className="text-white font-semibold ml-2">
-              <Ionicons name="trash-outline" size={20} color="#fff" /> Hapus
-              Data
-            </Text>
-          }
+          title="Hapus Data"
           variant="danger"
           onPress={
             canDelete
               ? handleDelete
               : () => {
-                showErrorToast(
-                  "Hapus Data Ditolak",
-                  "Anda tidak mempunyai izin untuk menghapus."
-                );
-              }
+                  showErrorToast(
+                    "Hapus Data Ditolak",
+                    "Anda tidak mempunyai izin untuk menghapus."
+                  );
+                }
           }
           className={
             `mt-6 flex-row items-center justify-center p-3 rounded-lg active:opacity-80 

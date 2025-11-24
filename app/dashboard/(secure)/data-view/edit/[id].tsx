@@ -18,6 +18,7 @@ import {
   PopulationRecord,
   STREET_OPTIONS,
 } from "@/constants/data";
+import { useActivityLog } from "@/hooks/useActivityLog";
 import { usePopulationMutations } from "@/hooks/useFirestoreMutations"; // Stable Mutation
 import { usePopulationRecordListener } from "@/hooks/usePopulationRecordListener"; // Stable Read
 import { useToastService } from "@/hooks/useToastService";
@@ -34,6 +35,7 @@ export default function EditRecordScreen() {
 
   // 2. Stable Mutation Access
   const { updateRecord } = usePopulationMutations();
+  const { logActivity } = useActivityLog();
 
   // 3. Form State (Using partial structure for updates)
   const [formData, setFormData] = useState<Partial<PopulationRecord>>({});
@@ -94,9 +96,22 @@ export default function EditRecordScreen() {
     try {
       // Send only the changed fields in formData to the stable mutation hook
       await updateRecord(id, formData);
+
+      await logActivity(
+        "UPDATE",
+        "RECORD",
+        `Updated record: ${record.houseId} - ${record.name}`,
+        id,
+        {
+          before: record,
+          after: { ...record, ...formData },
+          changes: formData,
+        }
+      );
+
       showSuccessToast(
         "Success",
-        `Record for ${formData.houseId} updated successfully.`
+        `Record for ${formData.houseId || record.houseId} updated successfully.`
       );
       router.replace(`/dashboard/(secure)/data-view/data/${id}`); // Go back to detail view
     } catch (err) {
@@ -156,7 +171,7 @@ export default function EditRecordScreen() {
         selectedValue={formData.houseStatus || ""}
         onValueChange={(value) => handleChange("houseStatus", value)}
         horizontal={true} // Use vertical alignment if it's 3 items wide
-      // Need to provide the SelectGroup component colors for 'Kosong', 'Ditempati', 'Sewa'
+        // Need to provide the SelectGroup component colors for 'Kosong', 'Ditempati', 'Sewa'
       />
       {/* Street Selector */}
       <SelectGroup
@@ -174,8 +189,8 @@ export default function EditRecordScreen() {
         <View className="flex-1">
           <FormInput
             label="Dewasa"
-            value={formData.adultTotal}
-            onChangeText={(value) => handleChange("adultTotal", value)}
+            value={String(formData.adultTotal || "0")}
+            onChangeText={(value) => handleChange("adultTotal", Number(value))}
             placeholder="0"
             keyboardType="decimal-pad"
             labelStyle="text-center"
@@ -184,8 +199,8 @@ export default function EditRecordScreen() {
         <View className="flex-1">
           <FormInput
             label="Anak-Anak"
-            value={formData.kidsTotal}
-            onChangeText={(value) => handleChange("kidsTotal", value)}
+            value={String(formData.kidsTotal || "0")}
+            onChangeText={(value) => handleChange("kidsTotal", Number(value))}
             placeholder="0"
             keyboardType="decimal-pad"
             labelStyle="text-center"
@@ -209,7 +224,9 @@ export default function EditRecordScreen() {
         variant="primary"
       />
       <AppButton
-        onPress={() => router.replace(`/dashboard/(secure)/data-view/data/${id}`)}
+        onPress={() =>
+          router.replace(`/dashboard/(secure)/data-view/data/${id}`)
+        }
         title="Batal"
         variant="danger"
         className="mt-3"

@@ -4,6 +4,7 @@ import AppButton from "@/components/ui/AppButton";
 import DatePickerInput from "@/components/ui/DatePickerInput";
 import FormInput from "@/components/ui/FormInput";
 import { useActivityDetail } from "@/hooks/useActivityDetail";
+import { useActivityLog } from "@/hooks/useActivityLog";
 import { useToastService } from "@/hooks/useToastService";
 import { db } from "@/lib/firebase";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -34,6 +35,7 @@ export default function EditActivityScreen() {
   const activityId = Array.isArray(id) ? id[0] : id;
   const router = useRouter();
   const { showSuccessToast, showErrorToast } = useToastService();
+  const { logActivity } = useActivityLog();
 
   const { activity, loading, error } = useActivityDetail(activityId || "");
   const [formData, setFormData] = useState<Partial<EditActivityData>>({});
@@ -95,6 +97,17 @@ export default function EditActivityScreen() {
       };
 
       await updateDoc(docRef, updatePayload);
+
+      await logActivity(
+        "UPDATE",
+        "ACTIVITY",
+        `Updated activity: ${formData.title}`,
+        activityId,
+        {
+          before: activity,
+          after: updatePayload,
+        }
+      );
 
       showSuccessToast(
         "Berhasil",
