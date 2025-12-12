@@ -1,18 +1,24 @@
 // app/dashboard/(secure)/data-view/index.tsx
 import CompactListItem from "@/components/data/CompactListItem";
+import RecordPrintListModal from "@/components/print/RecordPrintListModal";
 import SelectGroup from "@/components/ui/SelectGroup";
 import {
   GENDER_OPTIONS,
   PopulationRecord,
   STREET_OPTIONS,
 } from "@/constants/data";
+import { useAuth } from "@/context/AuthProvider";
 import { usePopulationRecordsListener } from "@/hooks/usePopulationRecordsListener";
+import { generateRecordsReportHtml, PrintOptions } from "@/utils/recordsPdf";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import * as Print from "expo-print";
 import { Link, useRouter } from "expo-router";
+import * as Sharing from "expo-sharing";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Platform,
   Pressable,
   Text,
   View,
@@ -107,23 +113,52 @@ export default function DataViewListScreen() {
 
   const [viewMode, setViewMode] = useState<"card" | "list">("list");
   const [isControlsVisible, setIsControlsVisible] = useState(false);
+  const [isPrintModalVisible, setIsPrintModalVisible] = useState(false);
+  const { userProfile } = useAuth();
 
-  // Use useFocusEffect to reload data whenever the screen becomes focused (e.g., after saving a new record)
+  const handlePrintPdf = async (options: PrintOptions) => {
+    setIsPrintModalVisible(false);
+    try {
+      const username =
+        userProfile?.fullName || userProfile?.username || "Admin";
+      // Use 'records' from the hook which contains ALL currently loaded records.
+      // The utility function handles filtering based on options.
+      const html = generateRecordsReportHtml(records || [], options, username);
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsRefreshing(false);
+      if (Platform.OS === "web") {
+        const iframe = document.createElement("iframe");
+        iframe.style.height = "0";
+        iframe.style.visibility = "hidden";
+        iframe.style.width = "0";
+        iframe.style.position = "absolute";
+        iframe.srcdoc = html;
+        document.body.appendChild(iframe);
+
+        iframe.onload = () => {
+          setTimeout(() => {
+            if (iframe.contentWindow) {
+              iframe.contentWindow.focus();
+              iframe.contentWindow.print();
+            }
+            setTimeout(() => {
+              document.body.removeChild(iframe);
+            }, 1000);
+          }, 100);
+        };
+      } else {
+        const { uri } = await Print.printToFileAsync({ html });
+        await Sharing.shareAsync(uri, {
+          UTI: ".pdf",
+          mimeType: "application/pdf",
+          dialogTitle: "Laporan Data Warga",
+        });
+      }
+    } catch (error) {
+      console.error("Print Error:", error);
+    }
   };
 
-  if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color="#4F46E5" />
-        <Text className="mt-2 text-gray-600">Memuat Data...</Text>
-      </View>
-    );
-  }
+  // Use useFocusEffect to reload data whenever the screen becomes focused (e.g., after saving a new record)
 
   const sortedAndFilterRecords = React.useMemo(() => {
     if (!records) return [];
@@ -176,6 +211,7 @@ export default function DataViewListScreen() {
     results.sort((a, b) => compare(a, b, sort.key));
     return results;
   }, [records, filters, sort]);
+
   const activeFilters = React.useMemo(() => {
     const filtersArray = [];
 
@@ -194,12 +230,27 @@ export default function DataViewListScreen() {
     return filtersArray;
   }, [filters]);
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setIsRefreshing(false);
+  };
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color="#4F46E5" />
+        <Text className="mt-2 text-gray-600">Memuat Data...</Text>
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 bg-white">
       <Text className="italic text-xs font-semibold bg-red-100 p-2 rounded-md text-center">
-        Data yang ditampilkan adalah data mockup / tidak asli.
-        Mohon untuk tidak menggunakan data asli sebelum proyek ini sudah dalam
-        status "In-Production"
+        Data yang ditampilkan adalah data mockup / tidak asli. Mohon untuk tidak
+        menggunakan data asli sebelum proyek ini sudah dalam status
+        "In-Production"
       </Text>
       <View className="p-4 bg-white border-b border-gray-100">
         {/* --- Top Row: Title and Actions (Add Button, View Switcher, Filter Toggle) --- */}
@@ -214,8 +265,16 @@ export default function DataViewListScreen() {
             </Pressable>
           </Link>
 
-          {/* Right Side: View Switcher and Filter Toggle Group */}
-          <View className="flex-row items-center gap-3">
+          {/* Right Side: View Switcher, Filter Toggle Group, and PRINT Button */}
+          <View className="flex-row items-center gap-2">
+            {/* Print Button */}
+            <Pressable
+              onPress={() => setIsPrintModalVisible(true)}
+              className="p-2 border border-blue-200 bg-blue-50 rounded-lg active:opacity-80"
+            >
+              <Ionicons name="print-outline" size={20} color="#2563EB" />
+            </Pressable>
+
             {/* View Switcher */}
             <View className="flex-row border border-gray-300 rounded-lg overflow-hidden">
               <Pressable
@@ -253,6 +312,13 @@ export default function DataViewListScreen() {
             </Pressable>
           </View>
         </View>
+
+        {/* Print Modal */}
+        <RecordPrintListModal
+          visible={isPrintModalVisible}
+          onClose={() => setIsPrintModalVisible(false)}
+          onPrint={handlePrintPdf}
+        />
 
         {/* --- Collapsible Filter/Sort Panel --- */}
         {isControlsVisible && (

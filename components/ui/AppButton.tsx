@@ -5,11 +5,12 @@ interface AppButtonProps {
   title: string;
   onPress: () => void;
   isLoading?: boolean;
-  variant: "primary" | "secondary" | "danger";
+  variant: "primary" | "secondary" | "danger" | "outline";
   className?: string;
   loadingText?: string;
   disabled?: boolean;
   textClassName?: string;
+  icon?: React.ReactNode;
 }
 
 const getVariantStyle = (variant: AppButtonProps["variant"]) => {
@@ -22,6 +23,11 @@ const getVariantStyle = (variant: AppButtonProps["variant"]) => {
     case "secondary":
       return {
         button: "bg-gray-200 border border-gray-300 active:bg-gray-300",
+        text: "text-gray-700",
+      };
+    case "outline":
+      return {
+        button: "bg-white border border-gray-300 active:bg-gray-50",
         text: "text-gray-700",
       };
     case "primary":
@@ -41,6 +47,7 @@ export default function AppButton({
   loadingText = "Loading . . .",
   disabled = false,
   textClassName = "",
+  icon,
 }: AppButtonProps) {
   const styles = getVariantStyle(variant);
   const isDisabled = isLoading || disabled;
@@ -64,9 +71,12 @@ export default function AppButton({
           </Text>
         </View>
       ) : (
-        <Text className={`font-bold text-base ${textColor} ${textClassName}`}>
-          {title}
-        </Text>
+        <View className="flex-row items-center">
+          {icon && <View className="mr-2">{icon}</View>}
+          <Text className={`font-bold text-base ${textColor} ${textClassName}`}>
+            {title}
+          </Text>
+        </View>
       )}
     </Pressable>
   );
