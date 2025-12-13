@@ -1,3 +1,4 @@
+import UserManagementSection from "@/components/settings/UserManagementSection";
 import AppButton from "@/components/ui/AppButton";
 import { useAuth } from "@/context/AuthProvider";
 import { useActivityLog } from "@/hooks/useActivityLog";
@@ -144,13 +145,19 @@ export default function Settings() {
           />
 
           {role === "admin" && (
-            <AppButton
-              title="Activity Log"
-              onPress={() => router.push("/dashboard/activity-log" as any)}
-              variant="secondary"
-              className="mt-2 border-indigo-200 bg-indigo-50"
-              textClassName="text-indigo-600"
-            />
+            <>
+              <UserManagementSection />
+              <View className="h-4" />
+              <AppButton
+                title="Activity Log"
+                onPress={() =>
+                  router.push("/dashboard/(admin)/activity-log" as any)
+                }
+                variant="secondary"
+                className="mt-2 border-indigo-200 bg-indigo-50"
+                textClassName="text-indigo-600"
+              />
+            </>
           )}
         </View>
       </ScrollView>
