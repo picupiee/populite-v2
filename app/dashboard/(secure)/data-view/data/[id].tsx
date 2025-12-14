@@ -23,20 +23,29 @@ const DetailCard = ({
   value,
   icon,
   color = "text-gray-700",
+  titleStyle,
 }: {
   title: string;
   value: string;
   icon: string;
   color?: string;
+  titleStyle?: string
 }) => (
   <View className="flex-row justify-between items-center py-3 border-b border-gray-100">
     <View className="flex-row items-center">
       <Ionicons name={icon as any} size={20} color="#4F46E5" />
-      <Text className="ml-3 text-base text-gray-500">{title}</Text>
+      <Text className={`text-base text-gray-500 ${titleStyle}`}>{title}</Text>
     </View>
     <Text className={`text-base font-semibold ${color}`}>{value}</Text>
   </View>
 );
+
+const getStreetBadgeStyles = (street: string) => {
+  if (street.includes("Mawar")) return "bg-red-600 text-white";
+  if (street.includes("Pinus")) return "bg-green-600 text-white";
+  if (street.includes("Edelweis")) return "bg-blue-600 text-white";
+  return "bg-gray-200 text-gray-800";
+};
 
 export default function RecordDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -89,22 +98,22 @@ export default function RecordDetailScreen() {
     const confirmDelete =
       Platform.OS !== "web"
         ? () =>
-            Alert.alert(
-              "Konfirmasi",
-              `Yakin ingin menghapus data ${record?.houseId}?`,
-              [
-                { text: "Batal", style: "cancel" },
-                { text: "Hapus", style: "destructive", onPress: runDelete },
-              ]
-            )
+          Alert.alert(
+            "Konfirmasi",
+            `Yakin ingin menghapus data ${record?.houseId}?`,
+            [
+              { text: "Batal", style: "cancel" },
+              { text: "Hapus", style: "destructive", onPress: runDelete },
+            ]
+          )
         : () => {
-            if (
-              window.confirm(`Yakin ingin menghapus data ${record?.houseId}?`)
-            ) {
-              runDelete();
-              router.replace("/dashboard/(secure)/data-view");
-            }
-          };
+          if (
+            window.confirm(`Yakin ingin menghapus data ${record?.houseId}?`)
+          ) {
+            runDelete();
+            router.replace("/dashboard/(secure)/data-view");
+          }
+        };
 
     const runDelete = async () => {
       try {
@@ -190,7 +199,11 @@ export default function RecordDetailScreen() {
         <Text className="text-3xl font-bold text-indigo-700 mb-2">
           {record.houseId}
         </Text>
-        <Text className="text-lg text-gray-600 border-b pb-4 mb-4">
+        <Text
+          className={`text-lg border-b mb-4 w-fit font-semibold rounded-md p-2 ${getStreetBadgeStyles(
+            record.street
+          )}`}
+        >
           Jalan {record.street}
         </Text>
 
@@ -199,11 +212,13 @@ export default function RecordDetailScreen() {
           title="Nama Penghuni"
           value={record.name}
           icon="person-outline"
+          titleStyle="ml-2"
         />
         <DetailCard
           title="Status Hunian"
           value={record.houseStatus}
           icon="home-outline"
+          titleStyle="ml-2"
         />
         <DetailCard
           title="Mulai Menghuni Sejak"
@@ -213,6 +228,7 @@ export default function RecordDetailScreen() {
               : "Belum Diisi"
           }
           icon="calendar-outline"
+          titleStyle="ml-2"
         />
         <Text className="mt-5 pt-2 border-t-2 border-gray-200 text-lg font-semibold text-center">
           Jumlah Penghuni Rumah
@@ -221,12 +237,53 @@ export default function RecordDetailScreen() {
           title="Dewasa"
           value={String(record.adultTotal)}
           icon="woman-outline"
+          titleStyle="ml-2"
         />
         <DetailCard
           title="Anak-anak"
           value={String(record.kidsTotal)}
           icon="people-outline"
+          titleStyle="ml-2"
         />
+        <View className="flex-row gap-2 border-t-2 border-gray-200">
+          <View className="flex-1 border-2 border-gray-200 mt-2 rounded-md">
+            <Text className="pt-2 text-md font-semibold text-center">
+              Jumlah Dewasa
+            </Text>
+            <Text className="text-xs text-center">Berdasarkan Jenis Kelamin</Text>
+            <View className="flex-row gap-2 justify-center items-center">
+              <DetailCard
+                title=""
+                value={String(record.adultMale)}
+                icon="man-outline"
+              />
+              <Text className="text-xl">|</Text>
+              <DetailCard
+                title=""
+                value={String(record.adultFemale)}
+                icon="woman-outline"
+              />
+            </View>
+          </View>
+          <View className="flex-1 border-2 border-gray-200 mt-2 rounded-md">
+            <Text className="pt-2 text-md font-semibold text-center">
+              Jumlah Anak
+            </Text>
+            <Text className="text-xs text-center">Berdasarkan Jenis Kelamin</Text>
+            <View className="flex-row gap-2 justify-center">
+              <DetailCard
+                title=""
+                value={String(record.kidsMale)}
+                icon="man-outline"
+              />
+              <DetailCard
+                title=""
+                value={String(record.kidsFemale)}
+                icon="woman-outline"
+              />
+            </View>
+          </View>
+        </View>
         <Text className="mt-4 text-xs font-normal text-gray-400">
           Data Masuk:{" "}
           {record.entryDate.toLocaleDateString("id-ID", {
@@ -244,11 +301,11 @@ export default function RecordDetailScreen() {
             canDelete
               ? handleDelete
               : () => {
-                  showErrorToast(
-                    "Hapus Data Ditolak",
-                    "Anda tidak mempunyai izin untuk menghapus."
-                  );
-                }
+                showErrorToast(
+                  "Hapus Data Ditolak",
+                  "Anda tidak mempunyai izin untuk menghapus."
+                );
+              }
           }
           className={
             `mt-6 flex-row items-center justify-center p-3 rounded-lg active:opacity-80 

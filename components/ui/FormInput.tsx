@@ -34,7 +34,7 @@ export default function FormInput({
   inputStyle = "",
 }: FormInputProps) {
   const controlledValue = String(value ?? "")
-  
+
   // Container style for the input + icon
   const containerStyle = `
     flex-row items-center border rounded-xl px-3 bg-white
@@ -54,14 +54,14 @@ export default function FormInput({
       {/* Input Container */}
       <View className={containerStyle}>
         {icon && <View className="mr-3">{icon}</View>}
-        
+
         <TextInput
           value={controlledValue}
           onChangeText={onChangeText}
           placeholder={placeholder}
           keyboardType={keyboardType}
           multiline={multiline}
-          style={{ flex: 1, minHeight: multiline ? 80 : undefined }}
+          style={{ flex: 1, minHeight: multiline ? 80 : undefined, outline: "none" }}
           placeholderTextColor={error ? "#EF4444" : "#9CA3AF"}
           secureTextEntry={secureTextEntry}
           onSubmitEditing={onSubmitEditing}
