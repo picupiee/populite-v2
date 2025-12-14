@@ -17,6 +17,11 @@ export interface PopulationRecord {
   adultTotal: number; // Same as kids, but for now lets count adult regardless of their gender as well. Automatically count as 1 if houseStatus is Occupied / Ditempati.
   entryDate: Date;
   // Anything else will be added here base on user feedback
+  // To be added soon for more accurate and detailed data per house.
+  kidsMale: number;
+  kidsFemale: number;
+  adultMale: number;
+  adultFemale: number;
 }
 
 export const STREET_OPTIONS = ["Pinus 1", "Pinus 2", "Edelweis", "Mawar"];
