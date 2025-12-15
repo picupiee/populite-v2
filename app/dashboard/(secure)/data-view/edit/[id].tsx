@@ -171,7 +171,7 @@ export default function EditRecordScreen() {
         selectedValue={formData.houseStatus || ""}
         onValueChange={(value) => handleChange("houseStatus", value)}
         horizontal={true} // Use vertical alignment if it's 3 items wide
-        // Need to provide the SelectGroup component colors for 'Kosong', 'Ditempati', 'Sewa'
+      // Need to provide the SelectGroup component colors for 'Kosong', 'Ditempati', 'Sewa'
       />
       {/* Street Selector */}
       <SelectGroup
@@ -205,6 +205,64 @@ export default function EditRecordScreen() {
             keyboardType="decimal-pad"
             labelStyle="text-center"
           />
+        </View>
+      </View>
+      <Text className="text-center font-medium mt-2 border-t-2 border-gray-200 pt-2">
+        Jumlah Penghuni
+      </Text>
+      <Text className="text-xs text-center">(Berdasarkan Jenis Kelamin)</Text>
+      <View className="flex-1">
+        <View className="flex-row gap-4 mt-2">
+          <View className="flex-1">
+            <Text className="text-center mb-2">Dewasa</Text>
+            <View className="flex-row gap-2">
+              <View className="flex-1">
+                <FormInput
+                  label="Pria"
+                  value={String(formData.adultMale || "0")}
+                  onChangeText={(value) => handleChange("adultMale", Number(value))}
+                  placeholder="0"
+                  keyboardType="decimal-pad"
+                  labelStyle="text-center text-xs"
+                />
+              </View>
+              <View className="flex-1">
+                <FormInput
+                  label="Wanita"
+                  value={String(formData.adultFemale || "0")}
+                  onChangeText={(value) => handleChange("adultFemale", Number(value))}
+                  placeholder="0"
+                  keyboardType="decimal-pad"
+                  labelStyle="text-center text-xs"
+                />
+              </View>
+            </View>
+          </View>
+          <View className="flex-1">
+            <Text className="text-center mb-2">Anak-Anak</Text>
+            <View className="flex-row gap-2">
+              <View className="flex-1">
+                <FormInput
+                  label="Laki-laki"
+                  value={String(formData.kidsMale || "0")}
+                  onChangeText={(value) => handleChange("kidsMale", Number(value))}
+                  placeholder="0"
+                  keyboardType="decimal-pad"
+                  labelStyle="text-center text-xs"
+                />
+              </View>
+              <View className="flex-1">
+                <FormInput
+                  label=" Perempuan"
+                  value={String(formData.kidsFemale || "0")}
+                  onChangeText={(value) => handleChange("kidsFemale", Number(value))}
+                  placeholder="0"
+                  keyboardType="decimal-pad"
+                  labelStyle="text-center text-xs"
+                />
+              </View>
+            </View>
+          </View>
         </View>
       </View>
       {/* Change Date of Occupy */}

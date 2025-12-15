@@ -1,6 +1,6 @@
 import {
-    PopulationRecord,
-    STREET_OPTIONS
+  PopulationRecord,
+  STREET_OPTIONS
 } from "@/constants/data";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
@@ -52,50 +52,111 @@ export const generateRecordsReportHtml = (
     filteredRecords = filteredRecords.filter((r) => r.kidsTotal > 0);
   }
 
-  // 2. Calculate Summaries
-  const totalPopulation = filteredRecords.reduce((sum, r) => {
-    if (populationFilter === "adults_only") return sum + r.adultTotal;
-    if (populationFilter === "kids_only") return sum + r.kidsTotal;
-    return sum + r.adultTotal + r.kidsTotal;
-  }, 0);
+// 2. Calculate Summaries
+  const stats = filteredRecords.reduce(
+    (acc, r) => {
+      // Demographics
+      acc.adultMale += r.adultMale || 0;
+      acc.adultFemale += r.adultFemale || 0;
+      acc.kidsMale += r.kidsMale || 0;
+      acc.kidsFemale += r.kidsFemale || 0;
+      
+      // Totals from fields (fallback to male+female if needed, but per user request data is entered)
+      // We will derive totals from the male/female sums to ensure table consistency
+      
+      // House Status
+      if (r.houseStatus === "Ditempati") acc.housesOccupied++;
+      else if (r.houseStatus === "Sewa") acc.housesRented++;
+      else if (r.houseStatus === "Kosong") acc.housesEmpty++;
+      
+      return acc;
+    },
+    {
+      adultMale: 0,
+      adultFemale: 0,
+      kidsMale: 0,
+      kidsFemale: 0,
+      housesOccupied: 0,
+      housesRented: 0,
+      housesEmpty: 0,
+    }
+  );
 
-  const totalAdults = filteredRecords.reduce((sum, r) => sum + r.adultTotal, 0);
-  const totalKids = filteredRecords.reduce((sum, r) => sum + r.kidsTotal, 0);
-
-  const housesOccupied = filteredRecords.filter(
-    (r) => r.houseStatus === "Ditempati"
-  ).length;
-  const housesRented = filteredRecords.filter(
-    (r) => r.houseStatus === "Sewa"
-  ).length;
-  const housesEmpty = filteredRecords.filter(
-    (r) => r.houseStatus === "Kosong"
-  ).length;
+  const totalAdults = stats.adultMale + stats.adultFemale;
+  const totalKids = stats.kidsMale + stats.kidsFemale;
+  const totalMale = stats.adultMale + stats.kidsMale;
+  const totalFemale = stats.adultFemale + stats.kidsFemale;
+  const totalPopulation = totalAdults + totalKids;
   const totalHouses = filteredRecords.length;
+  
+  // Calculate Average Residents (Occupied + Rented only to avoid skewing by empty houses)
+  const occupiedCount = stats.housesOccupied + stats.housesRented;
+  const avgResidents = occupiedCount > 0 
+    ? (totalPopulation / occupiedCount).toFixed(1) 
+    : "0";
 
   const summarySection = `
-    <div class="summary-box">
-      <div class="summary-item">
-        <div class="summary-label">Total Warga</div>
-        <div class="summary-value text-blue">${totalPopulation}</div>
-        <div class="summary-sublabel">Total Keseluruhan</div>
+    <div class="summary-container">
+      <!-- Card 1: Demografi Warga -->
+      <div class="summary-card">
+        <div class="summary-title">Demografi Sebaran Warga</div>
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th style="width: 40%; text-align:left;">Kategori</th>
+                    <th style="width: 20%;">L</th>
+                    <th style="width: 20%;">P</th>
+                    <th style="width: 20%;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="label-cell">Dewasa</td>
+                    <td class="num-cell">${stats.adultMale}</td>
+                    <td class="num-cell">${stats.adultFemale}</td>
+                    <td class="num-cell strong">${totalAdults}</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Anak-Anak</td>
+                    <td class="num-cell">${stats.kidsMale}</td>
+                    <td class="num-cell">${stats.kidsFemale}</td>
+                    <td class="num-cell strong">${totalKids}</td>
+                </tr>
+                <tr class="total-row">
+                    <td class="label-cell">Total</td>
+                    <td class="num-cell">${totalMale}</td>
+                    <td class="num-cell">${totalFemale}</td>
+                    <td class="num-cell">${totalPopulation}</td>
+                </tr>
+            </tbody>
+        </table>
       </div>
-       <div class="summary-item">
-        <div class="summary-label">Dewasa</div>
-        <div class="summary-value text-gray-dark">${totalAdults}</div>
-         <div class="summary-sublabel">Warga Dewasa</div>
-      </div>
-       <div class="summary-item">
-        <div class="summary-label">Anak-anak</div>
-        <div class="summary-value text-gray-dark">${totalKids}</div>
-         <div class="summary-sublabel">Warga Anak</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">Total Hunian</div>
-        <div class="summary-value text-gray-dark">${totalHouses}</div>
-        <div class="summary-sublabel">
-           (Tetap: ${housesOccupied}, Sewa: ${housesRented}, Kosong: ${housesEmpty})
-        </div>
+
+      <!-- Card 2: Statistik Hunian -->
+      <div class="summary-card">
+         <div class="summary-title">Statistik Hunian & Warga</div>
+         <table class="report-table no-border">
+            <tr>
+                <td class="label-cell">Total Hunian</td>
+                <td class="num-cell strong">${totalHouses} Unit</td>
+            </tr>
+            <tr>
+                <td class="label-cell" style="padding-left: 10px; color: #555;">• Ditempati (Milik)</td>
+                <td class="num-cell">${stats.housesOccupied}</td>
+            </tr>
+             <tr>
+                <td class="label-cell" style="padding-left: 10px; color: #555;">• Disewa / Kontrak</td>
+                <td class="num-cell">${stats.housesRented}</td>
+            </tr>
+             <tr>
+                <td class="label-cell" style="padding-left: 10px; color: #888;">• Kosong</td>
+                <td class="num-cell text-muted">${stats.housesEmpty}</td>
+            </tr>
+            <tr class="highlight-row">
+                <td class="label-cell" style="padding-top: 10px;">Rata-rata Warga / Rumah</td>
+                <td class="num-cell strong" style="padding-top: 10px;">${avgResidents}</td>
+            </tr>
+         </table>
       </div>
     </div>
   `;
@@ -104,10 +165,9 @@ export const generateRecordsReportHtml = (
   let tablesHtml = "";
   if (reportType === "detailed") {
     // Dynamically identify which streets are present in the filtered records
-    // This ensures we show tables for data that exists, avoiding mismatches with STREET_OPTIONS
     const distinctStreets = Array.from(new Set(filteredRecords.map(r => r.street)));
     
-    // Sort streets to match STREET_OPTIONS order if possible, or alphabetical
+    // Sort streets
     distinctStreets.sort((a, b) => {
         const idxA = STREET_OPTIONS.indexOf(a);
         const idxB = STREET_OPTIONS.indexOf(b);
@@ -118,7 +178,6 @@ export const generateRecordsReportHtml = (
     });
 
     distinctStreets.forEach((currentStreet) => {
-      // Get records for this street from our ALREADY FILTERED list
       const streetRecords = filteredRecords.filter(
         (r) => r.street === currentStreet
       );
@@ -137,19 +196,17 @@ export const generateRecordsReportHtml = (
               ? `<span style="color:#999; font-style:italic;">Nama Disembunyikan</span>`
               : escapeHtml(r.name);
             
-             // Calculate display values based on filter
-             // Even if filter is 'all', we separate columns.
-             // If filter is 'kids_only', does the user want the Adult column to be 0 or show actual adults in that house?
-             // Usually filters narrow down RECORDS. The columns should show data for those records.
-             // However, for totals, the requirements say "population number either all or selected".
-             // If filtered to 'Kids Only', likely we care about kids count.
-             // But showing context (Adults in that house) is helpful.
-             // Let's stick to showing actual data of the record.
-            
+             // For the table, we use the specific breakdown if available or just Total?
+             // The old table just showed Adult Total and Kid Total.
+             // We can keep that simple or expand it. The user requirement was about the "Summary" lacking breakdown.
+             // The "Detailed Data" lists each house. 
+             // "We split these data into detailed data like from the adult and kids total now include how many women and men... Then make an averege... So this "Ringkasan" will be looked like a proper summary report"
+             // It implies modifying the "Ringkasan" (Summary) section mainly.
+             // I'll keep the detailed table columns simple (Total Adult, Total Kids) to save space, unless requested.
+             
              const adultCount = r.adultTotal;
              const kidCount = r.kidsTotal;
              
-             // Update subtotals
              subTotalAdults += adultCount;
              subTotalKids += kidCount;
              
@@ -226,19 +283,29 @@ export const generateRecordsReportHtml = (
         <style>
           body { font-family: 'Helvetica', 'Arial', sans-serif; padding: 20px; color: #333; }
           h1 { text-align: center; color: #4F46E5; margin-bottom: 5px; }
-          h2 { text-align: center; font-size: 14px; color: #666; margin-top: 0; margin-bottom: 20px; font-weight: normal; }
+          h2 { text-align: center; font-size: 14px; color: #666; margin-top: 0; margin-bottom: 30px; font-weight: normal; }
           
-          .summary-box { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; border: 1px solid #ddd; padding: 15px; border-radius: 8px; background-color: #f9fafb; }
-          .summary-item { text-align: center; flex: 1; padding: 0 5px; border-right: 1px solid #eee; }
-          .summary-item:last-child { border-right: none; }
-          .summary-label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
-          .summary-value { font-size: 20px; font-weight: bold; }
-          .summary-sublabel { font-size: 10px; color: #888; margin-top: 4px; }
+          /* Summary Section CSS */
+          .summary-container { display: flex; gap: 20px; margin-bottom: 40px; }
+          .summary-card { flex: 1; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px 20px; background-color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+          .summary-title { font-size: 14px; font-weight: bold; color: #111827; margin-bottom: 12px; border-bottom: 2px solid #f3f4f6; padding-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
           
-          .text-blue { color: #3B82F6; }
-          .text-gray-dark { color: #374151; }
+          .report-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+          .report-table th { text-align: center; padding: 8px; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb; color: #666; font-size: 11px; text-transform: uppercase; }
+          .report-table td { padding: 8px 4px; border-bottom: 1px solid #f3f4f6; }
           
-          .street-header { border-bottom: 2px solid #eee; padding-bottom: 5px; margin-top: 20px; color: #333; font-size: 16px; font-weight: bold; }
+          .report-table.no-border td { border-bottom: none; padding: 5px 0; }
+          
+          .label-cell { color: #374151; font-weight: 500; }
+          .num-cell { text-align: right; color: #111827; }
+          .strong { font-weight: bold; }
+          .text-muted { color: #9ca3af; }
+          
+          .total-row td { border-top: 2px solid #e5e7eb; font-weight: bold; color: #000; background-color: #fafafa; }
+          .highlight-row td { border-top: 1px dashed #e5e7eb; margin-top: 5px; color: #4F46E5; }
+          
+          /* Detailed Table CSS */
+          .street-header { border-bottom: 2px solid #eee; padding-bottom: 5px; margin-top: 25px; color: #333; font-size: 16px; font-weight: bold; page-break-after: avoid; }
           
           table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
           th, td { border: 1px solid #eee; padding: 8px; text-align: left; }
@@ -248,11 +315,13 @@ export const generateRecordsReportHtml = (
         </style>
       </head>
       <body>
-        <h1>Laporan Data Warga</h1>
+        <h1>Laporan Data Warga Populite</h1>
         <h2>${filterDesc}</h2>
         
+        <h3 style="font-size:14px; margin-bottom:10px; color:#333; border-left:4px solid #4F46E5; padding-left:10px;">Ringkasan Eksekutif</h3>
         ${summarySection}
         
+        ${reportType === 'detailed' ? `<h3 style="font-size:14px; margin-bottom:10px; color:#333; border-left:4px solid #4F46E5; padding-left:10px;">Rincian Data</h3>` : ''}
         ${tablesHtml}
         
         <div class="footer">

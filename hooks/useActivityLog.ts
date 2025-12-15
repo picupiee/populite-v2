@@ -36,6 +36,22 @@ export const useActivityLog = () => {
     }
 
     try {
+      // Helper to replace undefined with null for Firestore compatibility
+      const sanitizeForFirestore = (data: any): any => {
+        if (data === undefined) return null;
+        if (data === null) return null;
+        if (data instanceof Date) return data;
+        if (Array.isArray(data)) return data.map(sanitizeForFirestore);
+        if (typeof data === "object") {
+          const newObj: any = {};
+          for (const key in data) {
+            newObj[key] = sanitizeForFirestore(data[key]);
+          }
+          return newObj;
+        }
+        return data;
+      };
+
       const logEntry: ActivityLog = {
         action,
         entityType,
@@ -46,7 +62,7 @@ export const useActivityLog = () => {
           username: userProfile?.username || "unknown",
         },
         timestamp: new Date().toISOString(),
-        metadata,
+        metadata: metadata ? sanitizeForFirestore(metadata) : undefined,
       };
 
       if (entityId) {
