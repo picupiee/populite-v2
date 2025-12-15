@@ -26,6 +26,10 @@ interface SummaryData {
   statusCounts: { [key: string]: number };
   adultTotal: number;
   kidsTotal: number;
+  adultMale: number;
+  adultFemale: number;
+  kidsMale: number;
+  kidsFemale: number;
 }
 
 /**
@@ -38,6 +42,10 @@ const calculateSummary = (records: PopulationRecord[]): SummaryData => {
     statusCounts: { Ditempati: 0, Sewa: 0, Kosong: 0 },
     adultTotal: 0,
     kidsTotal: 0,
+    adultMale: 0,
+    adultFemale: 0,
+    kidsMale: 0,
+    kidsFemale: 0,
   };
 
   records.forEach((record) => {
@@ -52,8 +60,14 @@ const calculateSummary = (records: PopulationRecord[]): SummaryData => {
     if (status === "Ditempati" || status === "Sewa") {
       const adults = Number(record.adultTotal) || 0;
       const kids = Number(record.kidsTotal) || 0;
+
       summary.adultTotal += adults;
       summary.kidsTotal += kids;
+
+      summary.adultMale += Number(record.adultMale) || 0;
+      summary.adultFemale += Number(record.adultFemale) || 0;
+      summary.kidsMale += Number(record.kidsMale) || 0;
+      summary.kidsFemale += Number(record.kidsFemale) || 0;
 
       summary.totalPopulation += adults + kids;
     }
@@ -71,6 +85,8 @@ const Card = ({
   color,
   iconColor,
   delay = 0,
+  maleCount,
+  femaleCount,
 }: {
   title: string;
   value: string;
@@ -78,29 +94,47 @@ const Card = ({
   color: string; // Tailwind bg class
   iconColor: string;
   delay?: number;
+  maleCount?: number;
+  femaleCount?: number;
 }) => (
   <Animated.View
     entering={FadeInDown.delay(delay).duration(600).springify()}
     style={{ width: "100%" }}
   >
     <View
-      className={`flex-row items-center py-5 px-2 mb-4 rounded-2xl justify-between shadow-lg shadow-indigo-100 ${color}`}
+      className={`py-4 px-3 mb-4 rounded-2xl shadow-lg shadow-indigo-100 ${color}`}
     >
-      <View className="flex-row items-center">
-        <View className="bg-white/20 p-2 rounded-full">
-          <Ionicons name={icon as any} size={24} color={iconColor} />
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center">
+          <View className="bg-white/20 p-2 rounded-full">
+            <Ionicons name={icon as any} size={24} color={iconColor} />
+          </View>
+          <Text
+            className={`text-sm font-semibold ml-2 ${iconColor === "#fff" ? "text-white" : "text-gray-700"}`}
+          >
+            {title}
+          </Text>
         </View>
         <Text
-          className={`text-sm font-semibold ml-2 ${iconColor === "#fff" ? "text-white" : "text-gray-700"}`}
+          className={`text-2xl font-bold mr-2 ${iconColor === "#fff" ? "text-white" : "text-gray-800"}`}
         >
-          {title}
+          {value}
         </Text>
       </View>
-      <Text
-        className={`text-2xl font-bold mr-2 ${iconColor === "#fff" ? "text-white" : "text-gray-800"}`}
-      >
-        {value}
-      </Text>
+
+      {/* Detail Breakdown for Gender */}
+      {(maleCount !== undefined || femaleCount !== undefined) && (
+        <View className="mt-3 pt-2 border-t border-gray-100 flex-row justify-around">
+          <View className="flex-row items-center">
+            <Ionicons name="male" size={12} color="#6B7280" />
+            <Text className="text-xs text-gray-500 ml-1 font-medium">{maleCount || 0} Pria</Text>
+          </View>
+          <View className="flex-row items-center">
+            <Ionicons name="female" size={12} color="#6B7280" />
+            <Text className="text-xs text-gray-500 ml-1 font-medium">{femaleCount || 0} Wanita</Text>
+          </View>
+        </View>
+      )}
     </View>
   </Animated.View>
 );
@@ -348,6 +382,8 @@ export default function SummaryScreen() {
                   color="bg-white"
                   iconColor="#4F46E5"
                   delay={200}
+                  maleCount={summary.adultMale}
+                  femaleCount={summary.adultFemale}
                 />
               </View>
               <View className="flex-1">
@@ -358,6 +394,8 @@ export default function SummaryScreen() {
                   color="bg-white"
                   iconColor="#F59E0B"
                   delay={300}
+                  maleCount={summary.kidsMale}
+                  femaleCount={summary.kidsFemale}
                 />
               </View>
             </View>
