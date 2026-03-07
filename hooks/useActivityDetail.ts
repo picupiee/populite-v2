@@ -1,5 +1,5 @@
 import { db } from "@/lib/firebase";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot, DocumentData } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { ActivityRecord } from "./useActivitiesListener";
 

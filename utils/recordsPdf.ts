@@ -1,7 +1,4 @@
-import {
-  PopulationRecord,
-  STREET_OPTIONS
-} from "@/constants/data";
+import { PopulationRecord, STREET_OPTIONS } from "@/constants/data";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 
@@ -10,7 +7,13 @@ export interface PrintOptions {
   populationFilter: "all" | "adults_only" | "kids_only";
   reportType: "summary" | "detailed";
   hideNames: boolean;
+  isMonthly?: boolean;
+  revisionNumber?: string;
 }
+
+import * as Print from "expo-print";
+import * as Sharing from "expo-sharing";
+import { Platform } from "react-native";
 
 /**
  * Escapes HTML characters to prevent XSS.
@@ -25,14 +28,60 @@ const escapeHtml = (unsafe: string): string => {
 };
 
 /**
+ * Shared utility to print or share an HTML string.
+ */
+export const printHtmlReport = async (html: string, title?: string) => {
+  try {
+    if (Platform.OS === "web") {
+      const iframe = document.createElement("iframe");
+      iframe.style.height = "0";
+      iframe.style.visibility = "hidden";
+      iframe.style.width = "0";
+      iframe.style.position = "absolute";
+      iframe.srcdoc = html;
+      document.body.appendChild(iframe);
+
+      iframe.onload = () => {
+        setTimeout(() => {
+          if (iframe.contentWindow) {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+          }
+          setTimeout(() => {
+            document.body.removeChild(iframe);
+          }, 1000);
+        }, 100);
+      };
+    } else {
+      const { uri } = await Print.printToFileAsync({ html });
+      await Sharing.shareAsync(uri, {
+        UTI: ".pdf",
+        mimeType: "application/pdf",
+        dialogTitle: title || "Laporan Data Warga",
+      });
+    }
+  } catch (error) {
+    console.error("Print Error:", error);
+    throw error;
+  }
+};
+
+/**
  * Generates the HTML content for the Records Data PDF.
  */
 export const generateRecordsReportHtml = (
   records: PopulationRecord[],
   options: PrintOptions,
-  username: string
+  username: string,
 ): string => {
-  const { street, populationFilter, reportType, hideNames } = options;
+  const {
+    street,
+    populationFilter,
+    reportType,
+    hideNames,
+    isMonthly,
+    revisionNumber,
+  } = options;
 
   // 1. Filter Records based on options
   let filteredRecords = records;
@@ -52,7 +101,7 @@ export const generateRecordsReportHtml = (
     filteredRecords = filteredRecords.filter((r) => r.kidsTotal > 0);
   }
 
-// 2. Calculate Summaries
+  // 2. Calculate Summaries
   const stats = filteredRecords.reduce(
     (acc, r) => {
       // Demographics
@@ -60,15 +109,15 @@ export const generateRecordsReportHtml = (
       acc.adultFemale += r.adultFemale || 0;
       acc.kidsMale += r.kidsMale || 0;
       acc.kidsFemale += r.kidsFemale || 0;
-      
+
       // Totals from fields (fallback to male+female if needed, but per user request data is entered)
       // We will derive totals from the male/female sums to ensure table consistency
-      
+
       // House Status
       if (r.houseStatus === "Ditempati") acc.housesOccupied++;
       else if (r.houseStatus === "Sewa") acc.housesRented++;
       else if (r.houseStatus === "Kosong") acc.housesEmpty++;
-      
+
       return acc;
     },
     {
@@ -79,7 +128,7 @@ export const generateRecordsReportHtml = (
       housesOccupied: 0,
       housesRented: 0,
       housesEmpty: 0,
-    }
+    },
   );
 
   const totalAdults = stats.adultMale + stats.adultFemale;
@@ -88,12 +137,11 @@ export const generateRecordsReportHtml = (
   const totalFemale = stats.adultFemale + stats.kidsFemale;
   const totalPopulation = totalAdults + totalKids;
   const totalHouses = filteredRecords.length;
-  
+
   // Calculate Average Residents (Occupied + Rented only to avoid skewing by empty houses)
   const occupiedCount = stats.housesOccupied + stats.housesRented;
-  const avgResidents = occupiedCount > 0 
-    ? (totalPopulation / occupiedCount).toFixed(1) 
-    : "0";
+  const avgResidents =
+    occupiedCount > 0 ? (totalPopulation / occupiedCount).toFixed(1) : "0";
 
   const summarySection = `
     <div class="summary-container">
@@ -165,26 +213,28 @@ export const generateRecordsReportHtml = (
   let tablesHtml = "";
   if (reportType === "detailed") {
     // Dynamically identify which streets are present in the filtered records
-    const distinctStreets = Array.from(new Set(filteredRecords.map(r => r.street)));
-    
+    const distinctStreets = Array.from(
+      new Set(filteredRecords.map((r) => r.street)),
+    );
+
     // Sort streets
     distinctStreets.sort((a, b) => {
-        const idxA = STREET_OPTIONS.indexOf(a);
-        const idxB = STREET_OPTIONS.indexOf(b);
-        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-        if (idxA !== -1) return -1;
-        if (idxB !== -1) return 1;
-        return a.localeCompare(b);
+      const idxA = STREET_OPTIONS.indexOf(a);
+      const idxB = STREET_OPTIONS.indexOf(b);
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return a.localeCompare(b);
     });
 
     distinctStreets.forEach((currentStreet) => {
       const streetRecords = filteredRecords.filter(
-        (r) => r.street === currentStreet
+        (r) => r.street === currentStreet,
       );
 
       if (streetRecords.length > 0) {
         streetRecords.sort((a, b) =>
-          (a.houseId || "").localeCompare(b.houseId || "")
+          (a.houseId || "").localeCompare(b.houseId || ""),
         );
 
         let subTotalAdults = 0;
@@ -192,24 +242,24 @@ export const generateRecordsReportHtml = (
 
         const rows = streetRecords
           .map((r, index) => {
-             const residentName = hideNames
+            const residentName = hideNames
               ? `<span style="color:#999; font-style:italic;">Nama Disembunyikan</span>`
               : escapeHtml(r.name);
-            
-             // For the table, we use the specific breakdown if available or just Total?
-             // The old table just showed Adult Total and Kid Total.
-             // We can keep that simple or expand it. The user requirement was about the "Summary" lacking breakdown.
-             // The "Detailed Data" lists each house. 
-             // "We split these data into detailed data like from the adult and kids total now include how many women and men... Then make an averege... So this "Ringkasan" will be looked like a proper summary report"
-             // It implies modifying the "Ringkasan" (Summary) section mainly.
-             // I'll keep the detailed table columns simple (Total Adult, Total Kids) to save space, unless requested.
-             
-             const adultCount = r.adultTotal;
-             const kidCount = r.kidsTotal;
-             
-             subTotalAdults += adultCount;
-             subTotalKids += kidCount;
-             
+
+            // For the table, we use the specific breakdown if available or just Total?
+            // The old table just showed Adult Total and Kid Total.
+            // We can keep that simple or expand it. The user requirement was about the "Summary" lacking breakdown.
+            // The "Detailed Data" lists each house.
+            // "We split these data into detailed data like from the adult and kids total now include how many women and men... Then make an averege... So this "Ringkasan" will be looked like a proper summary report"
+            // It implies modifying the "Ringkasan" (Summary) section mainly.
+            // I'll keep the detailed table columns simple (Total Adult, Total Kids) to save space, unless requested.
+
+            const adultCount = r.adultTotal;
+            const kidCount = r.kidsTotal;
+
+            subTotalAdults += adultCount;
+            subTotalKids += kidCount;
+
             return `
             <tr>
                 <td style="text-align:center;">${index + 1}</td>
@@ -222,7 +272,7 @@ export const generateRecordsReportHtml = (
             `;
           })
           .join("");
-          
+
         const tableFragment = `
           <h3 class="street-header">Jalan ${currentStreet} <span style="font-size:12px; font-weight:normal; color:#666;">(${streetRecords.length} Hunian)</span></h3>
           <table>
@@ -249,11 +299,11 @@ export const generateRecordsReportHtml = (
           </table>
           <div style="margin-bottom: 20px;"></div>
         `;
-        
+
         tablesHtml += tableFragment;
       }
     });
-    
+
     if (tablesHtml === "") {
       tablesHtml = `<p style="text-align:center; padding: 20px; font-style:italic; color:#999;">Tidak ada data untuk kriteria yang dipilih.</p>`;
     }
@@ -261,25 +311,32 @@ export const generateRecordsReportHtml = (
 
   // 4. HTML Template
   const dateStr = format(new Date(), "dd MMMM yyyy HH:mm", { locale: id });
-  
-  const streetLabel = isAllStreets 
-    ? "Semua Jalan" 
-    : street.join(", ");
-    
+
+  const streetLabel = isAllStreets ? "Semua Jalan" : street.join(", ");
+
   const filterDesc = `Lokasi: ${streetLabel} | Kategori: ${
     populationFilter === "all"
       ? "Semua"
       : populationFilter === "kids_only"
-      ? "Anak-anak"
-      : "Dewasa"
+        ? "Anak-anak"
+        : "Dewasa"
   }`;
+
+  const monthYearStr = format(new Date(), "MMMM yyyy", { locale: id });
+  let reportTitle = isMonthly
+    ? `Laporan Bulanan Warga - ${monthYearStr}`
+    : "Laporan Data Warga Populite";
+
+  if (isMonthly && revisionNumber && revisionNumber.trim() !== "") {
+    reportTitle += ` (Revisi ${revisionNumber.trim()})`;
+  }
 
   return `
     <!DOCTYPE html>
     <html>
       <head>
         <meta charset="utf-8">
-        <title>Laporan Data Warga - ${dateStr}</title>
+        <title>${escapeHtml(reportTitle)} - ${dateStr}</title>
         <style>
           body { font-family: 'Helvetica', 'Arial', sans-serif; padding: 20px; color: #333; }
           h1 { text-align: center; color: #4F46E5; margin-bottom: 5px; }
@@ -315,13 +372,13 @@ export const generateRecordsReportHtml = (
         </style>
       </head>
       <body>
-        <h1>Laporan Data Warga Populite</h1>
+        <h1>${escapeHtml(reportTitle)}</h1>
         <h2>${filterDesc}</h2>
         
         <h3 style="font-size:14px; margin-bottom:10px; color:#333; border-left:4px solid #4F46E5; padding-left:10px;">Ringkasan Eksekutif</h3>
         ${summarySection}
         
-        ${reportType === 'detailed' ? `<h3 style="font-size:14px; margin-bottom:10px; color:#333; border-left:4px solid #4F46E5; padding-left:10px;">Rincian Data</h3>` : ''}
+        ${reportType === "detailed" ? `<h3 style="font-size:14px; margin-bottom:10px; color:#333; border-left:4px solid #4F46E5; padding-left:10px;">Rincian Data</h3>` : ""}
         ${tablesHtml}
         
         <div class="footer">

@@ -15,6 +15,9 @@ import * as Print from "expo-print";
 import { Link, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
 import React, { useState } from "react";
+import MonthlyReportModal from "@/components/print/MonthlyReportModal";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import {
   ActivityIndicator,
   FlatList,
@@ -114,7 +117,8 @@ export default function DataViewListScreen() {
   const [viewMode, setViewMode] = useState<"card" | "list">("list");
   const [isControlsVisible, setIsControlsVisible] = useState(false);
   const [isPrintModalVisible, setIsPrintModalVisible] = useState(false);
-  const { userProfile } = useAuth();
+  const [isMonthlyModalVisible, setIsMonthlyModalVisible] = useState(false);
+  const { userProfile, user } = useAuth();
 
   const handlePrintPdf = async (options: PrintOptions) => {
     setIsPrintModalVisible(false);
@@ -124,37 +128,96 @@ export default function DataViewListScreen() {
       // Use 'records' from the hook which contains ALL currently loaded records.
       // The utility function handles filtering based on options.
       const html = generateRecordsReportHtml(records || [], options, username);
-
-      if (Platform.OS === "web") {
-        const iframe = document.createElement("iframe");
-        iframe.style.height = "0";
-        iframe.style.visibility = "hidden";
-        iframe.style.width = "0";
-        iframe.style.position = "absolute";
-        iframe.srcdoc = html;
-        document.body.appendChild(iframe);
-
-        iframe.onload = () => {
-          setTimeout(() => {
-            if (iframe.contentWindow) {
-              iframe.contentWindow.focus();
-              iframe.contentWindow.print();
-            }
-            setTimeout(() => {
-              document.body.removeChild(iframe);
-            }, 1000);
-          }, 100);
-        };
-      } else {
-        const { uri } = await Print.printToFileAsync({ html });
-        await Sharing.shareAsync(uri, {
-          UTI: ".pdf",
-          mimeType: "application/pdf",
-          dialogTitle: "Laporan Data Warga",
-        });
-      }
+      const { printHtmlReport } = await import("@/utils/recordsPdf");
+      await printHtmlReport(html, "Laporan Data Warga");
     } catch (error) {
       console.error("Print Error:", error);
+    }
+  };
+
+  const handleGenerateMonthlyReport = async (revisionNumber?: string) => {
+    setIsMonthlyModalVisible(false);
+    try {
+      const username =
+        userProfile?.fullName || userProfile?.username || "Admin";
+
+      // 1. Calculate Exact Stats for Firestore Metrics
+      const allRecords = records || [];
+      const stats = allRecords.reduce(
+        (acc, r) => {
+          acc.adultMale += r.adultMale || 0;
+          acc.adultFemale += r.adultFemale || 0;
+          acc.kidsMale += r.kidsMale || 0;
+          acc.kidsFemale += r.kidsFemale || 0;
+          
+          if (r.houseStatus === "Ditempati") acc.housesOccupied++;
+          else if (r.houseStatus === "Sewa") acc.housesRented++;
+          else if (r.houseStatus === "Kosong") acc.housesEmpty++;
+          
+          return acc;
+        },
+        {
+          adultMale: 0,
+          adultFemale: 0,
+          kidsMale: 0,
+          kidsFemale: 0,
+          housesOccupied: 0,
+          housesRented: 0,
+          housesEmpty: 0,
+        }
+      );
+      
+      const totalAdults = stats.adultMale + stats.adultFemale;
+      const totalKids = stats.kidsMale + stats.kidsFemale;
+      const totalMale = stats.adultMale + stats.kidsMale;
+      const totalFemale = stats.adultFemale + stats.kidsFemale;
+      const totalPopulation = totalAdults + totalKids;
+      const totalHouses = allRecords.length;
+
+      // 2. Save metadata to Firestore
+      const now = new Date();
+      await addDoc(collection(db, "monthly_reports"), {
+        createdAt: serverTimestamp(),
+        generatedBy: user?.uid || "unknown",
+        generatedByName: username,
+        month: now.getMonth() + 1,
+        year: now.getFullYear(),
+        revisionNumber: revisionNumber || null,
+        totalPopulation,
+        totalAdults,
+        totalKids,
+        totalMale,
+        totalFemale,
+        totalHouses,
+        housesOccupied: stats.housesOccupied,
+        housesRented: stats.housesRented,
+        housesEmpty: stats.housesEmpty,
+        streetsCovered: ["Semua"]
+      });
+
+      // 3. Generate HTML & Print
+      const options: PrintOptions = {
+         street: ["Semua"],
+         populationFilter: "all",
+         reportType: "summary",
+         hideNames: false,
+         isMonthly: true,
+         revisionNumber,
+      };
+
+      const html = generateRecordsReportHtml(allRecords, options, username);
+      const { printHtmlReport } = await import("@/utils/recordsPdf");
+      
+      const monthYearStr = now.toLocaleDateString("id-ID", { month: "long", year: "numeric" });
+      let title = `Laporan Bulanan Warga - ${monthYearStr}`;
+      if (revisionNumber && revisionNumber.trim() !== "") {
+        title += ` (Revisi ${revisionNumber.trim()})`;
+      }
+
+      await printHtmlReport(html, title);
+    } catch (error) {
+       console.error("Monthly Print Error:", error);
+       alert("Gagal membuat laporan bulanan.");
     }
   };
 
@@ -267,6 +330,15 @@ export default function DataViewListScreen() {
 
           {/* Right Side: View Switcher, Filter Toggle Group, and PRINT Button */}
           <View className="flex-row items-center gap-2">
+            {/* Monthly Report Button */}
+            <Pressable
+              onPress={() => setIsMonthlyModalVisible(true)}
+              className="px-3 py-2 flex-row items-center bg-purple-50 border border-purple-200 rounded-lg active:opacity-80"
+            >
+              <Ionicons name="document-text-outline" size={18} color="#7E22CE" />
+              <Text className="ml-1 text-xs font-semibold text-purple-700 hidden sm:flex">Laporan Bulanan</Text>
+            </Pressable>
+
             {/* Print Button */}
             <Pressable
               onPress={() => setIsPrintModalVisible(true)}
@@ -318,6 +390,13 @@ export default function DataViewListScreen() {
           visible={isPrintModalVisible}
           onClose={() => setIsPrintModalVisible(false)}
           onPrint={handlePrintPdf}
+        />
+
+        {/* Monthly Report Modal */}
+        <MonthlyReportModal
+          visible={isMonthlyModalVisible}
+          onClose={() => setIsMonthlyModalVisible(false)}
+          onConfirm={handleGenerateMonthlyReport}
         />
 
         {/* --- Collapsible Filter/Sort Panel --- */}

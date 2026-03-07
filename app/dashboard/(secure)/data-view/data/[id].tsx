@@ -29,7 +29,7 @@ const DetailCard = ({
   value: string;
   icon: string;
   color?: string;
-  titleStyle?: string
+  titleStyle?: string;
 }) => (
   <View className="flex-row justify-between items-center py-3 border-b border-gray-100">
     <View className="flex-row items-center">
@@ -91,29 +91,29 @@ export default function RecordDetailScreen() {
     if (!canDelete || !id || !record) {
       showErrorToast(
         "TIDAK DIIZINKAN !",
-        "Hubungi admin untuk info lebih lanjut."
+        "Hubungi admin untuk info lebih lanjut.",
       );
     }
 
     const confirmDelete =
       Platform.OS !== "web"
         ? () =>
-          Alert.alert(
-            "Konfirmasi",
-            `Yakin ingin menghapus data ${record?.houseId}?`,
-            [
-              { text: "Batal", style: "cancel" },
-              { text: "Hapus", style: "destructive", onPress: runDelete },
-            ]
-          )
+            Alert.alert(
+              "Konfirmasi",
+              `Yakin ingin menghapus data ${record?.houseId}?`,
+              [
+                { text: "Batal", style: "cancel" },
+                { text: "Hapus", style: "destructive", onPress: runDelete },
+              ],
+            )
         : () => {
-          if (
-            window.confirm(`Yakin ingin menghapus data ${record?.houseId}?`)
-          ) {
-            runDelete();
-            router.replace("/dashboard/(secure)/data-view");
-          }
-        };
+            if (
+              window.confirm(`Yakin ingin menghapus data ${record?.houseId}?`)
+            ) {
+              runDelete();
+              router.replace("/dashboard/(secure)/data-view");
+            }
+          };
 
     const runDelete = async () => {
       try {
@@ -127,7 +127,7 @@ export default function RecordDetailScreen() {
             id,
             {
               deletedRecord: record,
-            }
+            },
           );
         }
 
@@ -135,7 +135,7 @@ export default function RecordDetailScreen() {
       } catch (err) {
         showErrorToast(
           "Gagal menghapus",
-          "Terjadi kesalahan saat menghapus data"
+          "Terjadi kesalahan saat menghapus data",
         );
       }
     };
@@ -201,7 +201,7 @@ export default function RecordDetailScreen() {
         </Text>
         <Text
           className={`text-lg border-b mb-4 w-fit font-semibold rounded-md p-2 ${getStreetBadgeStyles(
-            record.street
+            record.street,
           )}`}
         >
           Jalan {record.street}
@@ -218,6 +218,12 @@ export default function RecordDetailScreen() {
           title="Status Hunian"
           value={record.houseStatus}
           icon="home-outline"
+          titleStyle="ml-2"
+        />
+        <DetailCard
+          title="Domisili"
+          value={record.domicile}
+          icon="location-outline"
           titleStyle="ml-2"
         />
         <DetailCard
@@ -250,7 +256,9 @@ export default function RecordDetailScreen() {
             <Text className="pt-2 text-md font-semibold text-center">
               Jumlah Dewasa
             </Text>
-            <Text className="text-xs text-center">Berdasarkan Jenis Kelamin</Text>
+            <Text className="text-xs text-center">
+              Berdasarkan Jenis Kelamin
+            </Text>
             <View className="flex-row gap-2 justify-center items-center">
               <DetailCard
                 title=""
@@ -269,7 +277,9 @@ export default function RecordDetailScreen() {
             <Text className="pt-2 text-md font-semibold text-center">
               Jumlah Anak
             </Text>
-            <Text className="text-xs text-center">Berdasarkan Jenis Kelamin</Text>
+            <Text className="text-xs text-center">
+              Berdasarkan Jenis Kelamin
+            </Text>
             <View className="flex-row gap-2 justify-center">
               <DetailCard
                 title=""
@@ -301,11 +311,11 @@ export default function RecordDetailScreen() {
             canDelete
               ? handleDelete
               : () => {
-                showErrorToast(
-                  "Hapus Data Ditolak",
-                  "Anda tidak mempunyai izin untuk menghapus."
-                );
-              }
+                  showErrorToast(
+                    "Hapus Data Ditolak",
+                    "Anda tidak mempunyai izin untuk menghapus.",
+                  );
+                }
           }
           className={
             `mt-6 flex-row items-center justify-center p-3 rounded-lg active:opacity-80 

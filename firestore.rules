@@ -1,0 +1,141 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+  
+  function isAuthenticated() {
+  return request.auth != null;
+  }
+  function getRole() {
+  return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+  }
+  
+
+    // Allow read/write access to the 'users' collection only if the user is signed in
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      
+      // Allow update if:
+      // 1. Admin (can update anything, including roles)
+      // 2. Self (can update profile, but NOT role)
+      allow update: if isAuthenticated() && (
+        getRole() == 'admin' ||
+        (request.auth.uid == userId && request.resource.data.role == resource.data.role)
+      );
+    }
+    
+    match /activity_logs/{logEntry} {
+    allow read: if isAuthenticated() && getRole() == 'admin'
+    allow create: if isAuthenticated() && getRole() == 'admin' || getRole() == 'staff'
+    }
+    
+    match /populationData/{recordId} {
+      
+      // ----------------------------------------------------
+      // A. READ ACCESS: Admin, Staff, and Viewer can read
+      // ----------------------------------------------------
+      allow read: if isAuthenticated() && (
+        getRole() == 'admin' || 
+        getRole() == 'staff' || 
+        getRole() == 'viewer'
+      );
+      
+      // ----------------------------------------------------
+      // B. WRITE/CREATE ACCESS: Admin and Staff can create
+      // ----------------------------------------------------
+      allow create: if isAuthenticated() && (
+        getRole() == 'admin' || 
+        getRole() == 'staff'
+      );
+      
+      // ----------------------------------------------------
+      // C. UPDATE ACCESS: Admin and Staff can update
+      // ----------------------------------------------------
+      allow update: if isAuthenticated() && (
+        getRole() == 'admin' || 
+        getRole() == 'staff'
+      );
+      
+      // ----------------------------------------------------
+      // D. DELETE ACCESS: ONLY Admin can delete
+      // ----------------------------------------------------
+      allow delete: if isAuthenticated() && getRole() == 'admin';
+    }
+    
+    // ACTIVITIES RULES
+    match /activities/{activityId} {
+    	// Only authenticated users can read (Viewer/Staff/Admin)
+    	allow read: if isAuthenticated() && (
+        getRole() == 'admin' || 
+        getRole() == 'staff' || 
+        getRole() == 'viewer'
+      );
+
+  		// Only Admin or Staff can create a new activity
+  		allow create: if isAuthenticated() && (
+        getRole() == 'admin' || 
+        getRole() == 'staff'
+      );
+  
+  		// Only Admin or the creator of the activity can update/delete it
+  		allow update, delete: if isAuthenticated() && (
+        getRole() == 'admin' || 
+        getRole() == 'staff'
+      );
+    }
+    
+  // FINANCE INCOMES
+		match /finance_incomes/{incomeId} {
+  		// READ: Public access for transparency (Viewer/Staff/Admin)
+  		allow read: if isAuthenticated() && (
+        getRole() == 'admin' || 
+        getRole() == 'staff' || 
+        getRole() == 'viewer'
+      );
+  		// WRITE (create, update, delete): Only Admin/Staff
+  		allow create: if isAuthenticated() && (
+        getRole() == 'admin' || 
+        getRole() == 'staff'
+      );
+		}
+    
+
+	// FINANCE SPENDINGS
+		match /finance_spendings/{spendingId} {
+  		// READ: Public access for transparency (Viewer/Staff/Admin)
+  		allow read: if isAuthenticated() && (
+        getRole() == 'admin' || 
+        getRole() == 'staff' || 
+        getRole() == 'viewer'
+      );
+  		// WRITE (create, update, delete): Only Admin/Staff
+  		allow create: if isAuthenticated() && (
+        getRole() == 'admin' || 
+        getRole() == 'staff'
+      );
+		}
+
+    // MONTHLY REPORTS RULES
+    match /monthly_reports/{reportId} {
+      // ONLY Admin and Staff can read monthly reports
+      allow read: if isAuthenticated() && (
+        getRole() == 'admin' || 
+        getRole() == 'staff'
+      );
+
+      // ONLY Admin and Staff can create monthly reports
+      allow create: if isAuthenticated() && (
+        getRole() == 'admin' || 
+        getRole() == 'staff'
+      );
+
+      // NO updates or deletes allowed for monthly reports by anyone (immutability)
+      // Or if you prefer admins can delete: allow delete: if isAuthenticated() && getRole() == 'admin';
+    }
+    
+    // Default rule: deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

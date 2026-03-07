@@ -1,14 +1,14 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  RefreshControl,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    RefreshControl,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
@@ -17,6 +17,9 @@ import { PopulationRecord } from "@/constants/data";
 import { useAuth } from "@/context/AuthProvider";
 import { usePopulationRecordsListener } from "@/hooks/usePopulationRecordsListener"; // Stable List Listener
 import { useToastService } from "@/hooks/useToastService";
+import MonthlyReportModal from "@/components/print/MonthlyReportModal";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 // --- Interfaces and Calculation Logic ---
 
@@ -208,10 +211,11 @@ export default function SummaryScreen() {
   const { records, loading, error } = usePopulationRecordsListener();
   const { showErrorToast } = useToastService();
   const router = useRouter();
-  const { userProfile } = useAuth();
+  const { userProfile, user } = useAuth();
 
   const [summary, setSummary] = useState<SummaryData | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isMonthlyModalVisible, setIsMonthlyModalVisible] = useState(false);
 
   // 2. Calculate summary ONLY when stable 'records' list updates
   useEffect(() => {
@@ -236,6 +240,97 @@ export default function SummaryScreen() {
     // Wait a short time to show the refresh indicator
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsRefreshing(false);
+  };
+
+  const handleGenerateMonthlyReport = async (revisionNumber?: string) => {
+    setIsMonthlyModalVisible(false);
+    
+    if (!summary || !records) {
+      showErrorToast("Error", "Data ringkasan belum tersedia.");
+      return;
+    }
+
+    try {
+      const username = userProfile?.fullName || userProfile?.username || "Admin";
+      
+      // Calculate Exact Stats for Firestore Metrics
+      const allRecords = records || [];
+      const stats = allRecords.reduce(
+        (acc, r) => {
+          acc.adultMale += r.adultMale || 0;
+          acc.adultFemale += r.adultFemale || 0;
+          acc.kidsMale += r.kidsMale || 0;
+          acc.kidsFemale += r.kidsFemale || 0;
+          
+          if (r.houseStatus === "Ditempati") acc.housesOccupied++;
+          else if (r.houseStatus === "Sewa") acc.housesRented++;
+          else if (r.houseStatus === "Kosong") acc.housesEmpty++;
+          
+          return acc;
+        },
+        {
+          adultMale: 0,
+          adultFemale: 0,
+          kidsMale: 0,
+          kidsFemale: 0,
+          housesOccupied: 0,
+          housesRented: 0,
+          housesEmpty: 0,
+        }
+      );
+      
+      const totalAdults = stats.adultMale + stats.adultFemale;
+      const totalKids = stats.kidsMale + stats.kidsFemale;
+      const totalMale = stats.adultMale + stats.kidsMale;
+      const totalFemale = stats.adultFemale + stats.kidsFemale;
+      const totalPopulation = totalAdults + totalKids;
+      const totalHouses = allRecords.length;
+
+      // Save metadata to Firestore
+      const now = new Date();
+      await addDoc(collection(db, "monthly_reports"), {
+        createdAt: serverTimestamp(),
+        generatedBy: user?.uid || "unknown",
+        generatedByName: username,
+        month: now.getMonth() + 1,
+        year: now.getFullYear(),
+        revisionNumber: revisionNumber || null,
+        totalPopulation,
+        totalAdults,
+        totalKids,
+        totalMale,
+        totalFemale,
+        totalHouses,
+        housesOccupied: stats.housesOccupied,
+        housesRented: stats.housesRented,
+        housesEmpty: stats.housesEmpty,
+        streetsCovered: ["Semua"]
+      });
+
+      // Generate HTML & Print
+      const options = {
+         street: ["Semua"],
+         populationFilter: "all" as any,
+         reportType: "summary" as any,
+         hideNames: false,
+         isMonthly: true,
+         revisionNumber,
+      };
+
+      const { generateRecordsReportHtml, printHtmlReport } = await import("@/utils/recordsPdf");
+      const html = generateRecordsReportHtml(allRecords, options, username);
+      
+      const monthYearStr = now.toLocaleDateString("id-ID", { month: "long", year: "numeric" });
+      let title = `Laporan Bulanan Warga - ${monthYearStr}`;
+      if (revisionNumber && revisionNumber.trim() !== "") {
+        title += ` (Revisi ${revisionNumber.trim()})`;
+      }
+
+      await printHtmlReport(html, title);
+    } catch (error) {
+       console.error("Monthly Print Error:", error);
+       showErrorToast("Error", "Gagal membuat laporan bulanan.");
+    }
   };
 
   // --- UI Rendering ---
@@ -356,6 +451,12 @@ export default function SummaryScreen() {
                   onPress={() => router.push("/dashboard/(public)/activities")}
                   color="bg-orange-50"
                 />
+                <QuickAction
+                  title="Laporan Bulanan"
+                  icon="document-text"
+                  onPress={() => setIsMonthlyModalVisible(true)}
+                  color="bg-purple-50"
+                />
               </ScrollView>
             </View>
 
@@ -439,6 +540,13 @@ export default function SummaryScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Monthly Report Modal */}
+      <MonthlyReportModal
+        visible={isMonthlyModalVisible}
+        onClose={() => setIsMonthlyModalVisible(false)}
+        onConfirm={handleGenerateMonthlyReport}
+      />
     </View>
   );
 }

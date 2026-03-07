@@ -10,7 +10,6 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import * as Updates from "expo-updates";
-import React from "react";
 import { Alert, Linking, Platform, Pressable, Text, View } from "react-native";
 import { useAuth } from "../context/AuthProvider"; // Adjust path
 
@@ -49,23 +48,23 @@ export function CustomDrawerContent(props: DrawerContentComponentProps) {
                         text: "Mulai Ulang",
                         onPress: () => Updates.reloadAsync(),
                       },
-                    ]
+                    ],
                   );
                 } catch (error) {
                   console.log("Failed to fetch update: ", error);
                   showErrorToast(
                     "Gagal Mengunduh",
-                    "Terjadi kesalahan saat mengunduh update."
+                    "Terjadi kesalahan saat mengunduh update.",
                   );
                 }
               },
             },
-          ]
+          ],
         );
       } else {
         showInfoToast(
           "Aplikasi Terbaru",
-          "Anda sudah menggunakan versi terbaru."
+          "Anda sudah menggunakan versi terbaru.",
         );
       }
     } catch (error) {
@@ -73,7 +72,7 @@ export function CustomDrawerContent(props: DrawerContentComponentProps) {
       // Silent fail or show toast if explicitly requested by user action
       showErrorToast(
         "Gagal Cek Update",
-        "Tidak dapat memeriksa update saat ini."
+        "Tidak dapat memeriksa update saat ini.",
       );
     }
   };
@@ -90,7 +89,7 @@ export function CustomDrawerContent(props: DrawerContentComponentProps) {
         <View className="flex-row items-center">
           <View className="w-16 h-16 bg-white rounded-full items-center justify-center shadow-lg shadow-indigo-900/20">
             <Text className="text-2xl font-bold text-indigo-600">
-              {userProfile?.username.charAt(0).toUpperCase() || "U"}
+              {userProfile?.username!.charAt(0).toUpperCase() || "U"}
             </Text>
           </View>
           <View className="ml-4 flex-1">
@@ -130,7 +129,7 @@ export function CustomDrawerContent(props: DrawerContentComponentProps) {
           <Pressable
             onPress={() =>
               Linking.openURL(
-                "https://expo.dev/accounts/picupiee/projects/populite/builds/fe417c7d-a281-4028-9f0c-240cb240ee5a"
+                "https://expo.dev/accounts/picupiee/projects/populite/builds/fe417c7d-a281-4028-9f0c-240cb240ee5a",
               )
             }
             className="w-full bg-indigo-500 p-3 mb-2 rounded-xl flex-row items-center justify-center border border-indigo-100 active:bg-indigo-100"
