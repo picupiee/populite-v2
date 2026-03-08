@@ -21,7 +21,6 @@ import {
   FlatList,
   Pressable,
   Text,
-  TextInput,
   View,
 } from "react-native";
 
@@ -353,7 +352,7 @@ export default function DataViewListScreen() {
       </Text>
       <View className="p-4 bg-white border-b border-gray-100">
         {/* --- Search Bar --- */}
-        <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-2 mb-4 border border-gray-200">
+        {/* <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-2 mb-4 border border-gray-200">
           <Ionicons name="search" size={20} color="#6B7280" />
           <TextInput
             placeholder="Search by Name, House ID, Street..."
@@ -367,7 +366,7 @@ export default function DataViewListScreen() {
               <Ionicons name="close-circle" size={20} color="#9CA3AF" />
             </Pressable>
           )}
-        </View>
+        </View> */}
 
         {/* --- Top Row: Title and Actions (Add Button, View Switcher, Filter Toggle) --- */}
         <View className="flex-row justify-between items-center mb-4">
