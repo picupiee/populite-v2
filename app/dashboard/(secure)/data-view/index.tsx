@@ -1,5 +1,6 @@
 // app/dashboard/(secure)/data-view/index.tsx
 import CompactListItem from "@/components/data/CompactListItem";
+import MonthlyReportModal from "@/components/print/MonthlyReportModal";
 import RecordPrintListModal from "@/components/print/RecordPrintListModal";
 import SelectGroup from "@/components/ui/SelectGroup";
 import {
@@ -9,21 +10,18 @@ import {
 } from "@/constants/data";
 import { useAuth } from "@/context/AuthProvider";
 import { usePopulationRecordsListener } from "@/hooks/usePopulationRecordsListener";
+import { db } from "@/lib/firebase";
 import { generateRecordsReportHtml, PrintOptions } from "@/utils/recordsPdf";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import * as Print from "expo-print";
 import { Link, useRouter } from "expo-router";
-import * as Sharing from "expo-sharing";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import React, { useState } from "react";
-import MonthlyReportModal from "@/components/print/MonthlyReportModal";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import {
   ActivityIndicator,
   FlatList,
-  Platform,
   Pressable,
   Text,
+  TextInput,
   View,
 } from "react-native";
 
@@ -101,6 +99,7 @@ const RecordItem = ({ record }: { record: PopulationRecord }) => {
 export default function DataViewListScreen() {
   const { records, loading, error } = usePopulationRecordsListener();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<FilterState>({
     street: "Semua",
     status: "Semua",
@@ -149,11 +148,11 @@ export default function DataViewListScreen() {
           acc.adultFemale += r.adultFemale || 0;
           acc.kidsMale += r.kidsMale || 0;
           acc.kidsFemale += r.kidsFemale || 0;
-          
+
           if (r.houseStatus === "Ditempati") acc.housesOccupied++;
           else if (r.houseStatus === "Sewa") acc.housesRented++;
           else if (r.houseStatus === "Kosong") acc.housesEmpty++;
-          
+
           return acc;
         },
         {
@@ -164,9 +163,9 @@ export default function DataViewListScreen() {
           housesOccupied: 0,
           housesRented: 0,
           housesEmpty: 0,
-        }
+        },
       );
-      
+
       const totalAdults = stats.adultMale + stats.adultFemale;
       const totalKids = stats.kidsMale + stats.kidsFemale;
       const totalMale = stats.adultMale + stats.kidsMale;
@@ -192,23 +191,26 @@ export default function DataViewListScreen() {
         housesOccupied: stats.housesOccupied,
         housesRented: stats.housesRented,
         housesEmpty: stats.housesEmpty,
-        streetsCovered: ["Semua"]
+        streetsCovered: ["Semua"],
       });
 
       // 3. Generate HTML & Print
       const options: PrintOptions = {
-         street: ["Semua"],
-         populationFilter: "all",
-         reportType: "summary",
-         hideNames: false,
-         isMonthly: true,
-         revisionNumber,
+        street: ["Semua"],
+        populationFilter: "all",
+        reportType: "summary",
+        hideNames: false,
+        isMonthly: true,
+        revisionNumber,
       };
 
       const html = generateRecordsReportHtml(allRecords, options, username);
       const { printHtmlReport } = await import("@/utils/recordsPdf");
-      
-      const monthYearStr = now.toLocaleDateString("id-ID", { month: "long", year: "numeric" });
+
+      const monthYearStr = now.toLocaleDateString("id-ID", {
+        month: "long",
+        year: "numeric",
+      });
       let title = `Laporan Bulanan Warga - ${monthYearStr}`;
       if (revisionNumber && revisionNumber.trim() !== "") {
         title += ` (Revisi ${revisionNumber.trim()})`;
@@ -216,8 +218,8 @@ export default function DataViewListScreen() {
 
       await printHtmlReport(html, title);
     } catch (error) {
-       console.error("Monthly Print Error:", error);
-       alert("Gagal membuat laporan bulanan.");
+      console.error("Monthly Print Error:", error);
+      alert("Gagal membuat laporan bulanan.");
     }
   };
 
@@ -228,6 +230,35 @@ export default function DataViewListScreen() {
     let results = [...records];
 
     // A. Filtering
+    // 0. Search Query
+    if (searchQuery.trim() !== "") {
+      const lowerQuery = searchQuery.toLowerCase().trim();
+      const queryParts = lowerQuery.split(/\s+/);
+
+      results = results.filter((record) => {
+        const hId = (record.houseId || "").toLowerCase();
+        const hPre = (record.housePrefix || "").toLowerCase();
+        const hSuf = String(record.houseSuffix || "").toLowerCase();
+        const name = record.name.toLowerCase();
+        const street = record.street.toLowerCase();
+        const status = record.houseStatus.toLowerCase();
+        const domicile = record.domicile.toLowerCase();
+
+        // For each part, check if it matches EXACTLY one of the house components, OR is a substring of the text fields
+        return queryParts.every((part) => {
+          return (
+            hId === part ||
+            hPre === part ||
+            hSuf === part ||
+            name.includes(part) ||
+            street.includes(part) ||
+            status.includes(part) ||
+            domicile.includes(part)
+          );
+        });
+      });
+    }
+
     // 1. Filter by Street
     if (filters.street !== "Semua") {
       results = results.filter((record) => record.street === filters.street);
@@ -235,7 +266,7 @@ export default function DataViewListScreen() {
     // 2. Filter by Status
     if (filters.status !== "Semua") {
       results = results.filter(
-        (record) => record.houseStatus === filters.status
+        (record) => record.houseStatus === filters.status,
       );
     }
 
@@ -248,7 +279,7 @@ export default function DataViewListScreen() {
     const compare = (
       a: PopulationRecord,
       b: PopulationRecord,
-      key: SortKey
+      key: SortKey,
     ) => {
       const typedKey = key as keyof PopulationRecord;
       let aVal: any = a[typedKey];
@@ -290,9 +321,12 @@ export default function DataViewListScreen() {
       filtersArray.push(`Gender: ${filters.gender}`);
     }
 
-    return filtersArray;
-  }, [filters]);
+    if (searchQuery.trim() !== "") {
+      filtersArray.push(`Pencarian: "${searchQuery}"`);
+    }
 
+    return filtersArray;
+  }, [filters, searchQuery]);
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -311,11 +345,30 @@ export default function DataViewListScreen() {
   return (
     <View className="flex-1 bg-white">
       <Text className="italic text-xs font-semibold bg-red-100 p-2 rounded-md text-center">
-        Data yang ditampilkan adalah data mockup / tidak asli. Mohon untuk tidak
-        menggunakan data asli sebelum proyek ini sudah dalam status
-        "In-Production"
+        Aplikasi masih dalam proses pengembangan. Jika terjadi kesalahan saat
+        menggunakan aplikasi, mohon laporkan kepada pengembang. JANGAN PERNAH
+        menggunakan data ini untuk keperluan pribadi atau tindakan yang
+        melanggar hukum seperti pencurian data, penggunaan data sebagai langkah
+        verifikasi pinjaman online, dan lain sebagainya
       </Text>
       <View className="p-4 bg-white border-b border-gray-100">
+        {/* --- Search Bar --- */}
+        <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-2 mb-4 border border-gray-200">
+          <Ionicons name="search" size={20} color="#6B7280" />
+          <TextInput
+            placeholder="Search by Name, House ID, Street..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            className="flex-1 ml-2 text-gray-800"
+            placeholderTextColor="#9CA3AF"
+          />
+          {searchQuery.length > 0 && (
+            <Pressable onPress={() => setSearchQuery("")}>
+              <Ionicons name="close-circle" size={20} color="#9CA3AF" />
+            </Pressable>
+          )}
+        </View>
+
         {/* --- Top Row: Title and Actions (Add Button, View Switcher, Filter Toggle) --- */}
         <View className="flex-row justify-between items-center mb-4">
           {/* Left Side: Title & Add Button */}
@@ -323,7 +376,7 @@ export default function DataViewListScreen() {
             <Pressable className="flex-row items-center justify-center p-3 bg-indigo-600 rounded-lg active:opacity-80">
               <Ionicons name="add-circle-outline" size={24} color="#fff" />
               <Text className="text-white font-semibold ml-2">
-                Warga / Hunian Baru
+                Tambah Warga
               </Text>
             </Pressable>
           </Link>
@@ -335,17 +388,24 @@ export default function DataViewListScreen() {
               onPress={() => setIsMonthlyModalVisible(true)}
               className="px-3 py-2 flex-row items-center bg-purple-50 border border-purple-200 rounded-lg active:opacity-80"
             >
-              <Ionicons name="document-text-outline" size={18} color="#7E22CE" />
-              <Text className="ml-1 text-xs font-semibold text-purple-700 hidden sm:flex">Laporan Bulanan</Text>
+              <Ionicons
+                name="document-text-outline"
+                size={18}
+                color="#7E22CE"
+              />
+              <Text className="ml-1 text-xs font-semibold text-purple-700 hidden sm:flex">
+                Laporan Bulanan
+              </Text>
             </Pressable>
 
             {/* Print Button */}
-            <Pressable
+            {/* Disabled since it will be moved to the monthly report page */}
+            {/* <Pressable
               onPress={() => setIsPrintModalVisible(true)}
               className="p-2 border border-blue-200 bg-blue-50 rounded-lg active:opacity-80"
             >
               <Ionicons name="print-outline" size={20} color="#2563EB" />
-            </Pressable>
+            </Pressable> */}
 
             {/* View Switcher */}
             <View className="flex-row border border-gray-300 rounded-lg overflow-hidden">

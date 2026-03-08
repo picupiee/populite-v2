@@ -11,7 +11,7 @@ import { checkHouseIdExists } from "@/utils/populationService";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React, { useState, useCallback, memo } from "react";
+import React, { useCallback, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -77,25 +77,28 @@ export default function DataEntryScreen() {
     // console.log("Form Resetted !");
   };
 
-  const handleChange = useCallback((key: keyof typeof initialFormState, value: any) => {
-    setFormData((prev) => {
-      const newState = { ...prev, [key]: value };
+  const handleChange = useCallback(
+    (key: keyof typeof initialFormState, value: any) => {
+      setFormData((prev) => {
+        const newState = { ...prev, [key]: value };
 
-      // Auto-sum adult and kids totals from specific gender and age inputs
-      if (key === "adultMale" || key === "adultFemale") {
-        newState.adultTotal =
-          (parseInt(String(newState.adultMale)) || 0) +
-          (parseInt(String(newState.adultFemale)) || 0);
-      }
-      if (key === "kidsMale" || key === "kidsFemale") {
-        newState.kidsTotal =
-          (parseInt(String(newState.kidsMale)) || 0) +
-          (parseInt(String(newState.kidsFemale)) || 0);
-      }
+        // Auto-sum adult and kids totals from specific gender and age inputs
+        if (key === "adultMale" || key === "adultFemale") {
+          newState.adultTotal =
+            (parseInt(String(newState.adultMale)) || 0) +
+            (parseInt(String(newState.adultFemale)) || 0);
+        }
+        if (key === "kidsMale" || key === "kidsFemale") {
+          newState.kidsTotal =
+            (parseInt(String(newState.kidsMale)) || 0) +
+            (parseInt(String(newState.kidsFemale)) || 0);
+        }
 
-      return newState;
-    });
-  }, []);
+        return newState;
+      });
+    },
+    [],
+  );
 
   const handleSave = async () => {
     const housePrefix = formData.housePrefix.toUpperCase().trim();
@@ -190,34 +193,82 @@ export default function DataEntryScreen() {
     }
   };
 
-  const handleNameChange = useCallback((value: string) => handleChange("name", value), [handleChange]);
-  const handleHousePrefixChange = useCallback((value: string) => handleChange("housePrefix", value.toUpperCase()), [handleChange]);
-  const handleHouseSuffixChange = useCallback((value: string) => handleChange("houseSuffix", value), [handleChange]);
-  const handleStreetChange = useCallback((value: string) => handleChange("street", value), [handleChange]);
-  const handleHouseStatusChange = useCallback((status: string) => handleChange("houseStatus", status), [handleChange]);
-  const handleGenderChange = useCallback((gender: string) => handleChange("gender", gender), [handleChange]);
-  const handleDomicileChange = useCallback((status: string) => handleChange("domicile", status), [handleChange]);
-  const handleDateOccupiedChange = useCallback((date: Date | string) => handleChange("dateOccupied", date), [handleChange]);
+  const handleNameChange = useCallback(
+    (value: string) => handleChange("name", value),
+    [handleChange],
+  );
+  const handleHousePrefixChange = useCallback(
+    (value: string) => handleChange("housePrefix", value.toUpperCase()),
+    [handleChange],
+  );
+  const handleHouseSuffixChange = useCallback(
+    (value: string) => handleChange("houseSuffix", value),
+    [handleChange],
+  );
+  const handleStreetChange = useCallback(
+    (value: string) => handleChange("street", value),
+    [handleChange],
+  );
+  const handleHouseStatusChange = useCallback(
+    (status: string) => handleChange("houseStatus", status),
+    [handleChange],
+  );
+  const handleGenderChange = useCallback(
+    (gender: string) => handleChange("gender", gender),
+    [handleChange],
+  );
+  const handleDomicileChange = useCallback(
+    (status: string) => handleChange("domicile", status),
+    [handleChange],
+  );
+  const handleDateOccupiedChange = useCallback(
+    (date: Date | string) => handleChange("dateOccupied", date),
+    [handleChange],
+  );
 
-  const handleAdultMaleChange = useCallback((value: string) => {
-    const numericValue = value.replace(/[^0-9]/g, '');
-    handleChange("adultMale", numericValue === '' ? '' : parseInt(numericValue, 10));
-  }, [handleChange]);
+  const handleAdultMaleChange = useCallback(
+    (value: string) => {
+      const numericValue = value.replace(/[^0-9]/g, "");
+      handleChange(
+        "adultMale",
+        numericValue === "" ? "" : parseInt(numericValue, 10),
+      );
+    },
+    [handleChange],
+  );
 
-  const handleAdultFemaleChange = useCallback((value: string) => {
-    const numericValue = value.replace(/[^0-9]/g, '');
-    handleChange("adultFemale", numericValue === '' ? '' : parseInt(numericValue, 10));
-  }, [handleChange]);
+  const handleAdultFemaleChange = useCallback(
+    (value: string) => {
+      const numericValue = value.replace(/[^0-9]/g, "");
+      handleChange(
+        "adultFemale",
+        numericValue === "" ? "" : parseInt(numericValue, 10),
+      );
+    },
+    [handleChange],
+  );
 
-  const handleKidsMaleChange = useCallback((value: string) => {
-    const numericValue = value.replace(/[^0-9]/g, '');
-    handleChange("kidsMale", numericValue === '' ? '' : parseInt(numericValue, 10));
-  }, [handleChange]);
+  const handleKidsMaleChange = useCallback(
+    (value: string) => {
+      const numericValue = value.replace(/[^0-9]/g, "");
+      handleChange(
+        "kidsMale",
+        numericValue === "" ? "" : parseInt(numericValue, 10),
+      );
+    },
+    [handleChange],
+  );
 
-  const handleKidsFemaleChange = useCallback((value: string) => {
-    const numericValue = value.replace(/[^0-9]/g, '');
-    handleChange("kidsFemale", numericValue === '' ? '' : parseInt(numericValue, 10));
-  }, [handleChange]);
+  const handleKidsFemaleChange = useCallback(
+    (value: string) => {
+      const numericValue = value.replace(/[^0-9]/g, "");
+      handleChange(
+        "kidsFemale",
+        numericValue === "" ? "" : parseInt(numericValue, 10),
+      );
+    },
+    [handleChange],
+  );
 
   const keyboardVerticalOffset = Platform.OS === "android" ? 75 : 100;
 
@@ -418,7 +469,11 @@ export default function DataEntryScreen() {
                               <View className="flex-1">
                                 <FormInput
                                   label="Pria"
-                                  value={formData.adultMale === ("" as any) ? "" : String(formData.adultMale)}
+                                  value={
+                                    formData.adultMale === ("" as any)
+                                      ? ""
+                                      : String(formData.adultMale)
+                                  }
                                   onChangeText={handleAdultMaleChange}
                                   placeholder="0"
                                   keyboardType="numeric"
@@ -429,7 +484,11 @@ export default function DataEntryScreen() {
                               <View className="flex-1">
                                 <FormInput
                                   label="Wanita"
-                                  value={formData.adultFemale === ("" as any) ? "" : String(formData.adultFemale)}
+                                  value={
+                                    formData.adultFemale === ("" as any)
+                                      ? ""
+                                      : String(formData.adultFemale)
+                                  }
                                   onChangeText={handleAdultFemaleChange}
                                   placeholder="0"
                                   keyboardType="numeric"
@@ -447,7 +506,11 @@ export default function DataEntryScreen() {
                               <View className="flex-1">
                                 <FormInput
                                   label="Laki-Laki"
-                                  value={formData.kidsMale === ("" as any) ? "" : String(formData.kidsMale)}
+                                  value={
+                                    formData.kidsMale === ("" as any)
+                                      ? ""
+                                      : String(formData.kidsMale)
+                                  }
                                   onChangeText={handleKidsMaleChange}
                                   placeholder="0"
                                   keyboardType="numeric"
@@ -458,7 +521,11 @@ export default function DataEntryScreen() {
                               <View className="flex-1">
                                 <FormInput
                                   label="Perempuan"
-                                  value={formData.kidsFemale === ("" as any) ? "" : String(formData.kidsFemale)}
+                                  value={
+                                    formData.kidsFemale === ("" as any)
+                                      ? ""
+                                      : String(formData.kidsFemale)
+                                  }
                                   onChangeText={handleKidsFemaleChange}
                                   placeholder="0"
                                   keyboardType="numeric"
