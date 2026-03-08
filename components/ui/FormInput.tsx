@@ -16,9 +16,10 @@ interface FormInputProps {
   style?: string;
   icon?: React.ReactNode; // New icon prop
   inputStyle?: string;
+  editable?: boolean;
 }
 
-export default function FormInput({
+const FormInput = ({
   label,
   value,
   onChangeText,
@@ -32,7 +33,8 @@ export default function FormInput({
   icon,
   onSubmitEditing,
   inputStyle = "",
-}: FormInputProps) {
+  editable = true,
+}: FormInputProps) => {
   const controlledValue = String(value ?? "")
 
   // Container style for the input + icon
@@ -65,6 +67,7 @@ export default function FormInput({
           placeholderTextColor={error ? "#EF4444" : "#9CA3AF"}
           secureTextEntry={secureTextEntry}
           onSubmitEditing={onSubmitEditing}
+          editable={editable}
           className={inputStyle}
         />
       </View>
@@ -75,4 +78,6 @@ export default function FormInput({
       )}
     </View>
   );
-}
+};
+
+export default React.memo(FormInput);

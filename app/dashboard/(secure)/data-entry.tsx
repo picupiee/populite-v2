@@ -11,7 +11,7 @@ import { checkHouseIdExists } from "@/utils/populationService";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useCallback, memo } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -27,23 +27,23 @@ const initialFormState: Omit<
   PopulationRecord,
   "id" | "entryDate" | "dateOccupied"
 > & { dateOccupied?: Date | string; housePrefix: string; houseSuffix: string } =
-{
-  name: "",
-  gender: "Pria", // Default to Male
-  housePrefix: "",
-  houseSuffix: "",
-  street: STREET_OPTIONS[0],
-  domicile: "Gunung Sari", // Default to Gunung Sari
-  houseStatus: "Ditempati", // Default to Ditempati
-  kidsTotal: 0,
-  adultTotal: 0, // Default to 1 adult if Ditempati
-  // To be added soon for more accurate and detailed data per house.
-  kidsMale: 0,
-  kidsFemale: 0,
-  adultMale: 0,
-  adultFemale: 0,
-  dateOccupied: undefined, // Will be set only if status is Ditempati/Sewa
-};
+  {
+    name: "",
+    gender: "Pria", // Default to Male
+    housePrefix: "",
+    houseSuffix: "",
+    street: STREET_OPTIONS[0],
+    domicile: "Gunung Sari", // Default to Gunung Sari
+    houseStatus: "Ditempati", // Default to Ditempati
+    kidsTotal: 0,
+    adultTotal: 0, // Default to 1 adult if Ditempati
+    // To be added soon for more accurate and detailed data per house.
+    kidsMale: "" as unknown as number,
+    kidsFemale: "" as unknown as number,
+    adultMale: "" as unknown as number,
+    adultFemale: "" as unknown as number,
+    dateOccupied: undefined, // Will be set only if status is Ditempati/Sewa
+  };
 const INITIAL_ERRORS = {
   name: null,
   gender: null,
@@ -54,6 +54,12 @@ const INITIAL_ERRORS = {
   houseStatus: null,
   dateOccupied: null,
 };
+
+const DatePlaceholder = () => (
+  <Text className="text-gray-400 italic mt-2 text-xs ml-1">
+    * Pilih tanggal sesuai perkiraan penghuni masuk.
+  </Text>
+);
 
 export default function DataEntryScreen() {
   const router = useRouter();
@@ -71,9 +77,25 @@ export default function DataEntryScreen() {
     // console.log("Form Resetted !");
   };
 
-  const handleChange = (key: keyof typeof initialFormState, value: any) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
-  };
+  const handleChange = useCallback((key: keyof typeof initialFormState, value: any) => {
+    setFormData((prev) => {
+      const newState = { ...prev, [key]: value };
+
+      // Auto-sum adult and kids totals from specific gender and age inputs
+      if (key === "adultMale" || key === "adultFemale") {
+        newState.adultTotal =
+          (parseInt(String(newState.adultMale)) || 0) +
+          (parseInt(String(newState.adultFemale)) || 0);
+      }
+      if (key === "kidsMale" || key === "kidsFemale") {
+        newState.kidsTotal =
+          (parseInt(String(newState.kidsMale)) || 0) +
+          (parseInt(String(newState.kidsFemale)) || 0);
+      }
+
+      return newState;
+    });
+  }, []);
 
   const handleSave = async () => {
     const housePrefix = formData.housePrefix.toUpperCase().trim();
@@ -83,7 +105,7 @@ export default function DataEntryScreen() {
     if (!housePrefix || !houseSuffix || !formData.street || !formData.name) {
       showErrorToast(
         "Validation Failed",
-        "Please fill in Name, House ID, and Street."
+        "Please fill in Name, House ID, and Street.",
       );
       return;
     }
@@ -97,7 +119,7 @@ export default function DataEntryScreen() {
       if (exists) {
         showErrorToast(
           "Sudah Terdata!",
-          `Rumah ${combinedHouseId} sudah terdata di sistem. Mohon cek kembali.`
+          `Rumah ${combinedHouseId} sudah terdata di sistem. Mohon cek kembali.`,
         );
         setLoading(false);
         return;
@@ -105,7 +127,7 @@ export default function DataEntryScreen() {
     } catch (error: any) {
       showErrorToast(
         "Database Error: ",
-        error.message || "Gagal menghubungi database server!"
+        error.message || "Gagal menghubungi database server!",
       );
       setLoading(false);
       return;
@@ -124,10 +146,10 @@ export default function DataEntryScreen() {
         houseId: combinedHouseId,
         housePrefix: housePrefix,
         houseSuffix: houseSuffix,
-        kidsMale: formData.kidsMale,
-        kidsFemale: formData.kidsFemale,
-        adultMale: formData.adultMale,
-        adultFemale: formData.adultFemale,
+        kidsMale: parseInt(String(formData.kidsMale)) || 0,
+        kidsFemale: parseInt(String(formData.kidsFemale)) || 0,
+        adultMale: parseInt(String(formData.adultMale)) || 0,
+        adultFemale: parseInt(String(formData.adultFemale)) || 0,
         dateOccupied:
           formData.dateOccupied instanceof Date
             ? formData.dateOccupied
@@ -146,12 +168,12 @@ export default function DataEntryScreen() {
           name: formData.name,
           street: formData.street,
           houseStatus: formData.houseStatus,
-        }
+        },
       );
 
       showSuccessToast(
         "Berhasil",
-        `Data Hunian ${combinedHouseId} telah tersimpan.`
+        `Data Hunian ${combinedHouseId} telah tersimpan.`,
       );
 
       // Reset form or navigate away
@@ -161,19 +183,41 @@ export default function DataEntryScreen() {
       console.error("Save Error:", error);
       showErrorToast(
         "Gagal Menyimpan",
-        "Terjadi kesalahan saat menyimpan data. Hubungi Admin."
+        "Terjadi kesalahan saat menyimpan data. Hubungi Admin.",
       );
     } finally {
       setLoading(false);
     }
   };
 
-  // Helper for Date input (we'll simplify this for now without a date picker)
-  const DatePlaceholder = () => (
-    <Text className="text-gray-400 italic mt-2 text-xs ml-1">
-      * Pilih tanggal sesuai perkiraan penghuni masuk.
-    </Text>
-  );
+  const handleNameChange = useCallback((value: string) => handleChange("name", value), [handleChange]);
+  const handleHousePrefixChange = useCallback((value: string) => handleChange("housePrefix", value.toUpperCase()), [handleChange]);
+  const handleHouseSuffixChange = useCallback((value: string) => handleChange("houseSuffix", value), [handleChange]);
+  const handleStreetChange = useCallback((value: string) => handleChange("street", value), [handleChange]);
+  const handleHouseStatusChange = useCallback((status: string) => handleChange("houseStatus", status), [handleChange]);
+  const handleGenderChange = useCallback((gender: string) => handleChange("gender", gender), [handleChange]);
+  const handleDomicileChange = useCallback((status: string) => handleChange("domicile", status), [handleChange]);
+  const handleDateOccupiedChange = useCallback((date: Date | string) => handleChange("dateOccupied", date), [handleChange]);
+
+  const handleAdultMaleChange = useCallback((value: string) => {
+    const numericValue = value.replace(/[^0-9]/g, '');
+    handleChange("adultMale", numericValue === '' ? '' : parseInt(numericValue, 10));
+  }, [handleChange]);
+
+  const handleAdultFemaleChange = useCallback((value: string) => {
+    const numericValue = value.replace(/[^0-9]/g, '');
+    handleChange("adultFemale", numericValue === '' ? '' : parseInt(numericValue, 10));
+  }, [handleChange]);
+
+  const handleKidsMaleChange = useCallback((value: string) => {
+    const numericValue = value.replace(/[^0-9]/g, '');
+    handleChange("kidsMale", numericValue === '' ? '' : parseInt(numericValue, 10));
+  }, [handleChange]);
+
+  const handleKidsFemaleChange = useCallback((value: string) => {
+    const numericValue = value.replace(/[^0-9]/g, '');
+    handleChange("kidsFemale", numericValue === '' ? '' : parseInt(numericValue, 10));
+  }, [handleChange]);
 
   const keyboardVerticalOffset = Platform.OS === "android" ? 75 : 100;
 
@@ -225,7 +269,7 @@ export default function DataEntryScreen() {
                 <FormInput
                   label="Nama Penghuni"
                   value={formData.name}
-                  onChangeText={(value) => handleChange("name", value)}
+                  onChangeText={handleNameChange}
                   placeholder="Contoh: Budi Santoso"
                   keyboardType="default"
                   icon={
@@ -241,12 +285,13 @@ export default function DataEntryScreen() {
                   {["Kosong", "Ditempati", "Sewa"].map((status) => (
                     <Pressable
                       key={status}
-                      onPress={() => handleChange("houseStatus", status)}
+                      onPress={() => handleHouseStatusChange(status)}
                       className={`flex-1 p-3 rounded-xl border items-center justify-center shadow-sm
-                    ${formData.houseStatus === status
-                          ? "bg-indigo-600 border-indigo-600 shadow-indigo-200"
-                          : "bg-white border-gray-200"
-                        }`}
+                    ${
+                      formData.houseStatus === status
+                        ? "bg-indigo-600 border-indigo-600 shadow-indigo-200"
+                        : "bg-white border-gray-200"
+                    }`}
                     >
                       <Text
                         className={`font-bold text-sm ${formData.houseStatus === status ? "text-white" : "text-gray-600"}`}
@@ -265,9 +310,7 @@ export default function DataEntryScreen() {
                         <FormInput
                           label="Blok"
                           value={formData.housePrefix}
-                          onChangeText={(value) =>
-                            handleChange("housePrefix", value.toUpperCase())
-                          }
+                          onChangeText={handleHousePrefixChange}
                           placeholder="C28"
                           labelStyle="text-center"
                           keyboardType="default"
@@ -278,9 +321,7 @@ export default function DataEntryScreen() {
                         <FormInput
                           label="Nomor"
                           value={formData.houseSuffix}
-                          onChangeText={(value) =>
-                            handleChange("houseSuffix", value)
-                          }
+                          onChangeText={handleHouseSuffixChange}
                           placeholder="20"
                           labelStyle="text-center"
                           keyboardType="decimal-pad"
@@ -296,7 +337,7 @@ export default function DataEntryScreen() {
                       label="Jalan (Gang)"
                       options={STREET_OPTIONS}
                       selectedValue={formData.street}
-                      onValueChange={(value) => handleChange("street", value)}
+                      onValueChange={handleStreetChange}
                       horizontal={true}
                     />
                   </View>
@@ -305,143 +346,133 @@ export default function DataEntryScreen() {
                 {/* Conditional Logic: Only show Gender/Totals if NOT Kosong */}
                 {(formData.houseStatus === "Ditempati" ||
                   formData.houseStatus === "Sewa") && (
-                    <Animated.View entering={FadeInDown.duration(400)}>
-                      <Text className="font-semibold text-gray-700 mt-4 mb-3 ml-1">
-                        Jenis Kelamin Penghuni
-                      </Text>
-                      <View className="flex-row gap-3 mb-6">
-                        {["Pria", "Wanita"].map((gender) => (
-                          <Pressable
-                            key={gender}
-                            onPress={() => handleChange("gender", gender)}
-                            className={`flex-1 p-4 rounded-xl border flex-row items-center justify-center gap-2
+                  <Animated.View entering={FadeInDown.duration(400)}>
+                    <Text className="font-semibold text-gray-700 mt-4 mb-3 ml-1">
+                      Jenis Kelamin Penghuni
+                    </Text>
+                    <View className="flex-row gap-3 mb-6">
+                      {["Pria", "Wanita"].map((gender) => (
+                        <Pressable
+                          key={gender}
+                          onPress={() => handleGenderChange(gender)}
+                          className={`flex-1 p-4 rounded-xl border flex-row items-center justify-center gap-2
                                   ${formData.gender === gender ? "bg-indigo-50 border-indigo-500" : "bg-white border-gray-200"}`}
+                        >
+                          <Ionicons
+                            name={gender === "Pria" ? "male" : "female"}
+                            size={18}
+                            color={
+                              formData.gender === gender ? "#4F46E5" : "#6B7280"
+                            }
+                          />
+                          <Text
+                            className={`font-semibold ${formData.gender === gender ? "text-indigo-700" : "text-gray-600"}`}
                           >
-                            <Ionicons
-                              name={gender === "Pria" ? "male" : "female"}
-                              size={18}
-                              color={
-                                formData.gender === gender ? "#4F46E5" : "#6B7280"
-                              }
-                            />
-                            <Text
-                              className={`font-semibold ${formData.gender === gender ? "text-indigo-700" : "text-gray-600"}`}
-                            >
-                              {gender}
-                            </Text>
-                          </Pressable>
-                        ))}
-                      </View>
+                            {gender}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
 
-                      {/* Totals */}
-                      <View className="bg-gray-50 p-4 rounded-2xl border border-gray-100 mb-4">
-                        <Text className="text-center font-bold text-gray-700 mb-4">
-                          Total Penghuni Rumah
+                    {/* Totals */}
+                    <View className="bg-gray-50 p-4 rounded-2xl border border-gray-100 mb-4">
+                      <Text className="text-center font-bold text-gray-700 mb-4">
+                        Total Penghuni Rumah
+                      </Text>
+                      <View className="flex-row gap-4 mb-4">
+                        <View className="flex-1">
+                          <FormInput
+                            label="Dewasa"
+                            value={String(formData.adultTotal)}
+                            onChangeText={() => {}}
+                            placeholder="0"
+                            keyboardType="numeric"
+                            labelStyle="text-center text-gray-500"
+                            style="text-center bg-gray-100 text-gray-500"
+                            editable={false}
+                          />
+                        </View>
+                        <View className="flex-1">
+                          <FormInput
+                            label="Anak-anak"
+                            value={String(formData.kidsTotal)}
+                            onChangeText={() => {}}
+                            placeholder="0"
+                            keyboardType="numeric"
+                            labelStyle="text-center text-gray-500"
+                            style="text-center bg-gray-100 text-gray-500"
+                            editable={false}
+                          />
+                        </View>
+                      </View>
+                      <View>
+                        <Text className="text-center text-xs font-medium border-1 border-b pb-2">
+                          Jumlah Penghuni Berdasarkan Jenis Kelamin
                         </Text>
                         <View className="flex-row gap-4">
-                          <View className="flex-1">
-                            <FormInput
-                              label="Dewasa"
-                              value={String(formData.adultTotal)}
-                              onChangeText={(value) =>
-                                handleChange("adultTotal", value)
-                              }
-                              placeholder="0"
-                              keyboardType="numeric"
-                              labelStyle="text-center"
-                              style="text-center bg-white"
-                            />
-                          </View>
-                          <View className="flex-1">
-                            <FormInput
-                              label="Anak-anak"
-                              value={String(formData.kidsTotal)}
-                              onChangeText={(value) =>
-                                handleChange("kidsTotal", value)
-                              }
-                              placeholder="0"
-                              keyboardType="numeric"
-                              labelStyle="text-center"
-                              style="text-center bg-white"
-                            />
-                          </View>
-                        </View>
-                        <View>
-                          <Text className="text-center text-xs font-medium border-1 border-b pb-2">
-                            Jumlah Penghuni Berdasarkan Jenis Kelamin
-                          </Text>
-                          <View className="flex-row gap-4">
-                            <View className="flex-1 border-gray-200 border-2 rounded-md p-1 mt-2">
-                              <Text className="text-md pt-1 pb-2 text-center font-medium">
-                                Dewasa
-                              </Text>
-                              <View className="flex-row gap-2">
-                                <View className="flex-1">
-                                  <FormInput
-                                    label="Pria"
-                                    value={String(formData.adultMale)}
-                                    onChangeText={(value) =>
-                                      handleChange("adultMale", value)
-                                    }
-                                    placeholder="0"
-                                    keyboardType="numeric"
-                                    labelStyle="text-center text-xs"
-                                    style="bg-white"
-                                  />
-                                </View>
-                                <View className="flex-1">
-                                  <FormInput
-                                    label="Wanita"
-                                    value={String(formData.adultFemale)}
-                                    onChangeText={(value) =>
-                                      handleChange("adultFemale", value)
-                                    }
-                                    placeholder="0"
-                                    keyboardType="numeric"
-                                    labelStyle="text-center text-xs"
-                                    style="bg-white"
-                                  />
-                                </View>
+                          <View className="flex-1 border-gray-200 border-2 rounded-md p-1 mt-2">
+                            <Text className="text-md pt-1 pb-2 text-center font-medium">
+                              Dewasa
+                            </Text>
+                            <View className="flex-row gap-2">
+                              <View className="flex-1">
+                                <FormInput
+                                  label="Pria"
+                                  value={formData.adultMale === ("" as any) ? "" : String(formData.adultMale)}
+                                  onChangeText={handleAdultMaleChange}
+                                  placeholder="0"
+                                  keyboardType="numeric"
+                                  labelStyle="text-center text-xs"
+                                  style="bg-white"
+                                />
+                              </View>
+                              <View className="flex-1">
+                                <FormInput
+                                  label="Wanita"
+                                  value={formData.adultFemale === ("" as any) ? "" : String(formData.adultFemale)}
+                                  onChangeText={handleAdultFemaleChange}
+                                  placeholder="0"
+                                  keyboardType="numeric"
+                                  labelStyle="text-center text-xs"
+                                  style="bg-white"
+                                />
                               </View>
                             </View>
-                            <View className="flex-1 border-gray-200 border-2 rounded-md p-1 mt-2">
-                              <Text className="text-md pt-1 pb-2 text-center font-medium">
-                                Anak-Anak
-                              </Text>
-                              <View className="flex-row gap-2">
-                                <View className="flex-1">
-                                  <FormInput
-                                    label="Laki-Laki"
-                                    value={String(formData.kidsMale)}
-                                    onChangeText={(value) =>
-                                      handleChange("kidsMale", value)
-                                    }
-                                    placeholder="0"
-                                    keyboardType="numeric"
-                                    labelStyle="text-center text-xs"
-                                    style="bg-white"
-                                  />
-                                </View>
-                                <View className="flex-1">
-                                  <FormInput
-                                    label="Perempuan"
-                                    value={String(formData.kidsFemale)}
-                                    onChangeText={(value) =>
-                                      handleChange("kidsFemale", value)
-                                    }
-                                    placeholder="0"
-                                    keyboardType="numeric"
-                                    labelStyle="text-center text-xs"
-                                    style="bg-white"
-                                  />
-                                </View>
+                          </View>
+                          <View className="flex-1 border-gray-200 border-2 rounded-md p-1 mt-2">
+                            <Text className="text-md pt-1 pb-2 text-center font-medium">
+                              Anak-Anak
+                            </Text>
+                            <View className="flex-row gap-2">
+                              <View className="flex-1">
+                                <FormInput
+                                  label="Laki-Laki"
+                                  value={formData.kidsMale === ("" as any) ? "" : String(formData.kidsMale)}
+                                  onChangeText={handleKidsMaleChange}
+                                  placeholder="0"
+                                  keyboardType="numeric"
+                                  labelStyle="text-center text-xs"
+                                  style="bg-white"
+                                />
+                              </View>
+                              <View className="flex-1">
+                                <FormInput
+                                  label="Perempuan"
+                                  value={formData.kidsFemale === ("" as any) ? "" : String(formData.kidsFemale)}
+                                  onChangeText={handleKidsFemaleChange}
+                                  placeholder="0"
+                                  keyboardType="numeric"
+                                  labelStyle="text-center text-xs"
+                                  style="bg-white"
+                                />
                               </View>
                             </View>
                           </View>
                         </View>
                       </View>
-                    </Animated.View>
-                  )}
+                    </View>
+                  </Animated.View>
+                )}
 
                 {/* Date Occupied Input */}
                 <View className="mt-2">
@@ -452,7 +483,7 @@ export default function DataEntryScreen() {
                         ? formData.dateOccupied
                         : undefined
                     }
-                    onChange={(date) => handleChange("dateOccupied", date)}
+                    onChange={handleDateOccupiedChange}
                     className="mb-0"
                     maxDate={new Date()}
                   />
@@ -467,7 +498,7 @@ export default function DataEntryScreen() {
                   {["Gunung Sari", "Lainnya"].map((domicileStatus) => (
                     <Pressable
                       key={domicileStatus}
-                      onPress={() => handleChange("domicile", domicileStatus)}
+                      onPress={() => handleDomicileChange(domicileStatus)}
                       className={`px-4 py-3 rounded-xl border flex-row items-center gap-2
                           ${formData.domicile === domicileStatus ? "bg-indigo-600 border-indigo-600" : "bg-white border-gray-200"}`}
                     >

@@ -143,6 +143,27 @@ export const generateRecordsReportHtml = (
   const avgResidents =
     occupiedCount > 0 ? (totalPopulation / occupiedCount).toFixed(1) : "0";
 
+  // Group Records by Street (used by both Monthly and Detailed reports)
+  const needsStreetGrouping = isMonthly || reportType === "detailed";
+  const recordsByStreet = new Map<string, PopulationRecord[]>();
+  let distinctStreets: string[] = [];
+
+  if (needsStreetGrouping) {
+    filteredRecords.forEach((r) => {
+      if (!recordsByStreet.has(r.street)) recordsByStreet.set(r.street, []);
+      recordsByStreet.get(r.street)!.push(r);
+    });
+
+    distinctStreets = Array.from(recordsByStreet.keys()).sort((a, b) => {
+      const idxA = STREET_OPTIONS.indexOf(a);
+      const idxB = STREET_OPTIONS.indexOf(b);
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return a.localeCompare(b);
+    });
+  }
+
   const summarySection = `
     <div class="summary-container">
       <!-- Card 1: Demografi Warga -->
@@ -185,52 +206,120 @@ export const generateRecordsReportHtml = (
          <div class="summary-title">Statistik Hunian & Warga</div>
          <table class="report-table no-border">
             <tr>
-                <td class="label-cell">Total Hunian</td>
-                <td class="num-cell strong">${totalHouses} Unit</td>
+                <td class="label-cell" style="padding-left: 5px;">Total Hunian</td>
+                <td class="num-cell strong" style="padding-right: 2px;">${totalHouses} Unit</td>
             </tr>
             <tr>
                 <td class="label-cell" style="padding-left: 10px; color: #555;">• Ditempati (Milik)</td>
-                <td class="num-cell">${stats.housesOccupied}</td>
+                <td class="num-cell" style="padding-right: 2px;">${stats.housesOccupied}</td>
             </tr>
              <tr>
                 <td class="label-cell" style="padding-left: 10px; color: #555;">• Disewa / Kontrak</td>
-                <td class="num-cell">${stats.housesRented}</td>
+                <td class="num-cell" style="padding-right: 2px;">${stats.housesRented}</td>
             </tr>
              <tr>
                 <td class="label-cell" style="padding-left: 10px; color: #888;">• Kosong</td>
-                <td class="num-cell text-muted">${stats.housesEmpty}</td>
+                <td class="num-cell text-muted" style="padding-right: 2px;">${stats.housesEmpty}</td>
             </tr>
             <tr class="highlight-row">
-                <td class="label-cell" style="padding-top: 10px;">Rata-rata Warga / Rumah</td>
-                <td class="num-cell strong" style="padding-top: 10px;">${avgResidents}</td>
+                <td class="label-cell" style="padding-top: 10px; padding-left: 5px;">Rata-Rata Penghuni / Rumah</td>
+                <td class="num-cell strong" style="padding-top: 10px; padding-right: 2px;">${avgResidents}</td>
             </tr>
          </table>
-      </div>
+       </div>
     </div>
   `;
+
+  // 2.5 Generate Per-Street Summary Table (Only for Monthly Report)
+  let streetSummarySection = "";
+  if (isMonthly) {
+    let streetRows = "";
+    let totalSOccupied = 0;
+    let totalSRented = 0;
+    let totalSEmpty = 0;
+    let totalSAdults = 0;
+    let totalSKids = 0;
+
+    distinctStreets.forEach((currentStreet) => {
+      const sRecords = recordsByStreet.get(currentStreet) || [];
+
+      const sStats = sRecords.reduce(
+        (acc, r) => {
+          acc.adults += (r.adultMale || 0) + (r.adultFemale || 0);
+          acc.kids += (r.kidsMale || 0) + (r.kidsFemale || 0);
+          if (r.houseStatus === "Ditempati") acc.occupied++;
+          else if (r.houseStatus === "Sewa") acc.rented++;
+          else if (r.houseStatus === "Kosong") acc.empty++;
+          return acc;
+        },
+        { adults: 0, kids: 0, occupied: 0, rented: 0, empty: 0 },
+      );
+
+      totalSAdults += sStats.adults;
+      totalSKids += sStats.kids;
+      totalSOccupied += sStats.occupied;
+      totalSRented += sStats.rented;
+      totalSEmpty += sStats.empty;
+
+      streetRows += `
+        <tr>
+          <td class="label-cell" style="text-align:center;">${currentStreet}</td>
+          <td class="num-cell" style="text-align:center;">${sStats.adults}</td>
+          <td class="num-cell" style="text-align:center;">${sStats.kids}</td>
+          <td class="num-cell strong" style="text-align:center;">${sStats.adults + sStats.kids}</td>
+          <td class="num-cell" style="text-align:center; border-left: 1px solid #e5e7eb;">${sStats.occupied}</td>
+          <td class="num-cell" style="text-align:center;">${sStats.rented}</td>
+          <td class="num-cell text-muted" style="text-align:center;">${sStats.empty}</td>
+          <td class="num-cell strong" style="text-align:center;">${sStats.occupied + sStats.rented + sStats.empty}</td>
+        </tr>
+      `;
+    });
+
+    streetSummarySection = `
+      <div class="summary-card" style="margin-bottom: 40px;">
+        <div class="summary-title" style="text-align:center;">Rekapitulasi Demografi & Hunian per Jalan</div>
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th rowspan="2" style="vertical-align:middle; border-right: 1px solid #e5e7eb;">Nama Jalan</th>
+              <th colspan="3" style="text-align:center; border-bottom: 1px solid #e5e7eb;">Populasi Warga</th>
+              <th colspan="4" style="text-align:center; border-left: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb;">Status Hunian (Unit)</th>
+            </tr>
+            <tr>
+              <th style="width:10%;">Dewasa</th>
+              <th style="width:10%;">Anak</th>
+              <th style="width:12%;">Total</th>
+              <th style="width:10%; border-left: 1px solid #e5e7eb;">Milik</th>
+              <th style="width:10%;">Sewa</th>
+              <th style="width:10%;">Kosong</th>
+              <th style="width:12%;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${streetRows}
+          </tbody>
+          <tfoot>
+             <tr class="total-row">
+                <td class="label-cell" style="text-align:center; border-right: 1px solid #e5e7eb;">Total Keseluruhan</td>
+                <td class="num-cell" style="text-align:center;">${totalSAdults}</td>
+                <td class="num-cell" style="text-align:center;">${totalSKids}</td>
+                <td class="num-cell strong" style="text-align:center;">${totalSAdults + totalSKids}</td>
+                <td class="num-cell" style="text-align:center; border-left: 1px solid #e5e7eb;">${totalSOccupied}</td>
+                <td class="num-cell" style="text-align:center;">${totalSRented}</td>
+                <td class="num-cell" style="text-align:center;">${totalSEmpty}</td>
+                <td class="num-cell strong" style="text-align:center;">${totalSOccupied + totalSRented + totalSEmpty}</td>
+             </tr>
+          </tfoot>
+        </table>
+      </div>
+    `;
+  }
 
   // 3. Generate Tables (if detailed)
   let tablesHtml = "";
   if (reportType === "detailed") {
-    // Dynamically identify which streets are present in the filtered records
-    const distinctStreets = Array.from(
-      new Set(filteredRecords.map((r) => r.street)),
-    );
-
-    // Sort streets
-    distinctStreets.sort((a, b) => {
-      const idxA = STREET_OPTIONS.indexOf(a);
-      const idxB = STREET_OPTIONS.indexOf(b);
-      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-      if (idxA !== -1) return -1;
-      if (idxB !== -1) return 1;
-      return a.localeCompare(b);
-    });
-
     distinctStreets.forEach((currentStreet) => {
-      const streetRecords = filteredRecords.filter(
-        (r) => r.street === currentStreet,
-      );
+      const streetRecords = recordsByStreet.get(currentStreet) || [];
 
       if (streetRecords.length > 0) {
         streetRecords.sort((a, b) =>
@@ -323,12 +412,17 @@ export const generateRecordsReportHtml = (
   }`;
 
   const monthYearStr = format(new Date(), "MMMM yyyy", { locale: id });
-  let reportTitle = isMonthly
+  const baseTitle = isMonthly
     ? `Laporan Bulanan Warga - ${monthYearStr}`
     : "Laporan Data Warga Populite";
 
+  let documentTitle = baseTitle;
+  let headerTitleHtml = escapeHtml(baseTitle);
+
   if (isMonthly && revisionNumber && revisionNumber.trim() !== "") {
-    reportTitle += ` (Revisi ${revisionNumber.trim()})`;
+    const revText = `(Revisi ${revisionNumber.trim()})`;
+    documentTitle += ` ${revText}`;
+    headerTitleHtml += `<br>${escapeHtml(revText)}`;
   }
 
   return `
@@ -336,7 +430,7 @@ export const generateRecordsReportHtml = (
     <html>
       <head>
         <meta charset="utf-8">
-        <title>${escapeHtml(reportTitle)} - ${dateStr}</title>
+        <title>${escapeHtml(documentTitle)} - ${dateStr}</title>
         <style>
           body { font-family: 'Helvetica', 'Arial', sans-serif; padding: 20px; color: #333; }
           h1 { text-align: center; color: #4F46E5; margin-bottom: 5px; }
@@ -372,11 +466,12 @@ export const generateRecordsReportHtml = (
         </style>
       </head>
       <body>
-        <h1>${escapeHtml(reportTitle)}</h1>
+        <h1>${headerTitleHtml}</h1>
         <h2>${filterDesc}</h2>
         
         <h3 style="font-size:14px; margin-bottom:10px; color:#333; border-left:4px solid #4F46E5; padding-left:10px;">Ringkasan Eksekutif</h3>
         ${summarySection}
+        ${streetSummarySection}
         
         ${reportType === "detailed" ? `<h3 style="font-size:14px; margin-bottom:10px; color:#333; border-left:4px solid #4F46E5; padding-left:10px;">Rincian Data</h3>` : ""}
         ${tablesHtml}

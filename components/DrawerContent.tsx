@@ -155,7 +155,7 @@ export function CustomDrawerContent(props: DrawerContentComponentProps) {
 
         <View className="mt-4 items-center">
           <Text className="text-xs text-gray-400 font-medium">
-            Populite v2.0.1
+            Populite v2.0.2
           </Text>
           <Text className="text-[10px] text-gray-300 mt-1">
             Built with 🧠 + 🤖 by PicuPiee
