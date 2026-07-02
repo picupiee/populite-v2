@@ -385,28 +385,28 @@ export default function DataViewListScreen() {
             {/* Monthly Report Button */}
             <Pressable
               onPress={() => setIsPrintModalVisible(true)}
-              className="px-3 py-2 flex-row items-center bg-purple-50 border border-purple-200 rounded-lg active:opacity-80"
+              className="px-3 py-2 flex-row items-center bg-green-50 border border-green-200 rounded-lg active:opacity-80"
             >
               <Ionicons
                 name="list-outline"
                 size={18}
-                color="#7E22CE"
+                color="#22C55E"
               />
-              <Text className="ml-1 text-xs font-semibold text-purple-700 hidden sm:flex">
+              <Text className="ml-1 text-xs font-semibold text-green-700 hidden sm:flex">
                 Cetak Daftar Warga
               </Text>
             </Pressable>
 
             <Pressable
               onPress={() => setIsMonthlyModalVisible(true)}
-              className="px-3 py-2 flex-row items-center bg-purple-50 border border-purple-200 rounded-lg active:opacity-80"
+              className="px-3 py-2 flex-row items-center bg-blue-50 border border-blue-200 rounded-lg active:opacity-80"
             >
               <Ionicons
                 name="document-text-outline"
                 size={18}
-                color="#7E22CE"
+                color="#60A5FA"
               />
-              <Text className="ml-1 text-xs font-semibold text-purple-700 hidden sm:flex">
+              <Text className="ml-1 text-xs font-semibold text-blue-700 hidden sm:flex">
                 Laporan Bulanan
               </Text>
             </Pressable>

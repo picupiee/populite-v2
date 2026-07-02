@@ -33,7 +33,7 @@ export default function DashboardLayout() {
         options={{
           title: "Beranda",
           drawerIcon: ({ color }) => (
-            <Ionicons name="home-outline" size={24} color={color} />
+            <Ionicons name="home-outline" size={24} color={color} style={{ marginRight: 8 }} />
           ),
         }}
       />
@@ -42,7 +42,7 @@ export default function DashboardLayout() {
         options={{
           title: "Pendataan Warga Baru",
           drawerIcon: ({ color }) => (
-            <Ionicons name="create-outline" size={24} color={color} />
+            <Ionicons name="create-outline" size={24} color={color} style={{ marginRight: 8 }} />
           ),
         }}
       />
@@ -51,7 +51,7 @@ export default function DashboardLayout() {
         options={{
           title: "Data Warga",
           drawerIcon: ({ color }) => (
-            <Ionicons name="people-outline" size={24} color={color} />
+            <Ionicons name="people-outline" size={24} color={color} style={{ marginRight: 8 }} />
           ),
         }}
       />
@@ -60,7 +60,7 @@ export default function DashboardLayout() {
         options={{
           title: "Keuangan",
           drawerIcon: ({ color }) => (
-            <Ionicons name="cash-outline" size={24} color={color} />
+            <Ionicons name="cash-outline" size={24} color={color} style={{ marginRight: 8 }} />
           ),
         }}
       />
@@ -69,7 +69,7 @@ export default function DashboardLayout() {
         options={{
           title: "Agenda / Kegiatan",
           drawerIcon: ({ color }) => (
-            <Ionicons name="radio-outline" size={24} color={color} />
+            <Ionicons name="radio-outline" size={24} color={color} style={{ marginRight: 8 }} />
           ),
         }}
       />
@@ -78,7 +78,7 @@ export default function DashboardLayout() {
         options={{
           title: "Settings",
           drawerIcon: ({ color }) => (
-            <Ionicons name="settings-outline" size={24} color={color} />
+            <Ionicons name="settings-outline" size={24} color={color} style={{ marginRight: 8 }} />
           ),
         }}
       />

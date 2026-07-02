@@ -3,23 +3,23 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    RefreshControl,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 // Data and Hooks
+import MonthlyReportModal from "@/components/print/MonthlyReportModal";
 import { PopulationRecord } from "@/constants/data";
 import { useAuth } from "@/context/AuthProvider";
 import { usePopulationRecordsListener } from "@/hooks/usePopulationRecordsListener"; // Stable List Listener
 import { useToastService } from "@/hooks/useToastService";
-import MonthlyReportModal from "@/components/print/MonthlyReportModal";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 // --- Interfaces and Calculation Logic ---
 
@@ -59,22 +59,17 @@ const calculateSummary = (records: PopulationRecord[]): SummaryData => {
       summary.statusCounts[status] = (summary.statusCounts[status] || 0) + 1;
     }
 
-    // Calculate Total Population (only if occupied)
-    if (status === "Ditempati" || status === "Sewa") {
-      const adults = Number(record.adultTotal) || 0;
-      const kids = Number(record.kidsTotal) || 0;
-
-      summary.adultTotal += adults;
-      summary.kidsTotal += kids;
-
-      summary.adultMale += Number(record.adultMale) || 0;
-      summary.adultFemale += Number(record.adultFemale) || 0;
-      summary.kidsMale += Number(record.kidsMale) || 0;
-      summary.kidsFemale += Number(record.kidsFemale) || 0;
-
-      summary.totalPopulation += adults + kids;
-    }
+    // Accumulate demographics exactly like the monthly report generator
+    summary.adultMale += Number(record.adultMale) || 0;
+    summary.adultFemale += Number(record.adultFemale) || 0;
+    summary.kidsMale += Number(record.kidsMale) || 0;
+    summary.kidsFemale += Number(record.kidsFemale) || 0;
   });
+
+  // Derive totals from the gender breakdowns to ensure consistency with the PDF
+  summary.adultTotal = summary.adultMale + summary.adultFemale;
+  summary.kidsTotal = summary.kidsMale + summary.kidsFemale;
+  summary.totalPopulation = summary.adultTotal + summary.kidsTotal;
 
   return summary;
 };
@@ -90,6 +85,7 @@ const Card = ({
   delay = 0,
   maleCount,
   femaleCount,
+  ping = false,
 }: {
   title: string;
   value: string;
@@ -99,6 +95,7 @@ const Card = ({
   delay?: number;
   maleCount?: number;
   femaleCount?: number;
+  ping?: boolean;
 }) => (
   <Animated.View
     entering={FadeInDown.delay(delay).duration(600).springify()}
@@ -109,8 +106,13 @@ const Card = ({
     >
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center">
-          <View className="bg-white/20 p-2 rounded-full">
-            <Ionicons name={icon as any} size={24} color={iconColor} />
+          <View className="relative">
+            {ping && (
+              <View className="absolute inset-0 rounded-full bg-white/40 animate-ping" />
+            )}
+            <View className="bg-white/20 p-2 rounded-full relative z-10">
+              <Ionicons name={icon as any} size={24} color={iconColor} />
+            </View>
           </View>
           <Text
             className={`text-sm font-semibold ml-2 ${iconColor === "#fff" ? "text-white" : "text-gray-700"}`}
@@ -148,12 +150,14 @@ const StatusCard = ({
   total,
   color,
   delay = 0,
+  ping = false,
 }: {
   status: string;
   count: number;
   total: number;
   color: string;
   delay?: number;
+  ping?: boolean
 }) => {
   const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : "0.0";
   return (
@@ -244,7 +248,7 @@ export default function SummaryScreen() {
 
   const handleGenerateMonthlyReport = async (revisionNumber?: string) => {
     setIsMonthlyModalVisible(false);
-    
+
     if (!summary || !records) {
       showErrorToast("Error", "Data ringkasan belum tersedia.");
       return;
@@ -252,7 +256,7 @@ export default function SummaryScreen() {
 
     try {
       const username = userProfile?.fullName || userProfile?.username || "Admin";
-      
+
       // Calculate Exact Stats for Firestore Metrics
       const allRecords = records || [];
       const stats = allRecords.reduce(
@@ -261,11 +265,11 @@ export default function SummaryScreen() {
           acc.adultFemale += r.adultFemale || 0;
           acc.kidsMale += r.kidsMale || 0;
           acc.kidsFemale += r.kidsFemale || 0;
-          
+
           if (r.houseStatus === "Ditempati") acc.housesOccupied++;
           else if (r.houseStatus === "Sewa") acc.housesRented++;
           else if (r.houseStatus === "Kosong") acc.housesEmpty++;
-          
+
           return acc;
         },
         {
@@ -278,7 +282,7 @@ export default function SummaryScreen() {
           housesEmpty: 0,
         }
       );
-      
+
       const totalAdults = stats.adultMale + stats.adultFemale;
       const totalKids = stats.kidsMale + stats.kidsFemale;
       const totalMale = stats.adultMale + stats.kidsMale;
@@ -309,17 +313,17 @@ export default function SummaryScreen() {
 
       // Generate HTML & Print
       const options = {
-         street: ["Semua"],
-         populationFilter: "all" as any,
-         reportType: "summary" as any,
-         hideNames: false,
-         isMonthly: true,
-         revisionNumber,
+        street: ["Semua"],
+        populationFilter: "all" as any,
+        reportType: "summary" as any,
+        hideNames: false,
+        isMonthly: true,
+        revisionNumber,
       };
 
       const { generateRecordsReportHtml, printHtmlReport } = await import("@/utils/recordsPdf");
       const html = generateRecordsReportHtml(allRecords, options, username);
-      
+
       const monthYearStr = now.toLocaleDateString("id-ID", { month: "long", year: "numeric" });
       let title = `Laporan Bulanan Warga - ${monthYearStr}`;
       if (revisionNumber && revisionNumber.trim() !== "") {
@@ -328,8 +332,8 @@ export default function SummaryScreen() {
 
       await printHtmlReport(html, title);
     } catch (error) {
-       console.error("Monthly Print Error:", error);
-       showErrorToast("Error", "Gagal membuat laporan bulanan.");
+      console.error("Monthly Print Error:", error);
+      showErrorToast("Error", "Gagal membuat laporan bulanan.");
     }
   };
 
@@ -508,6 +512,7 @@ export default function SummaryScreen() {
               color="bg-emerald-500"
               iconColor="#fff"
               delay={400}
+              ping={true}
             />
 
             {/* Status Breakdown */}
@@ -521,6 +526,7 @@ export default function SummaryScreen() {
                 total={summary.totalRecords}
                 color="text-green-600"
                 delay={500}
+                ping={true}
               />
               <StatusCard
                 status="Sewa"

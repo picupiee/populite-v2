@@ -10,7 +10,7 @@ import { useToastService } from "@/hooks/useToastService";
 import { checkHouseIdExists } from "@/utils/populationService";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -69,6 +69,14 @@ export default function DataEntryScreen() {
   const [formData, setFormData] = useState(initialFormState);
   const [errors, setErrors] = useState(INITIAL_ERRORS);
   const [loading, setLoading] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      setFormData(initialFormState);
+      setErrors(INITIAL_ERRORS);
+      setLoading(false);
+    }, [])
+  );
 
   const handleReset = () => {
     setFormData(initialFormState);
