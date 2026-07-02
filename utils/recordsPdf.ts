@@ -5,10 +5,12 @@ import { id } from "date-fns/locale";
 export interface PrintOptions {
   street: string[]; // Multiple streets
   populationFilter: "all" | "adults_only" | "kids_only";
-  reportType: "summary" | "detailed";
+  reportType: "summary" | "detailed" | "simple_list";
   hideNames: boolean;
+  hideSummary?: boolean;
   isMonthly?: boolean;
   revisionNumber?: string;
+  customTitle?: string;
 }
 
 import * as Print from "expo-print";
@@ -79,8 +81,10 @@ export const generateRecordsReportHtml = (
     populationFilter,
     reportType,
     hideNames,
+    hideSummary,
     isMonthly,
     revisionNumber,
+    customTitle,
   } = options;
 
   // 1. Filter Records based on options
@@ -144,7 +148,7 @@ export const generateRecordsReportHtml = (
     occupiedCount > 0 ? (totalPopulation / occupiedCount).toFixed(1) : "0";
 
   // Group Records by Street (used by both Monthly and Detailed reports)
-  const needsStreetGrouping = isMonthly || reportType === "detailed";
+  const needsStreetGrouping = isMonthly || reportType === "detailed" || reportType === "simple_list";
   const recordsByStreet = new Map<string, PopulationRecord[]>();
   let distinctStreets: string[] = [];
 
@@ -164,7 +168,7 @@ export const generateRecordsReportHtml = (
     });
   }
 
-  const summarySection = `
+  const summarySection = hideSummary ? "" : `
     <div class="summary-container">
       <!-- Card 1: Demografi Warga -->
       <div class="summary-card">
@@ -232,7 +236,7 @@ export const generateRecordsReportHtml = (
 
   // 2.5 Generate Per-Street Summary Table (Only for Monthly Report)
   let streetSummarySection = "";
-  if (isMonthly) {
+  if (isMonthly && !hideSummary) {
     let streetRows = "";
     let totalSOccupied = 0;
     let totalSRented = 0;
@@ -315,9 +319,11 @@ export const generateRecordsReportHtml = (
     `;
   }
 
-  // 3. Generate Tables (if detailed)
+  // 3. Generate Tables (if detailed or simple_list)
   let tablesHtml = "";
-  if (reportType === "detailed") {
+  if (reportType === "detailed" || reportType === "simple_list") {
+    const isSimple = reportType === "simple_list";
+
     distinctStreets.forEach((currentStreet) => {
       const streetRecords = recordsByStreet.get(currentStreet) || [];
 
@@ -355,8 +361,7 @@ export const generateRecordsReportHtml = (
                 <td style="text-align:center;">${escapeHtml(r.houseId || "-")}</td>
                 <td style="text-align:center;">${escapeHtml(r.houseStatus)}</td>
                 <td>${residentName}</td>
-                 <td style="text-align:center;">${adultCount}</td>
-                  <td style="text-align:center;">${kidCount}</td>
+                 ${!isSimple ? `<td style="text-align:center;">${adultCount}</td><td style="text-align:center;">${kidCount}</td>` : ""}
             </tr>
             `;
           })
@@ -371,20 +376,19 @@ export const generateRecordsReportHtml = (
                 <th style="width: 15%">No. Rumah</th>
                 <th style="width: 15%">Status</th>
                 <th style="width: 45%">Warga</th>
-                <th style="width: 10%">Dewasa</th>
-                 <th style="width: 10%">Anak</th>
+                ${!isSimple ? `<th style="width: 10%">Dewasa</th><th style="width: 10%">Anak</th>` : ""}
               </tr>
             </thead>
             <tbody>
               ${rows}
             </tbody>
-             <tfoot>
+             ${!isSimple ? `<tfoot>
               <tr style="background-color: #f9fafb; font-weight: bold;">
                 <td colspan="4" style="text-align: right; padding-right: 15px;">Total:</td>
                 <td style="text-align: center;">${subTotalAdults}</td>
                 <td style="text-align: center;">${subTotalKids}</td>
               </tr>
-            </tfoot>
+            </tfoot>` : ""}
           </table>
           <div style="margin-bottom: 20px;"></div>
         `;
@@ -412,9 +416,15 @@ export const generateRecordsReportHtml = (
   }`;
 
   const monthYearStr = format(new Date(), "MMMM yyyy", { locale: id });
-  const baseTitle = isMonthly
+  
+  let baseTitle = isMonthly
     ? `Laporan Bulanan Warga - ${monthYearStr}`
-    : "Laporan Data Warga Populite";
+    : "Laporan Data Warga";
+
+  // Use custom title if provided
+  if (customTitle && customTitle.trim() !== "") {
+    baseTitle = customTitle.trim();
+  }
 
   let documentTitle = baseTitle;
   let headerTitleHtml = escapeHtml(baseTitle);
@@ -473,7 +483,7 @@ export const generateRecordsReportHtml = (
         ${summarySection}
         ${streetSummarySection}
         
-        ${reportType === "detailed" ? `<h3 style="font-size:14px; margin-bottom:10px; color:#333; border-left:4px solid #4F46E5; padding-left:10px;">Rincian Data</h3>` : ""}
+        ${reportType === "detailed" || reportType === "simple_list" ? `<h3 style="font-size:14px; margin-bottom:10px; color:#333; border-left:4px solid #4F46E5; padding-left:10px;">Rincian Data</h3>` : ""}
         ${tablesHtml}
         
         <div class="footer">

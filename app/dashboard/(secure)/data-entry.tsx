@@ -27,23 +27,23 @@ const initialFormState: Omit<
   PopulationRecord,
   "id" | "entryDate" | "dateOccupied"
 > & { dateOccupied?: Date | string; housePrefix: string; houseSuffix: string } =
-  {
-    name: "",
-    gender: "Pria", // Default to Male
-    housePrefix: "",
-    houseSuffix: "",
-    street: STREET_OPTIONS[0],
-    domicile: "Gunung Sari", // Default to Gunung Sari
-    houseStatus: "Ditempati", // Default to Ditempati
-    kidsTotal: 0,
-    adultTotal: 0, // Default to 1 adult if Ditempati
-    // To be added soon for more accurate and detailed data per house.
-    kidsMale: "" as unknown as number,
-    kidsFemale: "" as unknown as number,
-    adultMale: "" as unknown as number,
-    adultFemale: "" as unknown as number,
-    dateOccupied: undefined, // Will be set only if status is Ditempati/Sewa
-  };
+{
+  name: "",
+  gender: "Pria", // Default to Male
+  housePrefix: "",
+  houseSuffix: "",
+  street: STREET_OPTIONS[0],
+  domicile: "Gunung Sari", // Default to Gunung Sari
+  houseStatus: "Ditempati", // Default to Ditempati
+  kidsTotal: 0,
+  adultTotal: 0, // Default to 1 adult if Ditempati
+  // To be added soon for more accurate and detailed data per house.
+  kidsMale: "" as unknown as number,
+  kidsFemale: "" as unknown as number,
+  adultMale: "" as unknown as number,
+  adultFemale: "" as unknown as number,
+  dateOccupied: undefined, // Will be set only if status is Ditempati/Sewa
+};
 const INITIAL_ERRORS = {
   name: null,
   gender: null,
@@ -338,11 +338,10 @@ export default function DataEntryScreen() {
                       key={status}
                       onPress={() => handleHouseStatusChange(status)}
                       className={`flex-1 p-3 rounded-xl border items-center justify-center shadow-sm
-                    ${
-                      formData.houseStatus === status
-                        ? "bg-indigo-600 border-indigo-600 shadow-indigo-200"
-                        : "bg-white border-gray-200"
-                    }`}
+                    ${formData.houseStatus === status
+                          ? "bg-indigo-600 border-indigo-600 shadow-indigo-200"
+                          : "bg-white border-gray-200"
+                        }`}
                     >
                       <Text
                         className={`font-bold text-sm ${formData.houseStatus === status ? "text-white" : "text-gray-600"}`}
@@ -397,149 +396,149 @@ export default function DataEntryScreen() {
                 {/* Conditional Logic: Only show Gender/Totals if NOT Kosong */}
                 {(formData.houseStatus === "Ditempati" ||
                   formData.houseStatus === "Sewa") && (
-                  <Animated.View entering={FadeInDown.duration(400)}>
-                    <Text className="font-semibold text-gray-700 mt-4 mb-3 ml-1">
-                      Jenis Kelamin Penghuni
-                    </Text>
-                    <View className="flex-row gap-3 mb-6">
-                      {["Pria", "Wanita"].map((gender) => (
-                        <Pressable
-                          key={gender}
-                          onPress={() => handleGenderChange(gender)}
-                          className={`flex-1 p-4 rounded-xl border flex-row items-center justify-center gap-2
-                                  ${formData.gender === gender ? "bg-indigo-50 border-indigo-500" : "bg-white border-gray-200"}`}
-                        >
-                          <Ionicons
-                            name={gender === "Pria" ? "male" : "female"}
-                            size={18}
-                            color={
-                              formData.gender === gender ? "#4F46E5" : "#6B7280"
-                            }
-                          />
-                          <Text
-                            className={`font-semibold ${formData.gender === gender ? "text-indigo-700" : "text-gray-600"}`}
-                          >
-                            {gender}
-                          </Text>
-                        </Pressable>
-                      ))}
-                    </View>
-
-                    {/* Totals */}
-                    <View className="bg-gray-50 p-4 rounded-2xl border border-gray-100 mb-4">
-                      <Text className="text-center font-bold text-gray-700 mb-4">
-                        Total Penghuni Rumah
+                    <Animated.View entering={FadeInDown.duration(400)}>
+                      <Text className="font-semibold text-gray-700 mt-4 mb-3 ml-1">
+                        Jenis Kelamin Penghuni
                       </Text>
-                      <View className="flex-row gap-4 mb-4">
-                        <View className="flex-1">
-                          <FormInput
-                            label="Dewasa"
-                            value={String(formData.adultTotal)}
-                            onChangeText={() => {}}
-                            placeholder="0"
-                            keyboardType="numeric"
-                            labelStyle="text-center text-gray-500"
-                            style="text-center bg-gray-100 text-gray-500"
-                            editable={false}
-                          />
-                        </View>
-                        <View className="flex-1">
-                          <FormInput
-                            label="Anak-anak"
-                            value={String(formData.kidsTotal)}
-                            onChangeText={() => {}}
-                            placeholder="0"
-                            keyboardType="numeric"
-                            labelStyle="text-center text-gray-500"
-                            style="text-center bg-gray-100 text-gray-500"
-                            editable={false}
-                          />
-                        </View>
+                      <View className="flex-row gap-3 mb-6">
+                        {["Pria", "Wanita"].map((gender) => (
+                          <Pressable
+                            key={gender}
+                            onPress={() => handleGenderChange(gender)}
+                            className={`flex-1 p-4 rounded-xl border flex-row items-center justify-center gap-2
+                                  ${formData.gender === gender ? "bg-indigo-50 border-indigo-500" : "bg-white border-gray-200"}`}
+                          >
+                            <Ionicons
+                              name={gender === "Pria" ? "male" : "female"}
+                              size={18}
+                              color={
+                                formData.gender === gender ? "#4F46E5" : "#6B7280"
+                              }
+                            />
+                            <Text
+                              className={`font-semibold ${formData.gender === gender ? "text-indigo-700" : "text-gray-600"}`}
+                            >
+                              {gender}
+                            </Text>
+                          </Pressable>
+                        ))}
                       </View>
-                      <View>
-                        <Text className="text-center text-xs font-medium border-1 border-b pb-2">
-                          Jumlah Penghuni Berdasarkan Jenis Kelamin
+
+                      {/* Totals */}
+                      <View className="bg-gray-50 p-4 rounded-2xl border border-gray-100 mb-4">
+                        <Text className="text-center font-bold text-gray-700 mb-4">
+                          Total Penghuni Rumah
                         </Text>
-                        <View className="flex-row gap-4">
-                          <View className="flex-1 border-gray-200 border-2 rounded-md p-1 mt-2">
-                            <Text className="text-md pt-1 pb-2 text-center font-medium">
-                              Dewasa
-                            </Text>
-                            <View className="flex-row gap-2">
-                              <View className="flex-1">
-                                <FormInput
-                                  label="Pria"
-                                  value={
-                                    formData.adultMale === ("" as any)
-                                      ? ""
-                                      : String(formData.adultMale)
-                                  }
-                                  onChangeText={handleAdultMaleChange}
-                                  placeholder="0"
-                                  keyboardType="numeric"
-                                  labelStyle="text-center text-xs"
-                                  style="bg-white"
-                                />
-                              </View>
-                              <View className="flex-1">
-                                <FormInput
-                                  label="Wanita"
-                                  value={
-                                    formData.adultFemale === ("" as any)
-                                      ? ""
-                                      : String(formData.adultFemale)
-                                  }
-                                  onChangeText={handleAdultFemaleChange}
-                                  placeholder="0"
-                                  keyboardType="numeric"
-                                  labelStyle="text-center text-xs"
-                                  style="bg-white"
-                                />
+                        <View>
+                          <Text className="text-center text-xs font-medium border-1 border-b pb-2">
+                            Jumlah Penghuni Berdasarkan Jenis Kelamin
+                          </Text>
+                          <View className="flex-row gap-2">
+                            <View className="flex-1 border-gray-400 border-2 border-dashed rounded-md p-2 mt-2">
+                              <Text className="text-md pt-1 pb-2 text-center font-medium">
+                                Dewasa
+                              </Text>
+                              <View className="flex-row gap-2">
+                                <View className="flex-1">
+                                  <FormInput
+                                    label="Pria"
+                                    value={
+                                      formData.adultMale === ("" as any)
+                                        ? ""
+                                        : String(formData.adultMale)
+                                    }
+                                    onChangeText={handleAdultMaleChange}
+                                    placeholder="0"
+                                    keyboardType="numeric"
+                                    labelStyle="text-center text-xs"
+                                    style="bg-white"
+                                  />
+                                </View>
+                                <View className="flex-1">
+                                  <FormInput
+                                    label="Wanita"
+                                    value={
+                                      formData.adultFemale === ("" as any)
+                                        ? ""
+                                        : String(formData.adultFemale)
+                                    }
+                                    onChangeText={handleAdultFemaleChange}
+                                    placeholder="0"
+                                    keyboardType="numeric"
+                                    labelStyle="text-center text-xs"
+                                    style="bg-white"
+                                  />
+                                </View>
                               </View>
                             </View>
-                          </View>
-                          <View className="flex-1 border-gray-200 border-2 rounded-md p-1 mt-2">
-                            <Text className="text-md pt-1 pb-2 text-center font-medium">
-                              Anak-Anak
-                            </Text>
-                            <View className="flex-row gap-2">
-                              <View className="flex-1">
-                                <FormInput
-                                  label="Laki-Laki"
-                                  value={
-                                    formData.kidsMale === ("" as any)
-                                      ? ""
-                                      : String(formData.kidsMale)
-                                  }
-                                  onChangeText={handleKidsMaleChange}
-                                  placeholder="0"
-                                  keyboardType="numeric"
-                                  labelStyle="text-center text-xs"
-                                  style="bg-white"
-                                />
-                              </View>
-                              <View className="flex-1">
-                                <FormInput
-                                  label="Perempuan"
-                                  value={
-                                    formData.kidsFemale === ("" as any)
-                                      ? ""
-                                      : String(formData.kidsFemale)
-                                  }
-                                  onChangeText={handleKidsFemaleChange}
-                                  placeholder="0"
-                                  keyboardType="numeric"
-                                  labelStyle="text-center text-xs"
-                                  style="bg-white"
-                                />
+                            <View className="flex-1 border-gray-400 border-2 border-dashed rounded-md p-2 mt-2">
+                              <Text className="text-md pt-1 pb-2 text-center font-medium">
+                                Anak-Anak
+                              </Text>
+                              <View className="flex-row gap-2">
+                                <View className="flex-1">
+                                  <FormInput
+                                    label="Laki-Laki"
+                                    value={
+                                      formData.kidsMale === ("" as any)
+                                        ? ""
+                                        : String(formData.kidsMale)
+                                    }
+                                    onChangeText={handleKidsMaleChange}
+                                    placeholder="0"
+                                    keyboardType="numeric"
+                                    labelStyle="text-center text-xs"
+                                    style="bg-white"
+                                  />
+                                </View>
+                                <View className="flex-1">
+                                  <FormInput
+                                    label="Perempuan"
+                                    value={
+                                      formData.kidsFemale === ("" as any)
+                                        ? ""
+                                        : String(formData.kidsFemale)
+                                    }
+                                    onChangeText={handleKidsFemaleChange}
+                                    placeholder="0"
+                                    keyboardType="numeric"
+                                    labelStyle="text-center text-xs"
+                                    style="bg-white"
+                                  />
+                                </View>
                               </View>
                             </View>
                           </View>
                         </View>
+                        <View className="flex-row gap-4 mt-6 mb-4">
+                          <View className="flex-1">
+                            <FormInput
+                              label="Dewasa"
+                              value={String(formData.adultTotal)}
+                              onChangeText={() => { }}
+                              placeholder="0"
+                              keyboardType="numeric"
+                              labelStyle="text-center text-gray-500"
+                              style="text-center bg-gray-100 text-gray-500"
+                              editable={false}
+                            />
+                          </View>
+                          <View className="flex-1">
+                            <FormInput
+                              label="Anak-anak"
+                              value={String(formData.kidsTotal)}
+                              onChangeText={() => { }}
+                              placeholder="0"
+                              keyboardType="numeric"
+                              labelStyle="text-center text-gray-500"
+                              style="text-center bg-gray-100 text-gray-500"
+                              editable={false}
+                            />
+                          </View>
+                        </View>
                       </View>
-                    </View>
-                  </Animated.View>
-                )}
+                    </Animated.View>
+                  )}
 
                 {/* Date Occupied Input */}
                 <View className="mt-2">

@@ -384,6 +384,20 @@ export default function DataViewListScreen() {
           <View className="flex-row items-center gap-2">
             {/* Monthly Report Button */}
             <Pressable
+              onPress={() => setIsPrintModalVisible(true)}
+              className="px-3 py-2 flex-row items-center bg-purple-50 border border-purple-200 rounded-lg active:opacity-80"
+            >
+              <Ionicons
+                name="list-outline"
+                size={18}
+                color="#7E22CE"
+              />
+              <Text className="ml-1 text-xs font-semibold text-purple-700 hidden sm:flex">
+                Cetak Daftar Warga
+              </Text>
+            </Pressable>
+
+            <Pressable
               onPress={() => setIsMonthlyModalVisible(true)}
               className="px-3 py-2 flex-row items-center bg-purple-50 border border-purple-200 rounded-lg active:opacity-80"
             >
@@ -396,15 +410,6 @@ export default function DataViewListScreen() {
                 Laporan Bulanan
               </Text>
             </Pressable>
-
-            {/* Print Button */}
-            {/* Disabled since it will be moved to the monthly report page */}
-            {/* <Pressable
-              onPress={() => setIsPrintModalVisible(true)}
-              className="p-2 border border-blue-200 bg-blue-50 rounded-lg active:opacity-80"
-            >
-              <Ionicons name="print-outline" size={20} color="#2563EB" />
-            </Pressable> */}
 
             {/* View Switcher */}
             <View className="flex-row border border-gray-300 rounded-lg overflow-hidden">
@@ -450,8 +455,6 @@ export default function DataViewListScreen() {
           onClose={() => setIsPrintModalVisible(false)}
           onPrint={handlePrintPdf}
         />
-
-        {/* Monthly Report Modal */}
         <MonthlyReportModal
           visible={isMonthlyModalVisible}
           onClose={() => setIsMonthlyModalVisible(false)}
