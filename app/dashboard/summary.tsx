@@ -400,13 +400,13 @@ export default function SummaryScreen() {
                   {userProfile?.fullName || "User"}
                 </Text>
               </View>
-              <View className="bg-white/20 p-2 rounded-full backdrop-blur-md">
+              {/* <View className="bg-white/20 p-2 rounded-full backdrop-blur-md">
                 <Ionicons
                   name="notifications-outline"
                   size={24}
                   color="white"
                 />
-              </View>
+              </View> */}
             </View>
 
             <View className="mt-6 bg-white/10 p-4 rounded-2xl backdrop-blur-md border border-white/10 flex-row items-center">
