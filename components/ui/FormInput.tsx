@@ -4,7 +4,7 @@ import { KeyboardTypeOptions, Text, TextInput, View } from "react-native";
 interface FormInputProps {
   label: string;
   value: string;
-  onChangeText: (text: string) => void;
+  onChangeText?: (text: string) => void;
   placeholder?: string;
   error?: string | null; // Nullable error message
   keyboardType?: KeyboardTypeOptions;

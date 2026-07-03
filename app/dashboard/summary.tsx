@@ -110,18 +110,18 @@ const Card = ({
             {ping && (
               <View className="absolute inset-0 rounded-full bg-white/40 animate-ping" />
             )}
-            <View className="bg-white/20 p-2 rounded-full relative z-10">
+            <View className="bg-white/20 p-1.5 rounded-full relative z-10">
               <Ionicons name={icon as any} size={24} color={iconColor} />
             </View>
           </View>
           <Text
-            className={`text-sm font-semibold ml-2 ${iconColor === "#fff" ? "text-white" : "text-gray-700"}`}
+            className={`text-xs font-semibold ml-1 ${iconColor === "#fff" ? "text-white" : "text-gray-700"}`}
           >
             {title}
           </Text>
         </View>
         <Text
-          className={`text-2xl font-bold mr-2 ${iconColor === "#fff" ? "text-white" : "text-gray-800"}`}
+          className={`text-2xl font-bold p-1 ${iconColor === "#fff" ? "text-white" : "text-gray-800"}`}
         >
           {value}
         </Text>
@@ -132,11 +132,11 @@ const Card = ({
         <View className="mt-3 pt-2 border-t border-gray-100 flex-row justify-around">
           <View className="flex-row items-center">
             <Ionicons name="male" size={12} color="#6B7280" />
-            <Text className="text-xs text-gray-500 ml-1 font-medium">{maleCount || 0} Pria</Text>
+            <Text className="text-[10px] text-gray-500 ml-1 font-medium">{maleCount || 0} Pria</Text>
           </View>
           <View className="flex-row items-center">
             <Ionicons name="female" size={12} color="#6B7280" />
-            <Text className="text-xs text-gray-500 ml-1 font-medium">{femaleCount || 0} Wanita</Text>
+            <Text className="text-[10px] text-gray-500 ml-1 font-medium">{femaleCount || 0} Wanita</Text>
           </View>
         </View>
       )}
@@ -215,7 +215,8 @@ export default function SummaryScreen() {
   const { records, loading, error } = usePopulationRecordsListener();
   const { showErrorToast } = useToastService();
   const router = useRouter();
-  const { userProfile, user } = useAuth();
+  const { userProfile, user, role } = useAuth();
+  const isAdminOrStaff = role === "admin" || role === "staff";
 
   const [summary, setSummary] = useState<SummaryData | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -357,7 +358,7 @@ export default function SummaryScreen() {
           Gagal Memuat Data
         </Text>
         <Text className="text-gray-500 text-center mt-2 mb-6">
-          Terjadi kesalahan saat mengambil data terbaru.
+          Terjadi kesalahan saat mengambil data terbaru. Pastikan anda memiliki koneksi internet dan role akun sebagai admin/staff.
         </Text>
         <TouchableOpacity
           onPress={handleRefresh}
@@ -417,6 +418,9 @@ export default function SummaryScreen() {
                 <Text className="text-indigo-100 text-sm">
                   Puri Harmoni Pasir Mukti
                 </Text>
+                <Text className="text-indigo-100 text-sm">
+                  Desa Gunung Sari, Kec. Citeureup, Kab. Bogor
+                </Text>
               </View>
             </View>
           </LinearGradient>
@@ -455,12 +459,14 @@ export default function SummaryScreen() {
                   onPress={() => router.push("/dashboard/(public)/activities")}
                   color="bg-orange-50"
                 />
-                <QuickAction
-                  title="Laporan Bulanan"
-                  icon="document-text"
-                  onPress={() => setIsMonthlyModalVisible(true)}
-                  color="bg-purple-50"
-                />
+                {isAdminOrStaff && (
+                  <QuickAction
+                    title="Laporan Bulanan"
+                    icon="document-text"
+                    onPress={() => setIsMonthlyModalVisible(true)}
+                    color="bg-purple-50"
+                  />
+                )}
               </ScrollView>
             </View>
 

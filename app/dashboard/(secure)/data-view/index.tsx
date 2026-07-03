@@ -116,7 +116,8 @@ export default function DataViewListScreen() {
   const [isControlsVisible, setIsControlsVisible] = useState(false);
   const [isPrintModalVisible, setIsPrintModalVisible] = useState(false);
   const [isMonthlyModalVisible, setIsMonthlyModalVisible] = useState(false);
-  const { userProfile, user } = useAuth();
+  const { userProfile, user, role } = useAuth();
+  const isAdminOrStaff = role === "admin" || role === "staff";
 
   const handlePrintPdf = async (options: PrintOptions) => {
     setIsPrintModalVisible(false);
@@ -290,15 +291,24 @@ export default function DataViewListScreen() {
       }
 
       if (key === "houseId") {
-        const getSuffixNumber = (id: string) => {
-          const match = id.match(/\/(\d+)$/);
-          return match ? parseInt(match[1], 10) : 0;
+        // Parse both prefix number (e.g. "08" from "C08") and suffix number
+        // (e.g. "01" from "/01") so sorting is: C08/01 < C08/03 < C09/01
+        const parseHouseId = (id: string): [number, number] => {
+          const match = id.match(/[A-Za-z](\d+)\/(\d+)/);
+          return match
+            ? [parseInt(match[1], 10), parseInt(match[2], 10)]
+            : [0, 0];
         };
-        aVal = getSuffixNumber(a.houseId || "");
-        bVal = getSuffixNumber(b.houseId || "");
+        const [aPre, aSuf] = parseHouseId(a.houseId || "");
+        const [bPre, bSuf] = parseHouseId(b.houseId || "");
+        // Compare prefix first; use suffix as tiebreaker
+        if (aPre !== bPre) {
+          return sort.direction === "asc" ? aPre - bPre : bPre - aPre;
+        }
+        return sort.direction === "asc" ? aSuf - bSuf : bSuf - aSuf;
       }
       if (aVal < bVal) return sort.direction === "asc" ? -1 : 1;
-      if (aVal > bVal) return sort.direction === "desc" ? 1 : -1;
+      if (aVal > bVal) return sort.direction === "asc" ? 1 : -1;
       return 0;
     };
     results.sort((a, b) => compare(a, b, sort.key));
@@ -383,33 +393,37 @@ export default function DataViewListScreen() {
           {/* Right Side: View Switcher, Filter Toggle Group, and PRINT Button */}
           <View className="flex-row items-center gap-2">
             {/* Monthly Report Button */}
-            <Pressable
-              onPress={() => setIsPrintModalVisible(true)}
-              className="px-3 py-2 flex-row items-center bg-green-50 border border-green-200 rounded-lg active:opacity-80"
-            >
-              <Ionicons
-                name="list-outline"
-                size={18}
-                color="#22C55E"
-              />
-              <Text className="ml-1 text-xs font-semibold text-green-700 hidden sm:flex">
-                Cetak Daftar Warga
-              </Text>
-            </Pressable>
+            {isAdminOrStaff && (
+              <>
+                <Pressable
+                  onPress={() => setIsPrintModalVisible(true)}
+                  className="px-3 py-2 flex-row items-center bg-green-50 border border-green-200 rounded-lg active:opacity-80"
+                >
+                  <Ionicons
+                    name="list-outline"
+                    size={18}
+                    color="#22C55E"
+                  />
+                  <Text className="ml-1 text-xs font-semibold text-green-700 hidden sm:flex">
+                    Cetak Daftar Warga
+                  </Text>
+                </Pressable>
 
-            <Pressable
-              onPress={() => setIsMonthlyModalVisible(true)}
-              className="px-3 py-2 flex-row items-center bg-blue-50 border border-blue-200 rounded-lg active:opacity-80"
-            >
-              <Ionicons
-                name="document-text-outline"
-                size={18}
-                color="#60A5FA"
-              />
-              <Text className="ml-1 text-xs font-semibold text-blue-700 hidden sm:flex">
-                Laporan Bulanan
-              </Text>
-            </Pressable>
+                <Pressable
+                  onPress={() => setIsMonthlyModalVisible(true)}
+                  className="px-3 py-2 flex-row items-center bg-blue-50 border border-blue-200 rounded-lg active:opacity-80"
+                >
+                  <Ionicons
+                    name="document-text-outline"
+                    size={18}
+                    color="#60A5FA"
+                  />
+                  <Text className="ml-1 text-xs font-semibold text-blue-700 hidden sm:flex">
+                    Laporan Bulanan
+                  </Text>
+                </Pressable>
+              </>
+            )}
 
             {/* View Switcher */}
             <View className="flex-row border border-gray-300 rounded-lg overflow-hidden">
@@ -583,6 +597,13 @@ export default function DataViewListScreen() {
           )}
         </View>
       </View>
+      {viewMode == "list" ? (
+        <View className="flex-row gap-2 justify-between py-2 bg-gray-100">
+          <Text className="text-sm font-semibold text-gray-700 ml-6 border-r-2 pr-6">No. Rumah</Text>
+          <Text className="text-sm font-semibold text-gray-700 text-center ml-4">Nama Lengkap</Text>
+          <Text className="text-sm font-semibold text-gray-700 text-center mr-12 border-l-2 pl-6">Gang</Text>
+        </View>
+      ) : (<></>)}
       {loading ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#4F46E5" />

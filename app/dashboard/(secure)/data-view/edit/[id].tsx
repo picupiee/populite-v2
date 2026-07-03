@@ -58,6 +58,10 @@ export default function EditRecordScreen() {
         adultTotal: record.adultTotal,
         kidsTotal: record.kidsTotal,
         domicile: record.domicile,
+        adultMale: record.adultMale,
+        adultFemale: record.adultFemale,
+        kidsMale: record.kidsMale,
+        kidsFemale: record.kidsFemale,
         // dateOccupied is a Date object from the listener mapper
         dateOccupied: record.dateOccupied,
       });
@@ -76,7 +80,23 @@ export default function EditRecordScreen() {
 
   // 4. Input Handler
   const handleChange = (key: keyof PopulationRecord, value: any) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
+    setFormData((prev) => {
+      const newState = { ...prev, [key]: value };
+
+      // Auto-sum adult and kids totals from gender sub-fields
+      if (key === "adultMale" || key === "adultFemale") {
+        newState.adultTotal =
+          (parseInt(String(newState.adultMale)) || 0) +
+          (parseInt(String(newState.adultFemale)) || 0);
+      }
+      if (key === "kidsMale" || key === "kidsFemale") {
+        newState.kidsTotal =
+          (parseInt(String(newState.kidsMale)) || 0) +
+          (parseInt(String(newState.kidsFemale)) || 0);
+      }
+
+      return newState;
+    });
   };
 
   // 5. Submission Logic
@@ -190,20 +210,20 @@ export default function EditRecordScreen() {
           <FormInput
             label="Dewasa"
             value={String(formData.adultTotal || "0")}
-            onChangeText={(value) => handleChange("adultTotal", Number(value))}
             placeholder="0"
             keyboardType="decimal-pad"
             labelStyle="text-center"
+            editable={false}
           />
         </View>
         <View className="flex-1">
           <FormInput
             label="Anak-Anak"
             value={String(formData.kidsTotal || "0")}
-            onChangeText={(value) => handleChange("kidsTotal", Number(value))}
             placeholder="0"
             keyboardType="decimal-pad"
             labelStyle="text-center"
+            editable={false}
           />
         </View>
       </View>
