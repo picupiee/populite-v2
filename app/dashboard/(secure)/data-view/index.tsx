@@ -384,7 +384,7 @@ export default function DataViewListScreen() {
           <Link href="/dashboard/(secure)/data-entry" asChild>
             <Pressable className="flex-row items-center justify-center p-3 bg-indigo-600 rounded-lg active:opacity-80">
               <Ionicons name="add-circle-outline" size={24} color="#fff" />
-              <Text className="text-white font-semibold ml-2">
+              <Text className="text-white font-semibold ml-2 hidden sm:flex">
                 Tambah Warga
               </Text>
             </Pressable>

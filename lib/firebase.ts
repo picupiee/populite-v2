@@ -1,15 +1,12 @@
 // import { getAnalytics } from "firebase/analytics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { initializeApp } from "firebase/app";
+import { getApp, getApps, initializeApp } from "firebase/app";
 import {
-  Auth,
-  getAuth,
   // @ts-ignore
   getReactNativePersistence,
-  initializeAuth,
+  initializeAuth
 } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { Platform } from "react-native";
 
 const firebaseConfig = {
     apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -21,18 +18,12 @@ const firebaseConfig = {
     measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+
+// Analytics is not used, but initialized for future use.
 // const analytics = getAnalytics(app);
 
-// Use platform-specific persistence
-let auth: Auth;
-if (Platform.OS === "web") {
-  auth = getAuth(app);
-} else {
-  auth = initializeAuth(app, {
-    persistence: getReactNativePersistence(AsyncStorage),
-  });
-}
-
-export { auth };
+export const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage),
+})
 export const db = getFirestore(app);

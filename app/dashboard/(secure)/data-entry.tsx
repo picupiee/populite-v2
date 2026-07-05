@@ -10,7 +10,7 @@ import { useToastService } from "@/hooks/useToastService";
 import { checkHouseIdExists } from "@/utils/populationService";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter, useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -449,7 +449,7 @@ export default function DataEntryScreen() {
                               <View className="flex-row gap-2">
                                 <View className="flex-1">
                                   <FormInput
-                                    label="Pria"
+                                    label="L"
                                     value={
                                       formData.adultMale === ("" as any)
                                         ? ""
@@ -458,13 +458,14 @@ export default function DataEntryScreen() {
                                     onChangeText={handleAdultMaleChange}
                                     placeholder="0"
                                     keyboardType="numeric"
-                                    labelStyle="text-center text-xs"
+                                    labelStyle="text-xs text-center"
+                                    textAlign="center"
                                     style="bg-white"
                                   />
                                 </View>
                                 <View className="flex-1">
                                   <FormInput
-                                    label="Wanita"
+                                    label="P"
                                     value={
                                       formData.adultFemale === ("" as any)
                                         ? ""
@@ -473,7 +474,8 @@ export default function DataEntryScreen() {
                                     onChangeText={handleAdultFemaleChange}
                                     placeholder="0"
                                     keyboardType="numeric"
-                                    labelStyle="text-center text-xs"
+                                    labelStyle="text-xs text-center"
+                                    textAlign="center"
                                     style="bg-white"
                                   />
                                 </View>
@@ -486,7 +488,7 @@ export default function DataEntryScreen() {
                               <View className="flex-row gap-2">
                                 <View className="flex-1">
                                   <FormInput
-                                    label="Laki-Laki"
+                                    label="L"
                                     value={
                                       formData.kidsMale === ("" as any)
                                         ? ""
@@ -496,12 +498,13 @@ export default function DataEntryScreen() {
                                     placeholder="0"
                                     keyboardType="numeric"
                                     labelStyle="text-center text-xs"
+                                    textAlign="center"
                                     style="bg-white"
                                   />
                                 </View>
                                 <View className="flex-1">
                                   <FormInput
-                                    label="Perempuan"
+                                    label="P"
                                     value={
                                       formData.kidsFemale === ("" as any)
                                         ? ""
@@ -511,6 +514,7 @@ export default function DataEntryScreen() {
                                     placeholder="0"
                                     keyboardType="numeric"
                                     labelStyle="text-center text-xs"
+                                    textAlign="center"
                                     style="bg-white"
                                   />
                                 </View>

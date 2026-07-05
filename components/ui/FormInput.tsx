@@ -11,6 +11,7 @@ interface FormInputProps {
   multiline?: boolean;
   className?: string; // Tailwind class for the outer View
   labelStyle?: string;
+  textAlign?: string;
   onSubmitEditing?: () => void;
   secureTextEntry?: boolean;
   style?: string;
@@ -29,6 +30,7 @@ const FormInput = ({
   multiline = false,
   className = "",
   labelStyle = "",
+  textAlign = "left",
   secureTextEntry = false,
   icon,
   onSubmitEditing,
@@ -63,7 +65,7 @@ const FormInput = ({
           placeholder={placeholder}
           keyboardType={keyboardType}
           multiline={multiline}
-          style={{ flex: 1, minHeight: multiline ? 80 : undefined, outline: "none" }}
+          style={{ flex: 1, minHeight: multiline ? 80 : undefined, outline: "none", textAlign: textAlign }}
           placeholderTextColor={error ? "#EF4444" : "#9CA3AF"}
           secureTextEntry={secureTextEntry}
           onSubmitEditing={onSubmitEditing}
