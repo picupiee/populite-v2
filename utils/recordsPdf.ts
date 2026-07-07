@@ -35,25 +35,31 @@ const escapeHtml = (unsafe: string): string => {
 export const printHtmlReport = async (html: string, title?: string) => {
   try {
     if (Platform.OS === "web") {
-      const iframe = document.createElement("iframe");
-      iframe.style.height = "0";
-      iframe.style.visibility = "hidden";
-      iframe.style.width = "0";
-      iframe.style.position = "absolute";
-      iframe.srcdoc = html;
-      document.body.appendChild(iframe);
+      // Mobile browsers (iOS Safari, Android Chrome) do NOT support
+      // iframe.contentWindow.print() — they capture a screenshot of the
+      // parent screen instead. Opening the HTML as a Blob URL in a new
+      // window/tab works correctly on both desktop and mobile browsers.
+      const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const printWindow = window.open(url, "_blank");
 
-      iframe.onload = () => {
-        setTimeout(() => {
-          if (iframe.contentWindow) {
-            iframe.contentWindow.focus();
-            iframe.contentWindow.print();
-          }
+      if (printWindow) {
+        printWindow.onload = () => {
+          // Small delay to ensure styles are fully applied before print dialog
           setTimeout(() => {
-            document.body.removeChild(iframe);
-          }, 1000);
-        }, 100);
-      };
+            printWindow.focus();
+            printWindow.print();
+            // Revoke the object URL after a delay to free memory
+            setTimeout(() => {
+              URL.revokeObjectURL(url);
+            }, 60000);
+          }, 300);
+        };
+      } else {
+        // Popup blocked — fallback: navigate current tab to the blob URL
+        // so the user can use the browser's built-in print/save as PDF.
+        window.location.href = url;
+      }
     } else {
       const { uri } = await Print.printToFileAsync({ html });
       await Sharing.shareAsync(uri, {
@@ -148,7 +154,8 @@ export const generateRecordsReportHtml = (
     occupiedCount > 0 ? (totalPopulation / occupiedCount).toFixed(1) : "0";
 
   // Group Records by Street (used by both Monthly and Detailed reports)
-  const needsStreetGrouping = isMonthly || reportType === "detailed" || reportType === "simple_list";
+  const needsStreetGrouping =
+    isMonthly || reportType === "detailed" || reportType === "simple_list";
   const recordsByStreet = new Map<string, PopulationRecord[]>();
   let distinctStreets: string[] = [];
 
@@ -168,7 +175,9 @@ export const generateRecordsReportHtml = (
     });
   }
 
-  const summarySection = hideSummary ? "" : `
+  const summarySection = hideSummary
+    ? ""
+    : `
     <div class="summary-container">
       <!-- Card 1: Demografi Warga -->
       <div class="summary-card">
@@ -382,13 +391,17 @@ export const generateRecordsReportHtml = (
             <tbody>
               ${rows}
             </tbody>
-             ${!isSimple ? `<tfoot>
+             ${
+               !isSimple
+                 ? `<tfoot>
               <tr style="background-color: #f9fafb; font-weight: bold;">
                 <td colspan="4" style="text-align: right; padding-right: 15px;">Total:</td>
                 <td style="text-align: center;">${subTotalAdults}</td>
                 <td style="text-align: center;">${subTotalKids}</td>
               </tr>
-            </tfoot>` : ""}
+            </tfoot>`
+                 : ""
+             }
           </table>
           <div style="margin-bottom: 20px;"></div>
         `;
@@ -416,7 +429,7 @@ export const generateRecordsReportHtml = (
   }`;
 
   const monthYearStr = format(new Date(), "MMMM yyyy", { locale: id });
-  
+
   let baseTitle = isMonthly
     ? `Laporan Bulanan Warga - ${monthYearStr}`
     : "Laporan Data Warga";
