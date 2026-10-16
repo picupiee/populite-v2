@@ -285,10 +285,20 @@ export default function EditRecordScreen() {
           </View>
         </View>
       </View>
+      {/* Update Domicile status */}
+      <View className="mb-4">
+        <SelectGroup
+          label="Status Domicile"
+          options={["Gunung Sari", "Lainnya"]}
+          selectedValue={formData.domicile || ""}
+          onValueChange={(value) => handleChange("domicile", value)}
+          horizontal={true}
+        />
+      </View>
       {/* Change Date of Occupy */}
       <View className="mb-4">
         <DatePickerInput
-          label="Tanggal Dihuni (Date Occupied)"
+          label="Tanggal Mulai Dihuni (opsional)"
           value={formData.dateOccupied} // Must be a Date object or undefined
           onChange={(date) => handleChange("dateOccupied", date)}
         />

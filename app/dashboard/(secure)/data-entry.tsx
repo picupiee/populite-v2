@@ -56,7 +56,7 @@ const INITIAL_ERRORS = {
 };
 
 const DatePlaceholder = () => (
-  <Text className="text-gray-400 italic mt-2 text-xs ml-1">
+  <Text className="text-gray-400 italic text-xs ml-1">
     * Pilih tanggal sesuai perkiraan penghuni masuk.
   </Text>
 );
@@ -459,7 +459,7 @@ export default function DataEntryScreen() {
                                     placeholder="0"
                                     keyboardType="numeric"
                                     labelStyle="text-xs text-center"
-                                    textAlign="center"
+                                    textAlign="left"
                                     style="bg-white"
                                   />
                                 </View>
@@ -475,7 +475,7 @@ export default function DataEntryScreen() {
                                     placeholder="0"
                                     keyboardType="numeric"
                                     labelStyle="text-xs text-center"
-                                    textAlign="center"
+                                    textAlign="left"
                                     style="bg-white"
                                   />
                                 </View>
@@ -498,7 +498,7 @@ export default function DataEntryScreen() {
                                     placeholder="0"
                                     keyboardType="numeric"
                                     labelStyle="text-center text-xs"
-                                    textAlign="center"
+                                    textAlign="left"
                                     style="bg-white"
                                   />
                                 </View>
@@ -514,7 +514,7 @@ export default function DataEntryScreen() {
                                     placeholder="0"
                                     keyboardType="numeric"
                                     labelStyle="text-center text-xs"
-                                    textAlign="center"
+                                    textAlign="left"
                                     style="bg-white"
                                   />
                                 </View>
@@ -552,8 +552,22 @@ export default function DataEntryScreen() {
                     </Animated.View>
                   )}
 
+
+                {/* Domicile Selector */}
+                <Text className="font-semibold text-gray-700 mt-6 mb-3 ml-1">
+                  Domisili KTP
+                </Text>
+                <View className="flex">
+                  <SelectGroup
+                    label=""
+                    options={["Gunung Sari", "Lainnya"]}
+                    selectedValue={formData.domicile || ""}
+                    onValueChange={(value) => handleChange("domicile", value)}
+                    horizontal={true}
+                  />
+                </View>
                 {/* Date Occupied Input */}
-                <View className="mt-2">
+                <View className="mt-2 mb-4">
                   <DatePickerInput
                     label="Tanggal Hunian Ditempati"
                     value={
@@ -562,42 +576,9 @@ export default function DataEntryScreen() {
                         : undefined
                     }
                     onChange={handleDateOccupiedChange}
-                    className="mb-0"
                     maxDate={new Date()}
                   />
                   <DatePlaceholder />
-                </View>
-
-                {/* Domicile Selector */}
-                <Text className="font-semibold text-gray-700 mt-6 mb-3 ml-1">
-                  Domisili KTP
-                </Text>
-                <View className="flex-row flex-wrap gap-3 mb-8">
-                  {["Gunung Sari", "Lainnya"].map((domicileStatus) => (
-                    <Pressable
-                      key={domicileStatus}
-                      onPress={() => handleDomicileChange(domicileStatus)}
-                      className={`px-4 py-3 rounded-xl border flex-row items-center gap-2
-                          ${formData.domicile === domicileStatus ? "bg-indigo-600 border-indigo-600" : "bg-white border-gray-200"}`}
-                    >
-                      <Ionicons
-                        name={
-                          domicileStatus === "Gunung Sari" ? "location" : "map"
-                        }
-                        size={16}
-                        color={
-                          formData.domicile === domicileStatus
-                            ? "white"
-                            : "#6B7280"
-                        }
-                      />
-                      <Text
-                        className={`font-semibold ${formData.domicile === domicileStatus ? "text-white" : "text-gray-700"}`}
-                      >
-                        {domicileStatus}
-                      </Text>
-                    </Pressable>
-                  ))}
                 </View>
 
                 {/* Action Buttons */}
