@@ -34,11 +34,11 @@ function AuthGuard() {
 
     if (user && inAuthGroup) {
       // User is logged in AND is on a sign-in/sign-up screen -> Redirect to the main app
-      router.replace("/dashboard/home");
+      router.push("/dashboard/summary");
     } else if (!user && !inAuthGroup) {
       // User is NOT logged in AND is trying to access a protected route -> Redirect to sign-in
       // The sign-in route is at /app/(auth)/signIn
-      router.replace("/(auth)/signIn");
+      router.push("/(auth)/signIn");
     }
   }, [user, loading, inAuthGroup]); // IMPORTANT: useEffect watches the 'user' state
 

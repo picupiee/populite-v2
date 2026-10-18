@@ -158,8 +158,8 @@ export default function EditRecordScreen() {
 
   // --- Render Form ---
   return (
-    <ScrollView className="flex-1 p-6 bg-white mb-12"
-    contentContainerStyle={{ paddingBottom: 50 }}
+    <ScrollView className="flex-1 p-6 bg-white"
+      contentContainerStyle={{ paddingBottom: 40 }}
     >
       {/* Commented out Stack.Screen title override as per your UI requirement */}
       <Stack.Screen

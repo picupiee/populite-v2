@@ -45,7 +45,7 @@ export default function SignIn() {
         end={{ x: 1, y: 1 }}
         style={{ position: 'absolute', left: 0, right: 0, top: 0, height: '50%' }}
       />
-      
+
       <SafeAreaView className="flex-1">
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -57,7 +57,7 @@ export default function SignIn() {
             showsVerticalScrollIndicator={false}
           >
             {/* Header Section */}
-            <Animated.View 
+            <Animated.View
               entering={FadeInDown.delay(100).duration(1000).springify()}
               style={{ width: '100%', alignItems: 'center' }}
             >
@@ -71,7 +71,7 @@ export default function SignIn() {
             </Animated.View>
 
             {/* Login Card */}
-            <Animated.View 
+            <Animated.View
               entering={FadeInDown.delay(300).duration(1000).springify()}
               style={{ width: '100%', maxWidth: 448, alignSelf: 'center' }}
             >
@@ -95,6 +95,7 @@ export default function SignIn() {
 
                 <FormInput
                   label="Password"
+
                   value={password}
                   onChangeText={setPassword}
                   placeholder="••••••••"
@@ -112,7 +113,7 @@ export default function SignIn() {
                   </Link>
                 </View>
 
-                <AppButton title="Masuk Sekarang" onPress={handleLogin} variant="primary" className="mb-4 shadow-indigo-300 shadow-lg" />
+                <AppButton title="Masuk Sekarang" onPress={handleLogin} variant="primary" textClassName="text-lg" className="mb-4 py-4 shadow-indigo-300 shadow-lg" />
 
                 <View className="flex-row justify-center items-center mt-4">
                   <Text className="text-gray-500">Belum punya akun? </Text>
@@ -124,7 +125,7 @@ export default function SignIn() {
                 </View>
               </View>
             </Animated.View>
-            
+
             <View className="h-10" />
           </ScrollView>
         </KeyboardAvoidingView>

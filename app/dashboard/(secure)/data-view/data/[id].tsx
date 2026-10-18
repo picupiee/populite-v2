@@ -98,22 +98,22 @@ export default function RecordDetailScreen() {
     const confirmDelete =
       Platform.OS !== "web"
         ? () =>
-            Alert.alert(
-              "Konfirmasi",
-              `Yakin ingin menghapus data ${record?.houseId}?`,
-              [
-                { text: "Batal", style: "cancel" },
-                { text: "Hapus", style: "destructive", onPress: runDelete },
-              ],
-            )
+          Alert.alert(
+            "Konfirmasi",
+            `Yakin ingin menghapus data ${record?.houseId}?`,
+            [
+              { text: "Batal", style: "cancel" },
+              { text: "Hapus", style: "destructive", onPress: runDelete },
+            ],
+          )
         : () => {
-            if (
-              window.confirm(`Yakin ingin menghapus data ${record?.houseId}?`)
-            ) {
-              runDelete();
-              router.replace("/dashboard/(secure)/data-view");
-            }
-          };
+          if (
+            window.confirm(`Yakin ingin menghapus data ${record?.houseId}?`)
+          ) {
+            runDelete();
+            router.replace("/dashboard/(secure)/data-view");
+          }
+        };
 
     const runDelete = async () => {
       try {
@@ -311,11 +311,11 @@ export default function RecordDetailScreen() {
             canDelete
               ? handleDelete
               : () => {
-                  showErrorToast(
-                    "Hapus Data Ditolak",
-                    "Anda tidak mempunyai izin untuk menghapus.",
-                  );
-                }
+                showErrorToast(
+                  "Hapus Data Ditolak",
+                  "Anda tidak mempunyai izin untuk menghapus.",
+                );
+              }
           }
           className={
             `mt-6 flex-row items-center justify-center p-3 rounded-lg active:opacity-80 
