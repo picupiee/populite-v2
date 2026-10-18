@@ -370,6 +370,7 @@ export const generateRecordsReportHtml = (
                 <td style="text-align:center;">${escapeHtml(r.houseId || "-")}</td>
                 <td style="text-align:center;">${escapeHtml(r.houseStatus)}</td>
                 <td>${residentName}</td>
+                <td>${escapeHtml(r.domicile)}</td>
                  ${!isSimple ? `<td style="text-align:center;">${adultCount}</td><td style="text-align:center;">${kidCount}</td>` : ""}
             </tr>
             `;
@@ -382,9 +383,10 @@ export const generateRecordsReportHtml = (
             <thead>
               <tr>
                 <th style="width: 5%">No</th>
-                <th style="width: 15%">No. Rumah</th>
-                <th style="width: 15%">Status</th>
-                <th style="width: 45%">Warga</th>
+                <th style="width: 10%">No. Rumah</th>
+                <th style="width: 10%">Status</th>
+                <th style="width: 25%">Nama Lengkap</th>
+                <th style="width: 8%">Domisili KTP</th>
                 ${!isSimple ? `<th style="width: 10%">Dewasa</th><th style="width: 10%">Anak</th>` : ""}
               </tr>
             </thead>
@@ -395,7 +397,7 @@ export const generateRecordsReportHtml = (
                !isSimple
                  ? `<tfoot>
               <tr style="background-color: #f9fafb; font-weight: bold;">
-                <td colspan="4" style="text-align: right; padding-right: 15px;">Total:</td>
+                <td colspan="5" style="text-align: right; padding-right: 15px;">Total:</td>
                 <td style="text-align: center;">${subTotalAdults}</td>
                 <td style="text-align: center;">${subTotalKids}</td>
               </tr>
