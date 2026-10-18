@@ -27,3 +27,4 @@ export interface PopulationRecord {
 export const STREET_OPTIONS = ["Pinus 1", "Pinus 2", "Edelweis", "Mawar"];
 export const STATUS_OPTIONS = ["Ditempati", "Sewa", "Kosong"];
 export const GENDER_OPTIONS = ["Pria", "Wanita"];
+export const DOMICILE_OPTIONS = ["Gunung Sari", "Lainnya"];

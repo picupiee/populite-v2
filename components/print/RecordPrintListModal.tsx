@@ -1,5 +1,5 @@
 import AppButton from "@/components/ui/AppButton";
-import { STREET_OPTIONS } from "@/constants/data";
+import { DOMICILE_OPTIONS, STREET_OPTIONS } from "@/constants/data";
 import { PrintOptions } from "@/utils/recordsPdf";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useState } from "react";
@@ -17,6 +17,7 @@ export default function RecordPrintListModal({
   onPrint,
 }: RecordPrintListModalProps) {
   const [street, setStreet] = useState<string[]>(["Semua"]);
+  const [domicile, setDomicile] = useState<string>("Semua");
   const [populationFilter, setPopulationFilter] = useState<
     "all" | "adults_only" | "kids_only"
   >("all");
@@ -28,6 +29,7 @@ export default function RecordPrintListModal({
   const [customTitle, setCustomTitle] = useState<string>("");
 
   const STREET_FILTER_OPTIONS = ["Semua", ...STREET_OPTIONS];
+  const DOMICILE_FILTER_OPTIONS = ["Semua", ...DOMICILE_OPTIONS];
   const POPULATION_OPTIONS = ["all", "adults_only", "kids_only"];
   const REPORT_TYPE_OPTIONS = ["detailed", "simple_list", "summary"];
 
@@ -80,6 +82,7 @@ export default function RecordPrintListModal({
   const handlePrint = () => {
     onPrint({
       street,
+      domicile: domicile === "Semua" ? undefined : [domicile],
       populationFilter,
       reportType,
       hideNames,
@@ -139,18 +142,16 @@ export default function RecordPrintListModal({
                     <TouchableOpacity
                       key={opt}
                       onPress={() => toggleStreet(opt)}
-                      className={`px-4 py-2 rounded-full border ${
-                        isSelected
-                          ? "bg-indigo-600 border-indigo-600"
-                          : "bg-white border-gray-300"
-                      }`}
+                      className={`px-4 py-2 rounded-full border ${isSelected
+                        ? "bg-indigo-600 border-indigo-600"
+                        : "bg-white border-gray-300"
+                        }`}
                     >
                       <Text
-                        className={`${
-                          isSelected
-                            ? "text-white font-semibold"
-                            : "text-gray-700"
-                        }`}
+                        className={`${isSelected
+                          ? "text-white font-semibold"
+                          : "text-gray-700"
+                          }`}
                       >
                         {opt}
                       </Text>
@@ -170,29 +171,64 @@ export default function RecordPrintListModal({
                   <TouchableOpacity
                     key={opt}
                     onPress={() => setPopulationFilter(opt as any)}
-                    className={`flex-row items-center p-3 rounded-xl border ${
-                      populationFilter === opt
-                        ? "bg-indigo-50 border-indigo-500"
-                        : "bg-white border-gray-200"
-                    }`}
+                    className={`flex-row items-center p-3 rounded-xl border ${populationFilter === opt
+                      ? "bg-indigo-50 border-indigo-500"
+                      : "bg-white border-gray-200"
+                      }`}
                   >
                     <View
-                      className={`w-5 h-5 rounded-full border items-center justify-center mr-3 ${
-                        populationFilter === opt
-                          ? "border-indigo-600"
-                          : "border-gray-400"
-                      }`}
+                      className={`w-5 h-5 rounded-full border items-center justify-center mr-3 ${populationFilter === opt
+                        ? "border-indigo-600"
+                        : "border-gray-400"
+                        }`}
                     >
                       {populationFilter === opt && (
                         <View className="w-2.5 h-2.5 rounded-full bg-indigo-600" />
                       )}
                     </View>
                     <Text
-                      className={`${
-                        populationFilter === opt
-                          ? "text-indigo-800 font-semibold"
-                          : "text-gray-700"
+                      className={`${populationFilter === opt
+                        ? "text-indigo-800 font-semibold"
+                        : "text-gray-700"
+                        }`}
+                    >
+                      {getLabel(opt)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {/* Filter domisili */}
+            <View className="mb-6">
+              <Text className="text-sm font-semibold text-gray-500 uppercase mb-3 tracking-wider">
+                Domisili
+              </Text>
+              <View className="flex-col gap-2">
+                {DOMICILE_FILTER_OPTIONS.map((opt) => (
+                  <TouchableOpacity
+                    key={opt}
+                    onPress={() => setDomicile(opt)}
+                    className={`flex-row items-center p-3 rounded-xl border ${domicile === opt
+                      ? "bg-indigo-50 border-indigo-500"
+                      : "bg-white border-gray-200"
                       }`}
+                  >
+                    <View
+                      className={`w-5 h-5 rounded-full border items-center justify-center mr-3 ${domicile === opt
+                        ? "border-indigo-600"
+                        : "border-gray-400"
+                        }`}
+                    >
+                      {domicile === opt && (
+                        <View className="w-2.5 h-2.5 rounded-full bg-indigo-600" />
+                      )}
+                    </View>
+                    <Text
+                      className={`${domicile === opt
+                        ? "text-indigo-800 font-semibold"
+                        : "text-gray-700"
+                        }`}
                     >
                       {getLabel(opt)}
                     </Text>
@@ -211,28 +247,26 @@ export default function RecordPrintListModal({
                   <TouchableOpacity
                     key={opt}
                     onPress={() => setReportType(opt as any)}
-                    className={`flex-1 p-4 rounded-xl border items-center ${
-                      reportType === opt
-                        ? "bg-indigo-600 border-indigo-600"
-                        : "bg-white border-gray-200"
-                    }`}
+                    className={`flex-1 p-4 rounded-xl border items-center ${reportType === opt
+                      ? "bg-indigo-600 border-indigo-600"
+                      : "bg-white border-gray-200"
+                      }`}
                   >
                     <Ionicons
                       name={
                         opt === "summary"
                           ? "stats-chart-outline"
                           : opt === "simple_list"
-                          ? "list-circle-outline"
-                          : "list-outline"
+                            ? "list-circle-outline"
+                            : "list-outline"
                       }
                       size={24}
                       color={reportType === opt ? "white" : "#666"}
                       style={{ marginBottom: 5 }}
                     />
                     <Text
-                      className={`text-center font-medium ${
-                        reportType === opt ? "text-white" : "text-gray-700"
-                      }`}
+                      className={`text-center font-medium ${reportType === opt ? "text-white" : "text-gray-700"
+                        }`}
                     >
                       {getLabel(opt)}
                     </Text>
@@ -250,11 +284,10 @@ export default function RecordPrintListModal({
                   className="flex-row items-center"
                 >
                   <View
-                    className={`w-6 h-6 rounded border items-center justify-center mr-3 ${
-                      hideNames
-                        ? "bg-orange-500 border-orange-500"
-                        : "bg-white border-gray-300"
-                    }`}
+                    className={`w-6 h-6 rounded border items-center justify-center mr-3 ${hideNames
+                      ? "bg-orange-500 border-orange-500"
+                      : "bg-white border-gray-300"
+                      }`}
                   >
                     {hideNames && (
                       <Ionicons name="checkmark" size={16} color="white" />
@@ -276,11 +309,10 @@ export default function RecordPrintListModal({
                   className="flex-row items-center pt-2 border-t border-orange-200/50"
                 >
                   <View
-                    className={`w-6 h-6 rounded border items-center justify-center mr-3 ${
-                      hideSummary
-                        ? "bg-orange-500 border-orange-500"
-                        : "bg-white border-gray-300"
-                    }`}
+                    className={`w-6 h-6 rounded border items-center justify-center mr-3 ${hideSummary
+                      ? "bg-orange-500 border-orange-500"
+                      : "bg-white border-gray-300"
+                      }`}
                   >
                     {hideSummary && (
                       <Ionicons name="checkmark" size={16} color="white" />

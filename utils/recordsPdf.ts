@@ -11,6 +11,7 @@ export interface PrintOptions {
   isMonthly?: boolean;
   revisionNumber?: string;
   customTitle?: string;
+  domicile?: string[];
 }
 
 import * as Print from "expo-print";
@@ -109,6 +110,13 @@ export const generateRecordsReportHtml = (
   // Filter by Population Category
   if (populationFilter === "kids_only") {
     filteredRecords = filteredRecords.filter((r) => r.kidsTotal > 0);
+  }
+
+  // Filter by Domicile
+  if (options.domicile) {
+    filteredRecords = filteredRecords.filter((r) =>
+      options.domicile?.includes(r.domicile),
+    );
   }
 
   // 2. Calculate Summaries
