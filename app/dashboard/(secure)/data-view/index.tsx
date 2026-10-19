@@ -482,9 +482,8 @@ export default function DataViewListScreen() {
               overflow: "hidden",
             }}
           >
-            <View className="p-4 border-b border-gray-200 flex-row justify-between items-center">
-              <View className="flex-row items-center">
-                <Ionicons name="filter" size={20} color="#4F46E5" />
+            <View className="p-2 border-b border-gray-200 flex-row justify-between items-center">
+              <View className="flex-row">
                 <Text className="text-lg font-bold text-gray-800 ml-2">
                   Filter & Urutkan Data
                 </Text>
