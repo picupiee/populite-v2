@@ -2,7 +2,6 @@
 import CompactListItem from "@/components/data/CompactListItem";
 import MonthlyReportModal from "@/components/print/MonthlyReportModal";
 import RecordPrintListModal from "@/components/print/RecordPrintListModal";
-import SelectGroup from "@/components/ui/SelectGroup";
 import {
   GENDER_OPTIONS,
   PopulationRecord,
@@ -20,9 +19,11 @@ import {
   ActivityIndicator,
   FlatList,
   Pressable,
+  ScrollView,
   Text,
   View,
 } from "react-native";
+import { Button, Divider, Modal, Portal } from "react-native-paper";
 
 // Type Definitions for Filter and Sort
 export type HouseStatusFilter = "Semua" | "Ditempati" | "Sewa" | "Kosong";
@@ -33,6 +34,7 @@ export type StreetFilter =
   | "Edelweis"
   | "Mawar";
 export type GenderFilter = "Semua" | "Pria" | "Wanita";
+export type DomicileFilter = "Semua" | "Gunung Sari" | "Lainnya";
 
 export type SortKey = "houseId" | "entryDate" | "dateOccupied";
 export type SortDirection = "asc" | "desc";
@@ -41,6 +43,7 @@ interface FilterState {
   street: StreetFilter;
   status: HouseStatusFilter;
   gender: GenderFilter;
+  domicile: DomicileFilter;
 }
 
 interface SortState {
@@ -83,9 +86,6 @@ const RecordItem = ({ record }: { record: PopulationRecord }) => {
         {/* Right Side: Actions/Info */}
         <View className="flex-col items-end">
           <Ionicons name="chevron-forward-outline" size={24} color="#4F46E5" />
-          {/* <Text className="text-xs text-gray-500 mt-1">
-              Entry: {entryDate}
-            </Text> */}
         </View>
       </View>
       <Text className="text-xs text-gray-500 absolute right-2 bottom-2 underline underline-offset-4">
@@ -103,6 +103,7 @@ export default function DataViewListScreen() {
     street: "Semua",
     status: "Semua",
     gender: "Semua",
+    domicile: "Semua"
   });
   const [sort, setSort] = useState<SortState>({
     key: "entryDate",
@@ -111,6 +112,7 @@ export default function DataViewListScreen() {
   const HOUSE_STATUS_OPTIONS = ["Semua", "Ditempati", "Sewa", "Kosong"];
   const STREET_FILTER_OPTIONS = ["Semua", ...STREET_OPTIONS];
   const GENDER_FILTER_OPTIONS = ["Semua", ...GENDER_OPTIONS];
+  const DOMICILE_FILTER_OPTIONS = ["Semua", "Gunung Sari", "Lainnya"];
 
   const [viewMode, setViewMode] = useState<"card" | "list">("list");
   const [isControlsVisible, setIsControlsVisible] = useState(false);
@@ -275,6 +277,11 @@ export default function DataViewListScreen() {
       results = results.filter((record) => record.gender === filters.gender);
     }
 
+    // 4. Filter by Domicile
+    if (filters.domicile !== "Semua") {
+      results = results.filter((record) => record.domicile === filters.domicile);
+    }
+
     // B. Sorting
     const compare = (
       a: PopulationRecord,
@@ -330,6 +337,10 @@ export default function DataViewListScreen() {
       filtersArray.push(`Gender: ${filters.gender}`);
     }
 
+    if (filters.domicile !== "Semua") {
+      filtersArray.push(`Domisili: ${filters.domicile}`)
+    }
+
     if (searchQuery.trim() !== "") {
       filtersArray.push(`Pencarian: "${searchQuery}"`);
     }
@@ -353,31 +364,7 @@ export default function DataViewListScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      <Text className="italic text-xs font-semibold bg-red-100 p-2 rounded-md text-center">
-        Aplikasi masih dalam proses pengembangan. Jika terjadi kesalahan saat
-        menggunakan aplikasi, mohon laporkan kepada pengembang. JANGAN PERNAH
-        menggunakan data ini untuk keperluan pribadi atau tindakan yang
-        melanggar hukum seperti pencurian data, penggunaan data sebagai langkah
-        verifikasi pinjaman online, dan lain sebagainya
-      </Text>
-      <View className="p-4 bg-white border-b border-gray-100">
-        {/* --- Search Bar --- */}
-        {/* <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-2 mb-4 border border-gray-200">
-          <Ionicons name="search" size={20} color="#6B7280" />
-          <TextInput
-            placeholder="Search by Name, House ID, Street..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            className="flex-1 ml-2 text-gray-800"
-            placeholderTextColor="#9CA3AF"
-          />
-          {searchQuery.length > 0 && (
-            <Pressable onPress={() => setSearchQuery("")}>
-              <Ionicons name="close-circle" size={20} color="#9CA3AF" />
-            </Pressable>
-          )}
-        </View> */}
-
+      <View className="p-4 bg-white border-b border-gray-100 drop-shadow-lg">
         {/* --- Top Row: Title and Actions (Add Button, View Switcher, Filter Toggle) --- */}
         <View className="flex-row justify-between items-center mb-4">
           {/* Left Side: Title & Add Button */}
@@ -449,16 +436,23 @@ export default function DataViewListScreen() {
               </Pressable>
             </View>
 
-            {/* Filter/Sort Toggle Button */}
+            {/* Filter/Sort Button */}
             <Pressable
-              onPress={() => setIsControlsVisible(!isControlsVisible)}
-              className={`p-2 border-l rounded-lg border flex-row items-center ${isControlsVisible ? "bg-indigo-600 border-indigo-700" : "bg-gray-100 border-gray-300"}`}
+              onPress={() => setIsControlsVisible(true)}
+              className={`p-2 border rounded-lg flex-row items-center ${activeFilters.length > 0 ? "bg-indigo-600 border-indigo-700" : "bg-gray-100 border-gray-300"}`}
             >
               <Ionicons
-                name={isControlsVisible ? "close-outline" : "filter-outline"}
+                name="filter-outline"
                 size={20}
-                color={isControlsVisible ? "#fff" : "#4F46E5"}
+                color={activeFilters.length > 0 ? "#fff" : "#4F46E5"}
               />
+              {activeFilters.length > 0 && (
+                <View className="ml-1 bg-white rounded-full px-1.5 py-0.5">
+                  <Text className="text-[10px] font-bold text-indigo-600">
+                    {activeFilters.length}
+                  </Text>
+                </View>
+              )}
             </Pressable>
           </View>
         </View>
@@ -475,135 +469,230 @@ export default function DataViewListScreen() {
           onConfirm={handleGenerateMonthlyReport}
         />
 
-        {/* --- Collapsible Filter/Sort Panel --- */}
-        {isControlsVisible && (
-          <View className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-            {/* Filter Row */}
-            <View className="flex-row gap-4 mb-4">
-              {/* Filter 1: Street */}
-              <SelectGroup
-                label="Filter Jalan"
-                options={STREET_FILTER_OPTIONS}
-                selectedValue={filters.street}
-                onValueChange={(value) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    street: value as StreetFilter,
-                  }))
-                }
-                horizontal={false}
-                className="flex-1"
-              />
-
-              {/* Filter 2: Status */}
-              <SelectGroup
-                label="Filter Status"
-                options={HOUSE_STATUS_OPTIONS}
-                selectedValue={filters.status}
-                onValueChange={(value) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    status: value as HouseStatusFilter,
-                  }))
-                }
-                horizontal={false}
-                className="flex-1"
-              />
-              <SelectGroup
-                label="Jenis Kelamin"
-                options={GENDER_FILTER_OPTIONS}
-                selectedValue={filters.gender}
-                onValueChange={(value) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    gender: value as GenderFilter,
-                  }))
-                }
-                horizontal={true}
-                className="flex-1"
-              />
-            </View>
-
-            {/* Sort Controls */}
-            <Text className="text-sm font-medium mb-2 text-gray-700">
-              Sort By
-            </Text>
-            <View className="flex-row gap-3">
-              {/* Sort Button 1: House ID */}
-              <Pressable
-                onPress={() =>
-                  setSort((prev) => ({
-                    key: "houseId",
-                    direction:
-                      prev.key === "houseId" && prev.direction === "asc"
-                        ? "desc"
-                        : "asc",
-                  }))
-                }
-                className={`p-2 rounded-lg border flex-row items-center ${sort.key === "houseId" ? "bg-indigo-600 border-indigo-700" : "bg-white border-gray-300"}`}
-              >
-                <Text
-                  className={`font-semibold text-sm mr-1 ${sort.key === "houseId" ? "text-white" : "text-gray-700"}`}
-                >
-                  ID{" "}
-                  {sort.key === "houseId" &&
-                    (sort.direction === "asc" ? " (↑)" : " (↓)")}
+        {/* --- Native Filter & Sort Modal (React Native Paper) --- */}
+        <Portal>
+          <Modal
+            visible={isControlsVisible}
+            onDismiss={() => setIsControlsVisible(false)}
+            contentContainerStyle={{
+              backgroundColor: "white",
+              marginHorizontal: 20,
+              borderRadius: 16,
+              maxHeight: "85%",
+              overflow: "hidden",
+            }}
+          >
+            <View className="p-4 border-b border-gray-200 flex-row justify-between items-center">
+              <View className="flex-row items-center">
+                <Ionicons name="filter" size={20} color="#4F46E5" />
+                <Text className="text-lg font-bold text-gray-800 ml-2">
+                  Filter & Urutkan Data
                 </Text>
-              </Pressable>
-
-              {/* Sort Button 2: Entry Date */}
-              <Pressable
-                onPress={() =>
-                  setSort((prev) => ({
-                    key: "entryDate",
-                    direction:
-                      prev.key === "entryDate" && prev.direction === "desc"
-                        ? "asc"
-                        : "desc",
-                  }))
-                }
-                className={`p-2 rounded-lg border flex-row items-center ${sort.key === "entryDate" ? "bg-indigo-600 border-indigo-700" : "bg-white border-gray-300"}`}
-              >
-                <Text
-                  className={`font-semibold text-sm mr-1 ${sort.key === "entryDate" ? "text-white" : "text-gray-700"}`}
-                >
-                  Entry Date{" "}
-                  {sort.key === "entryDate" &&
-                    (sort.direction === "asc" ? " (↑)" : " (↓)")}
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-        )}
-        <View>
-          {activeFilters.length > 0 && (
-            <View className="px-4 bg-white border-b border-gray-100">
-              <View className="flex-row items-center flex-wrap">
-                <Text className="text-sm text-gray-700 font-semibold mr-3">
-                  Filter Aktif :
-                </Text>
-                {activeFilters.map((filter, index) => (
-                  <View
-                    key={index}
-                    className="flex-row items-center bg-indigo-100 px-3 py-1 mr-2 mb-1 rounded-full border border-indigo-200"
-                  >
-                    <Text className="text-xs font-medium text-indigo-700">
-                      {filter}
-                    </Text>
-                  </View>
-                ))}
               </View>
+              <Pressable
+                onPress={() => setIsControlsVisible(false)}
+                className="p-1 rounded-full active:bg-gray-100"
+              >
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </Pressable>
             </View>
-          )}
-        </View>
+
+            <ScrollView className="p-4" showsVerticalScrollIndicator={false}>
+              {/* Filter 1: Jalan */}
+              <Text className="text-sm font-bold text-gray-700 mb-2">
+                Pilih Jalan
+              </Text>
+              <View className="flex-row flex-wrap gap-2 mb-4">
+                {STREET_FILTER_OPTIONS.map((opt) => {
+                  const isSelected = filters.street === opt;
+                  return (
+                    <Pressable
+                      key={opt}
+                      onPress={() =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          street: opt as StreetFilter,
+                        }))
+                      }
+                      className={`px-3 py-1.5 rounded-full border ${isSelected ? "bg-indigo-600 border-indigo-600" : "bg-gray-100 border-gray-200"}`}
+                    >
+                      <Text
+                        className={`text-xs font-semibold ${isSelected ? "text-white" : "text-gray-700"}`}
+                      >
+                        {opt}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <Divider className="my-3" />
+
+              {/* Filter 2: Status Hunian */}
+              <Text className="text-sm font-bold text-gray-700 mb-2">
+                Status Hunian
+              </Text>
+              <View className="flex-row flex-wrap gap-2 mb-4">
+                {HOUSE_STATUS_OPTIONS.map((opt) => {
+                  const isSelected = filters.status === opt;
+                  return (
+                    <Pressable
+                      key={opt}
+                      onPress={() =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          status: opt as HouseStatusFilter,
+                        }))
+                      }
+                      className={`px-3 py-1.5 rounded-full border ${isSelected ? "bg-indigo-600 border-indigo-600" : "bg-gray-100 border-gray-200"}`}
+                    >
+                      <Text
+                        className={`text-xs font-semibold ${isSelected ? "text-white" : "text-gray-700"}`}
+                      >
+                        {opt}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <Divider className="my-3" />
+
+              {/* Filter 3: Jenis Kelamin */}
+              <Text className="text-sm font-bold text-gray-700 mb-2">
+                Jenis Kelamin
+              </Text>
+              <View className="flex-row flex-wrap gap-2 mb-4">
+                {GENDER_FILTER_OPTIONS.map((opt) => {
+                  const isSelected = filters.gender === opt;
+                  return (
+                    <Pressable
+                      key={opt}
+                      onPress={() =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          gender: opt as GenderFilter,
+                        }))
+                      }
+                      className={`px-3 py-1.5 rounded-full border ${isSelected ? "bg-indigo-600 border-indigo-600" : "bg-gray-100 border-gray-200"}`}
+                    >
+                      <Text
+                        className={`text-xs font-semibold ${isSelected ? "text-white" : "text-gray-700"}`}
+                      >
+                        {opt}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <Divider className="my-3" />
+
+              {/* Filter 4: Domicile */}
+              <Text className="text-sm font-bold text-gray-700 mb-2">
+                Domisili
+              </Text>
+              <View className="flex-row flex-wrap gap-2 mb-4">
+                {DOMICILE_FILTER_OPTIONS.map((opt) => {
+                  const isSelected = filters.domicile === opt;
+                  return (
+                    <Pressable
+                      key={opt}
+                      onPress={() =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          domicile: opt as DomicileFilter,
+                        }))
+                      }
+                      className={`px-3 py-1.5 rounded-full border ${isSelected ? "bg-indigo-600 border-indigo-600" : "bg-gray-100 border-gray-200"}`}
+                    >
+                      <Text
+                        className={`text-xs font-semibold ${isSelected ? "text-white" : "text-gray-700"}`}
+                      >
+                        {opt}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <Divider className="my-3" />
+
+              {/* Sort Section */}
+              <Text className="text-sm font-bold text-gray-700 mb-2">
+                Urutkan Berdasarkan
+              </Text>
+              <View className="flex-row gap-2 mb-6">
+                <Pressable
+                  onPress={() =>
+                    setSort((prev) => ({
+                      key: "houseId",
+                      direction:
+                        prev.key === "houseId" && prev.direction === "asc"
+                          ? "desc"
+                          : "asc",
+                    }))
+                  }
+                  className={`flex-1 p-2.5 rounded-xl border flex-row items-center justify-center ${sort.key === "houseId" ? "bg-indigo-600 border-indigo-600" : "bg-gray-50 border-gray-200"}`}
+                >
+                  <Text
+                    className={`font-semibold text-xs ${sort.key === "houseId" ? "text-white" : "text-gray-700"}`}
+                  >
+                    No. Rumah{" "}
+                    {sort.key === "houseId" &&
+                      (sort.direction === "asc" ? "↑" : "↓")}
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={() =>
+                    setSort((prev) => ({
+                      key: "entryDate",
+                      direction:
+                        prev.key === "entryDate" && prev.direction === "desc"
+                          ? "asc"
+                          : "desc",
+                    }))
+                  }
+                  className={`flex-1 p-2.5 rounded-xl border flex-row items-center justify-center ${sort.key === "entryDate" ? "bg-indigo-600 border-indigo-600" : "bg-gray-50 border-gray-200"}`}
+                >
+                  <Text
+                    className={`font-semibold text-xs ${sort.key === "entryDate" ? "text-white" : "text-gray-700"}`}
+                  >
+                    Tgl Pendataan{" "}
+                    {sort.key === "entryDate" &&
+                      (sort.direction === "asc" ? "↑" : "↓")}
+                  </Text>
+                </Pressable>
+              </View>
+            </ScrollView>
+
+            {/* Bottom Actions */}
+            <View className="p-4 border-t border-gray-200 bg-gray-50 flex-row gap-2">
+              <Button
+                mode="outlined"
+                textColor="#4B5563"
+                style={{ flex: 1, borderColor: "#D1D5DB" }}
+                onPress={() => {
+                  setFilters({ street: "Semua", status: "Semua", gender: "Semua", domicile: "Semua" });
+                  setSort({ key: "entryDate", direction: "asc" });
+                }}
+              >
+                Reset
+              </Button>
+              <Button
+                mode="contained"
+                buttonColor="#4F46E5"
+                textColor="white"
+                style={{ flex: 1 }}
+                onPress={() => setIsControlsVisible(false)}
+              >
+                Terapkan
+              </Button>
+            </View>
+          </Modal>
+        </Portal>
       </View>
-      {viewMode == "list" ? (
-        <View className="flex-row gap-2 justify-between py-2 bg-gray-100">
-          <Text className="text-sm font-semibold text-gray-700 ml-6 border-r-2 pr-6">No. Rumah</Text>
-          <Text className="text-sm font-semibold text-gray-700 text-center ml-4">Nama Lengkap</Text>
-          <Text className="text-sm font-semibold text-gray-700 text-center mr-12 border-l-2 pl-6">Gang</Text>
-        </View>
-      ) : (<></>)}
       {loading ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#4F46E5" />
@@ -644,7 +733,7 @@ export default function DataViewListScreen() {
           }
           contentContainerStyle={{
             paddingHorizontal: viewMode === "card" ? 10 : 10,
-            paddingBottom: 20,
+            paddingBottom: 20, paddingTop: 20
           }}
         />
       )}

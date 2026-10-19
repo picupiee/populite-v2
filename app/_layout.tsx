@@ -5,6 +5,7 @@ import { ActivityIndicator, Text, View } from "react-native";
 // Ensure these paths are correct based on your setup
 import { AuthProvider, useAuth } from "@/context/AuthProvider";
 import "@/global.css";
+import { PaperProvider } from "react-native-paper";
 import {
   configureReanimatedLogger,
   ReanimatedLogLevel,
@@ -64,9 +65,11 @@ function AuthGuard() {
 // 2. The Root Layout: Provides Context and Renders the Guard
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <AuthGuard />
-      <Toast />
-    </AuthProvider>
+    <PaperProvider>
+      <AuthProvider>
+        <AuthGuard />
+        <Toast />
+      </AuthProvider>
+    </PaperProvider>
   );
 }

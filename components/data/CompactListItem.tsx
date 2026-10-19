@@ -31,7 +31,7 @@ export default function CompactListItem({ record }: CompactListItemProps) {
           <Text className="w-2/4 text-gray-600 text-sm truncate">
             {record.name}
           </Text>
-          <Text className="w-1/4 text-gray-500 text-xs text-right">
+          <Text className="w-1/4 text-gray-400 text-xs text-right">
             {record.street}
           </Text>
         </View>
