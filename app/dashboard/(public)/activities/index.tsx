@@ -2,9 +2,9 @@
 
 import { useAccess } from "@/hooks/useAccess";
 import {
-  ActivityRecord,
   useActivitiesListener,
 } from "@/hooks/useActivitiesListener";
+import { ActivityRecord } from "@/stores/useActivityStore";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link } from "expo-router";
@@ -31,34 +31,34 @@ const ActivityCard = ({ activity, index }: { activity: ActivityRecord; index: nu
   // Determine if the activity is in the past
   const isPast =
     activity.activityDate.getTime() < new Date().getTime() - 86400000; // 1 day buffer
-  
+
   const textColor = isPast ? "text-gray-500" : "text-gray-800";
 
   return (
     <Link href={`/dashboard/(public)/activities/${activity.id}/`} asChild>
       <Pressable disabled={isPast}>
-        <Animated.View 
+        <Animated.View
           entering={FadeInDown.delay(index * 100).duration(600).springify()}
           style={{ marginBottom: 12 }}
         >
           <View className={`p-5 rounded-2xl bg-white shadow-sm border ${isPast ? 'border-gray-200 bg-gray-50' : 'border-indigo-100 shadow-indigo-100'}`}>
             <View className="flex-row justify-between items-start">
               <View className="flex-1 mr-4">
-                 <View className={`self-start px-3 py-1 rounded-full mb-3 ${isPast ? 'bg-gray-200' : 'bg-indigo-50'}`}>
-                    <Text className={`text-xs font-bold ${isPast ? 'text-gray-500' : 'text-indigo-600'}`}>
-                      {isPast ? "Selesai" : "Akan Datang"}
-                    </Text>
-                 </View>
-                
+                <View className={`self-start px-3 py-1 rounded-full mb-3 ${isPast ? 'bg-gray-200' : 'bg-indigo-50'}`}>
+                  <Text className={`text-xs font-bold ${isPast ? 'text-gray-500' : 'text-indigo-600'}`}>
+                    {isPast ? "Selesai" : "Akan Datang"}
+                  </Text>
+                </View>
+
                 <Text className={`text-lg font-bold ${textColor} mb-1`}>
                   {activity.title}
                 </Text>
-                
+
                 <View className="flex-row items-center mb-2">
-                   <Ionicons name="calendar-outline" size={14} color={isPast ? "#9CA3AF" : "#4F46E5"} />
-                   <Text className={`text-xs ml-1.5 font-medium ${isPast ? 'text-gray-400' : 'text-indigo-500'}`}>
-                      {formattedDate}
-                   </Text>
+                  <Ionicons name="calendar-outline" size={14} color={isPast ? "#9CA3AF" : "#4F46E5"} />
+                  <Text className={`text-xs ml-1.5 font-medium ${isPast ? 'text-gray-400' : 'text-indigo-500'}`}>
+                    {formattedDate}
+                  </Text>
                 </View>
 
                 <Text className="text-gray-500 text-sm line-clamp-2 leading-5">
@@ -107,40 +107,40 @@ export default function ActivitiesListScreen() {
 
   return (
     <View className="flex-1 bg-gray-50">
-       {/* Header */}
-       <LinearGradient
-          colors={["#4F46E5", "#b5bdffff"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          className="pt-12 pb-6 px-6 rounded-b-[32px] shadow-xl shadow-indigo-200 z-10"
-        >
-          <View className="flex-row justify-between items-center mb-4">
-            <View>
-              <Text className="text-indigo-100 font-medium text-lg">Agenda Kegiatan</Text>
-              <Text className="text-3xl font-extrabold text-white mt-1">
-                 Warga
-              </Text>
-            </View>
-            <View className="bg-white/20 p-2.5 rounded-full backdrop-blur-md">
-               <Ionicons name="calendar" size={24} color="#fff" />
-            </View>
+      {/* Header */}
+      <LinearGradient
+        colors={["#4F46E5", "#b5bdffff"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        className="pt-12 pb-6 px-6 rounded-b-[32px] shadow-xl shadow-indigo-200 z-10"
+      >
+        <View className="flex-row justify-between items-center mb-4">
+          <View>
+            <Text className="text-indigo-100 font-medium text-lg">Agenda Kegiatan</Text>
+            <Text className="text-3xl font-extrabold text-white mt-1">
+              Warga
+            </Text>
           </View>
+          <View className="bg-white/20 p-2.5 rounded-full backdrop-blur-md">
+            <Ionicons name="calendar" size={24} color="#fff" />
+          </View>
+        </View>
 
-          {/* Guarded Creation Button in Header */}
-          {canCreate && (
-             <Link href="/dashboard/(public)/activities/create" asChild>
-                <Pressable className="bg-white/10 border border-white/20 p-3 rounded-xl flex-row items-center justify-center mt-2 active:bg-white/20">
-                   <Ionicons name="add-circle-outline" size={20} color="#fff" />
-                   <Text className="text-white font-bold ml-2">Buat Kegiatan Baru</Text>
-                </Pressable>
-             </Link>
-          )}
-        </LinearGradient>
+        {/* Guarded Creation Button in Header */}
+        {canCreate && (
+          <Link href="/dashboard/(public)/activities/create" asChild>
+            <Pressable className="bg-white/10 border border-white/20 p-3 rounded-xl flex-row items-center justify-center mt-2 active:bg-white/20">
+              <Ionicons name="add-circle-outline" size={20} color="#fff" />
+              <Text className="text-white font-bold ml-2">Buat Kegiatan Baru</Text>
+            </Pressable>
+          </Link>
+        )}
+      </LinearGradient>
 
       {upcomingActivities.length === 0 && !loading ? (
         <View className="flex-1 items-center justify-center p-10 -mt-20">
           <View className="bg-white p-6 rounded-full shadow-sm mb-6">
-             <Ionicons name="calendar-clear-outline" size={60} color="#9CA3AF" />
+            <Ionicons name="calendar-clear-outline" size={60} color="#9CA3AF" />
           </View>
           <Text className="text-xl text-center font-bold text-gray-800">
             Tidak Ada Agenda
@@ -157,7 +157,7 @@ export default function ActivitiesListScreen() {
           contentContainerStyle={{ padding: 24, paddingTop: 24, paddingBottom: 100 }}
           showsVerticalScrollIndicator={false}
           refreshControl={
-             <RefreshControl refreshing={loading} onRefresh={() => {}} tintColor="#4F46E5" />
+            <RefreshControl refreshing={loading} onRefresh={() => { }} tintColor="#4F46E5" />
           }
         />
       )}

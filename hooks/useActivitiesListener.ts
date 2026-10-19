@@ -2,24 +2,9 @@
 
 import { useAuth } from "@/context/AuthProvider";
 import { db } from "@/lib/firebase";
+import { ActivityRecord, useActivityStore } from "@/stores/useActivityStore";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
-import { useEffect, useState } from "react";
-
-export interface ActivityRecord {
-  id: string;
-  title: string;
-  shortDescription: string;
-  longDescription: string;
-  activityDate: Date; // Mapped from string for easy comparison
-  createdByUid: string;
-  createdAt: Date;
-}
-
-interface RealTimeActivityData {
-  activities: ActivityRecord[];
-  loading: boolean;
-  error: Error | null;
-}
+import { useEffect } from "react";
 
 // Simple mapper utility to convert Firestore data to our app model
 const mapActivityDocToRecord = (data: any, id: string): ActivityRecord => ({
@@ -33,42 +18,39 @@ const mapActivityDocToRecord = (data: any, id: string): ActivityRecord => ({
   createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
 });
 
-export const useActivitiesListener = (): RealTimeActivityData => {
+export const useActivitiesListener = () => {
   const { user } = useAuth();
-  const [activities, setActivities] = useState<ActivityRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
+  const {
+    activities,
+    loading,
+    error,
+    setActivities,
+    setLoading,
+    setError,
+    reset,
+  } = useActivityStore();
   useEffect(() => {
     if (!user) {
-      setActivities([]);
-      setLoading(false);
+      reset(); // Clears Zustand store immediately on logout!
       return;
     }
+    setLoading(true);
     const collectionRef = collection(db, "activities");
-    // Query: Order by activityDate ascending to show upcoming activities first
     const q = query(collectionRef, orderBy("activityDate", "asc"));
-
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const fetchedActivities: ActivityRecord[] = snapshot.docs.map((doc) =>
+        const fetched = snapshot.docs.map((doc) =>
           mapActivityDocToRecord(doc.data(), doc.id),
         );
-
-        setActivities(fetchedActivities);
-        setError(null);
-        setLoading(false);
+        setActivities(fetched);
       },
       (err) => {
-        console.error("Real-time Activity Listener Error:", err);
+        console.error("Listener error:", err);
         setError(err);
-        setLoading(false);
       },
     );
-
     return () => unsubscribe();
   }, [user]);
-
   return { activities, loading, error };
 };

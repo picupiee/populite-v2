@@ -1,7 +1,7 @@
 import { db } from "@/lib/firebase";
-import { doc, onSnapshot, DocumentData } from "firebase/firestore";
+import { ActivityRecord } from "@/stores/useActivityStore";
+import { doc, DocumentData, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { ActivityRecord } from "./useActivitiesListener";
 
 interface ActivityDetailData {
   activity: ActivityRecord | null;
@@ -51,7 +51,7 @@ export const useActivityDetail = (activityId: string): ActivityDetailData => {
         console.error("Error setting up activity listener:", err);
         setError(err);
         setLoading(false);
-      }
+      },
     );
 
     // 🔑 Cleanup function: Stop listening when the component unmounts
