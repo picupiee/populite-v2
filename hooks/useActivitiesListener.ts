@@ -1,5 +1,6 @@
 // hooks/useActivitiesListener.ts
 
+import { useAuth } from "@/context/AuthProvider";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { useEffect, useState } from "react";
@@ -33,11 +34,17 @@ const mapActivityDocToRecord = (data: any, id: string): ActivityRecord => ({
 });
 
 export const useActivitiesListener = (): RealTimeActivityData => {
+  const { user } = useAuth();
   const [activities, setActivities] = useState<ActivityRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    if (!user) {
+      setActivities([]);
+      setLoading(false);
+      return;
+    }
     const collectionRef = collection(db, "activities");
     // Query: Order by activityDate ascending to show upcoming activities first
     const q = query(collectionRef, orderBy("activityDate", "asc"));
@@ -46,7 +53,7 @@ export const useActivitiesListener = (): RealTimeActivityData => {
       q,
       (snapshot) => {
         const fetchedActivities: ActivityRecord[] = snapshot.docs.map((doc) =>
-          mapActivityDocToRecord(doc.data(), doc.id)
+          mapActivityDocToRecord(doc.data(), doc.id),
         );
 
         setActivities(fetchedActivities);
@@ -57,11 +64,11 @@ export const useActivitiesListener = (): RealTimeActivityData => {
         console.error("Real-time Activity Listener Error:", err);
         setError(err);
         setLoading(false);
-      }
+      },
     );
 
     return () => unsubscribe();
-  }, []);
+  }, [user]);
 
   return { activities, loading, error };
 };

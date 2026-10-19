@@ -41,7 +41,7 @@ const FormInput = ({
 
   // Container style for the input + icon
   const containerStyle = `
-    flex-row items-center border rounded-xl px-3 bg-white
+    flex-row items-center border-b border-gray-300 px-3 bg-white
     ${error ? "border-red-500 bg-red-50" : "border-gray-200"}
     ${multiline ? "items-start py-2" : "h-12"}
   `;

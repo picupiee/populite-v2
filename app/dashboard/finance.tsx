@@ -33,14 +33,14 @@ const formatRupiah = (amount: number): string => {
 // --- REPORT SCREEN COMPONENTS ---
 
 // 1. Monthly Summary Card
-const SummaryCard: React.FC<{ 
-  title: string; 
-  amount: number; 
-  icon: React.ReactNode; 
+const SummaryCard: React.FC<{
+  title: string;
+  amount: number;
+  icon: React.ReactNode;
   color: string;
   delay?: number;
 }> = ({ title, amount, icon, color, delay = 0 }) => (
-  <Animated.View 
+  <Animated.View
     entering={FadeInDown.delay(delay).duration(600).springify()}
     style={{ flex: 1 }}
   >
@@ -76,7 +76,7 @@ const BreakdownCard = ({
 }) => {
   const percentage = total > 0 ? ((amount / total) * 100).toFixed(1) : "0.0";
   return (
-    <Animated.View 
+    <Animated.View
       entering={FadeInDown.delay(delay).duration(600).springify()}
     >
       <View className="flex-row justify-between items-center py-3 border-b border-gray-50 last:border-0">
@@ -136,15 +136,15 @@ export default function FinanceReportScreen() {
         document.body.appendChild(iframe);
 
         iframe.onload = () => {
+          setTimeout(() => {
+            if (iframe.contentWindow) {
+              iframe.contentWindow.focus();
+              iframe.contentWindow.print();
+            }
             setTimeout(() => {
-                if (iframe.contentWindow) {
-                    iframe.contentWindow.focus();
-                    iframe.contentWindow.print();
-                }
-                setTimeout(() => {
-                    document.body.removeChild(iframe);
-                }, 1000);
-            }, 100);
+              document.body.removeChild(iframe);
+            }, 1000);
+          }, 100);
         };
       } else {
         const { uri } = await Print.printToFileAsync({
@@ -215,55 +215,55 @@ export default function FinanceReportScreen() {
       >
         {/* --- Header & Month Navigation --- */}
         <LinearGradient
-            colors={["#4F46E5", "#b5bdffff"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
-            className="pt-12 pb-16 px-6 rounded-b-[40px] shadow-xl shadow-indigo-200"
-          >
-            <View className="flex-row justify-between items-start mb-6">
-              <View>
-                <Text className="text-indigo-100 font-medium text-lg">Laporan Keuangan</Text>
-                <Text className="text-3xl font-extrabold text-white mt-1">
-                   Kas RT
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={handleExportPdf}
-                disabled={isExporting}
-                className="bg-white/20 p-2 rounded-full backdrop-blur-md"
-              >
-                {isExporting ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Ionicons name="print-outline" size={24} color="#fff" />
-                )}
-              </TouchableOpacity>
+          colors={["#4F46E5", "#b5bdffff"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          className="pt-12 pb-16 px-6 rounded-b-[40px] shadow-xl shadow-indigo-200"
+        >
+          <View className="flex-row justify-between items-start mb-6">
+            <View>
+              <Text className="text-indigo-100 font-medium text-lg">Laporan Keuangan</Text>
+              <Text className="text-3xl font-extrabold text-white mt-1">
+                Kas RT
+              </Text>
             </View>
+            <TouchableOpacity
+              onPress={handleExportPdf}
+              disabled={isExporting}
+              className="bg-white/20 p-2 rounded-full backdrop-blur-md"
+            >
+              {isExporting ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Ionicons name="print-outline" size={24} color="#fff" />
+              )}
+            </TouchableOpacity>
+          </View>
 
-            {/* Month Navigator */}
-            <View className="bg-white/10 p-2 rounded-2xl backdrop-blur-md border border-white/10 flex-row items-center justify-between">
-               <TouchableOpacity onPress={() => navigateMonth('prev')} className="p-2 bg-white/10 rounded-xl">
-                 <Ionicons name="chevron-back" size={20} color="#fff" />
-               </TouchableOpacity>
-               <Text className="text-white font-bold text-lg">
-                 {report.monthYear}
-               </Text>
-               <TouchableOpacity onPress={() => navigateMonth('next')} className="p-2 bg-white/10 rounded-xl">
-                 <Ionicons name="chevron-forward" size={20} color="#fff" />
-               </TouchableOpacity>
-            </View>
+          {/* Month Navigator */}
+          <View className="bg-white/10 p-2 rounded-2xl backdrop-blur-md border border-white/10 flex-row items-center justify-between">
+            <TouchableOpacity onPress={() => navigateMonth('prev')} className="p-2 bg-white/10 rounded-xl">
+              <Ionicons name="chevron-back" size={20} color="#fff" />
+            </TouchableOpacity>
+            <Text className="text-white font-bold text-lg">
+              {report.monthYear}
+            </Text>
+            <TouchableOpacity onPress={() => navigateMonth('next')} className="p-2 bg-white/10 rounded-xl">
+              <Ionicons name="chevron-forward" size={20} color="#fff" />
+            </TouchableOpacity>
+          </View>
         </LinearGradient>
 
         <View className="px-6 -mt-10">
           {/* --- Net Balance Card --- */}
-          <Animated.View 
+          <Animated.View
             entering={FadeInDown.delay(100).duration(600).springify()}
           >
             <View className="bg-white p-6 rounded-3xl shadow-lg shadow-indigo-100 mb-6">
-               <Text className="text-sm font-medium text-gray-500 mb-1 text-center uppercase tracking-wider">Saldo Bersih Bulan Ini</Text>
-               <Text className={`text-3xl font-extrabold text-center ${report.netBalance >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
-                  {formatRupiah(report.netBalance)}
-               </Text>
+              <Text className="text-sm font-medium text-gray-500 mb-1 text-center uppercase tracking-wider">Saldo Bersih Bulan Ini</Text>
+              <Text className={`text-3xl font-extrabold text-center ${report.netBalance >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                {formatRupiah(report.netBalance)}
+              </Text>
             </View>
           </Animated.View>
 
@@ -287,7 +287,7 @@ export default function FinanceReportScreen() {
 
           {/* --- Action Buttons --- */}
           {canCreate && (
-            <Animated.View 
+            <Animated.View
               entering={FadeInDown.delay(400).duration(600).springify()}
             >
               <View className="flex-row mb-8">
@@ -296,7 +296,7 @@ export default function FinanceReportScreen() {
                   onPress={() => router.push('/dashboard/(secure)/(finance)/create-income')}
                   variant="primary"
                   className="flex-1 mr-2 shadow-indigo-200"
-                  // icon={<Ionicons name="add-circle" size={18} color="white" />} // Assuming AppButton supports icon or we just use text
+                // icon={<Ionicons name="add-circle" size={18} color="white" />} // Assuming AppButton supports icon or we just use text
                 />
                 <AppButton
                   title="Pengeluaran"
@@ -311,12 +311,12 @@ export default function FinanceReportScreen() {
           {/* --- Income Breakdown --- */}
           <View className="bg-white p-6 rounded-3xl shadow-sm shadow-gray-200 mb-6">
             <View className="flex-row items-center mb-4 border-b border-gray-100 pb-2">
-               <View className="bg-emerald-100 p-1.5 rounded-lg mr-3">
-                  <Ionicons name="wallet-outline" size={18} color="#10B981" />
-               </View>
-               <Text className="text-lg font-bold text-gray-800">Rincian Pemasukan</Text>
+              <View className="bg-emerald-100 p-1.5 rounded-lg mr-3">
+                <Ionicons name="wallet-outline" size={18} color="#10B981" />
+              </View>
+              <Text className="text-lg font-bold text-gray-800">Rincian Pemasukan</Text>
             </View>
-            
+
             {report.allIncomes.length === 0 ? (
               <Text className="text-gray-400 italic text-center py-4">Belum ada data pemasukan.</Text>
             ) : (
@@ -340,11 +340,11 @@ export default function FinanceReportScreen() {
 
           {/* --- Spending Breakdown --- */}
           <View className="bg-white p-6 rounded-3xl shadow-sm shadow-gray-200 mb-8">
-             <View className="flex-row items-center mb-4 border-b border-gray-100 pb-2">
-               <View className="bg-rose-100 p-1.5 rounded-lg mr-3">
-                  <Ionicons name="cart-outline" size={18} color="#F43F5E" />
-               </View>
-               <Text className="text-lg font-bold text-gray-800">Rincian Pengeluaran</Text>
+            <View className="flex-row items-center mb-4 border-b border-gray-100 pb-2">
+              <View className="bg-rose-100 p-1.5 rounded-lg mr-3">
+                <Ionicons name="cart-outline" size={18} color="#F43F5E" />
+              </View>
+              <Text className="text-lg font-bold text-gray-800">Rincian Pengeluaran</Text>
             </View>
 
             {report.allSpendings.length === 0 ? (

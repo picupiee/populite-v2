@@ -5,6 +5,7 @@ import { Drawer } from "expo-router/drawer";
 export default function DashboardLayout() {
   return (
     <Drawer
+      backBehavior="history"
       screenOptions={{
         headerStyle: { backgroundColor: "#4F46E5" },
         headerTintColor: "#fff",

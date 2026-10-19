@@ -84,7 +84,7 @@ export default function Settings() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1 bg-white"
     >
-      <ScrollView contentContainerStyle={{ padding: 24 }}>
+      <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 100 }}>
         <View className="mb-8 items-center">
           <View className="bg-indigo-100 p-4 rounded-full mb-4">
             <Ionicons name="person" size={40} color="#4F46E5" />
@@ -137,19 +137,14 @@ export default function Settings() {
             />
           </View>
 
-          <AppButton
-            title="Kembali ke Dashboard"
-            onPress={() => router.back()}
-            variant="secondary"
-            className="mt-2"
-          />
+          <View className="w-full px-4 pt-4 border-b-2 border-gray-300" />
 
           {role === "admin" && (
             <>
               <UserManagementSection />
               <View className="h-4" />
               <AppButton
-                title="Activity Log"
+                title="Log Aktifitas"
                 onPress={() =>
                   router.push("/dashboard/(admin)/activity-log" as any)
                 }

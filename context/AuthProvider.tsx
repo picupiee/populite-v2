@@ -145,7 +145,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     if (Platform.OS !== 'web') {
       // --- NATIVE LOGIC ---
-      
+
       // AppState Listener for background checks
       appStateSubscription = AppState.addEventListener(
         "change",
@@ -194,7 +194,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         if (auth.currentUser) {
           const expired = await isSessionExpired();
           if (expired) {
-             await signOut(auth);
+            await signOut(auth);
           }
         }
       }, 60 * 1000); // Check every 1 minute
@@ -205,7 +205,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       if (appStateSubscription) appStateSubscription.remove();
       if (heartbeat) clearInterval(heartbeat);
       if (webActivityInterval) clearInterval(webActivityInterval);
-      
+
       if (Platform.OS === 'web' && handleUserActivity) {
         window.removeEventListener('mousemove', handleUserActivity);
         window.removeEventListener('keydown', handleUserActivity);
@@ -246,7 +246,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           setUserProfile(null);
           await AsyncStorarge.removeItem(SESSION_KEY);
           router.dismissAll;
-          router.replace("/(auth)/signIn");
+          router.push("/(auth)/signIn");
         } catch (e) {
           console.error("Failed to logging out: ", e);
         }

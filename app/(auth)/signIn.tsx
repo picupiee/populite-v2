@@ -84,6 +84,7 @@ export default function SignIn() {
                   value={email}
                   keyboardType="email-address"
                   onChangeText={setEmail}
+                  inputStyle="text-black text-base"
                   placeholder="nama@email.com"
                   icon={<Ionicons name="mail-outline" size={20} color="#9CA3AF" />}
                   onSubmitEditing={() => {
@@ -95,31 +96,31 @@ export default function SignIn() {
 
                 <FormInput
                   label="Password"
-
                   value={password}
                   onChangeText={setPassword}
                   placeholder="••••••••"
                   icon={<Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" />}
                   onSubmitEditing={handleLogin}
                   secureTextEntry={true}
-                  inputStyle="text-black"
+                  inputStyle="text-black text-base"
                 />
 
                 <View className="items-end mb-6">
                   <Link href="/(auth)/reset-password" asChild>
                     <TouchableOpacity>
-                      <Text className="text-indigo-600 font-semibold text-sm">Lupa Password?</Text>
+                      <Text className="text-indigo-600 font-semibold text-sm underline underline-offset-2">Lupa Password ?</Text>
                     </TouchableOpacity>
                   </Link>
                 </View>
 
-                <AppButton title="Masuk Sekarang" onPress={handleLogin} variant="primary" textClassName="text-lg" className="mb-4 py-4 shadow-indigo-300 shadow-lg" />
+                <AppButton title="Masuk" onPress={handleLogin} variant="primary" textClassName="font-semibold text-base" className="mb-4 py-4 shadow-indigo-300 shadow-lg" />
 
                 <View className="flex-row justify-center items-center mt-4">
                   <Text className="text-gray-500">Belum punya akun? </Text>
                   <Link href="/(auth)/signUp" asChild>
                     <TouchableOpacity>
-                      <Text className="text-indigo-600 font-bold">Daftar Disini</Text>
+                      <Text className="text-indigo-600 font-bold underline underline-offset-2
+                      ">Daftar Disini</Text>
                     </TouchableOpacity>
                   </Link>
                 </View>
