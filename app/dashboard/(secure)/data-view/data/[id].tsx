@@ -16,6 +16,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { Divider } from "react-native-paper";
 
 // Helper component (DetailCard) definition goes here (copied from your previous code)
 const DetailCard = ({
@@ -196,16 +197,19 @@ export default function RecordDetailScreen() {
 
       <ScrollView contentContainerStyle={{ padding: 20 }}>
         {/* ... (Your detail presentation using 'record' data) ... */}
-        <Text className="text-3xl font-bold text-indigo-700 mb-2">
-          {record.houseId}
-        </Text>
-        <Text
-          className={`text-lg border-b mb-4 w-fit font-semibold rounded-md p-2 ${getStreetBadgeStyles(
-            record.street,
-          )}`}
-        >
-          Jalan {record.street}
-        </Text>
+        <View className="items-center justify-center flex-row gap-20 mb-4">
+          <Text className="text-3xl font-bold text-indigo-700">
+            {record.houseId}
+          </Text>
+          <Text
+            className={`text-lg border-b w-fit font-semibold rounded-md p-2 ${getStreetBadgeStyles(
+              record.street,
+            )}`}
+          >
+            Jalan {record.street}
+          </Text>
+        </View>
+        <Divider style={{ height: 1, backgroundColor: "#ccc" }} />
 
         {/* Example Detail Cards */}
         <DetailCard

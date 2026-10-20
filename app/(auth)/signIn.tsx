@@ -28,7 +28,7 @@ export default function SignIn() {
         return;
       }
       await login(email, password);
-      router.push("/dashboard/home");
+      router.push("/dashboard/summary");
     } catch (error: any) {
       const friendlyMessage = getFirebaseErrorMessage(error);
       showErrorToast("Gagal Masuk", friendlyMessage);

@@ -1,5 +1,4 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -372,7 +371,9 @@ export default function SummaryScreen() {
 
   // --- Render Summary ---
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-indigo-50">
+      <View className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-indigo-600/30 blur-lg z-0" />
+      <View className="absolute -bottom-40 -left-20 w-96 h-96 rounded-full bg-emerald-500/20 z-0 transform rotate-12" />
       <ScrollView
         contentContainerStyle={{ paddingBottom: 40, alignItems: "center" }}
         refreshControl={
@@ -385,56 +386,51 @@ export default function SummaryScreen() {
       >
         <View className="w-full max-w-4xl">
           {/* Welcome Header */}
-          <LinearGradient
+          {/* <LinearGradient
             colors={["#4F46E5", "#b5bdffff"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
             className="pt-8 pb-12 px-6 rounded-b-[40px] shadow-xl shadow-indigo-200"
           >
+          </LinearGradient> */}
+          <View className="pt-8 pb-12 px-6">
             <View className="flex-row justify-between items-start">
               <View>
-                <Text className="text-indigo-100 font-medium text-lg">
+                <Text className="text-slate-600 font-medium text-lg">
                   Selamat Datang,
                 </Text>
-                <Text className="text-3xl font-extrabold text-white mt-1">
+                <Text className="text-3xl font-extrabold text-slate-800 mt-1">
                   {userProfile?.fullName || "User"}
                 </Text>
               </View>
-              {/* <View className="bg-white/20 p-2 rounded-full backdrop-blur-md">
-                <Ionicons
-                  name="notifications-outline"
-                  size={24}
-                  color="white"
-                />
-              </View> */}
             </View>
 
-            <View className="mt-6 bg-white/10 p-4 rounded-2xl backdrop-blur-md border border-white/10 flex-row items-center">
+            <View className="mt-6 bg-indigo-600/70 p-4 rounded-2xl backdrop-blur-md border-8 border-indigo-300/80 flex-row items-center">
               <Ionicons name="location" size={24} color="#fff" />
               <View className="ml-3">
                 <Text className="text-white font-bold text-lg">
                   RT 003 / RW 007
                 </Text>
-                <Text className="text-indigo-100 text-sm">
+                <Text className="text-white text-sm">
                   Puri Harmoni Pasir Mukti
                 </Text>
-                <Text className="text-indigo-100 text-sm">
+                <Text className="text-white text-sm">
                   Desa Gunung Sari, Kec. Citeureup, Kab. Bogor
                 </Text>
               </View>
             </View>
-          </LinearGradient>
+          </View>
 
           <View className="px-6 -mt-8">
             {/* Quick Actions */}
-            <View className="bg-white p-5 rounded-2xl shadow-sm shadow-gray-200 mb-6">
-              <Text className="text-sm font-bold text-gray-400 mb-4 uppercase tracking-wider">
+            <View className="bg-white/60 p-5 rounded-2xl shadow-sm shadow-gray-200 mb-6">
+              <Text className="text-sm font-bold text-slate-600 mb-4 uppercase tracking-wider">
                 Akses Cepat
               </Text>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                className="-mx-1 px-1"
+                className="-mx-1 px-1 drop-shadow-md"
               >
                 <QuickAction
                   title="Warga Baru"
@@ -479,9 +475,10 @@ export default function SummaryScreen() {
               title="Total Populasi"
               value={summary.totalPopulation.toLocaleString()}
               icon="people"
-              color="bg-indigo-600"
+              color="bg-indigo-700/90"
               iconColor="#fff"
               delay={100}
+              ping={true}
             />
 
             <View className="flex-row gap-4 mb-4">
@@ -490,7 +487,7 @@ export default function SummaryScreen() {
                   title="Dewasa"
                   value={summary.adultTotal.toString()}
                   icon="person"
-                  color="bg-white"
+                  color="bg-white/70"
                   iconColor="#4F46E5"
                   delay={200}
                   maleCount={summary.adultMale}
@@ -502,7 +499,7 @@ export default function SummaryScreen() {
                   title="Anak-anak"
                   value={summary.kidsTotal.toString()}
                   icon="happy"
-                  color="bg-white"
+                  color="bg-white/70"
                   iconColor="#F59E0B"
                   delay={300}
                   maleCount={summary.kidsMale}
@@ -515,14 +512,14 @@ export default function SummaryScreen() {
               title="Total Rumah Terdata"
               value={summary.totalRecords.toLocaleString()}
               icon="home"
-              color="bg-emerald-500"
+              color="bg-emerald-500/80"
               iconColor="#fff"
               delay={400}
               ping={true}
             />
 
             {/* Status Breakdown */}
-            <View className="bg-white p-6 rounded-3xl shadow-sm shadow-gray-200 mt-2 mb-8">
+            <View className="bg-white/80 p-6 rounded-3xl shadow-sm shadow-gray-200 mt-2 mb-8 drop-shadow-sm">
               <Text className="text-lg font-bold text-gray-800 mb-4">
                 Status Hunian
               </Text>

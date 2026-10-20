@@ -106,7 +106,7 @@ export default function DataViewListScreen() {
     domicile: "Semua"
   });
   const [sort, setSort] = useState<SortState>({
-    key: "entryDate",
+    key: "houseId",
     direction: "asc",
   });
   const HOUSE_STATUS_OPTIONS = ["Semua", "Ditempati", "Sewa", "Kosong"];
