@@ -7,7 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, router } from "expo-router";
 import React, { useRef, useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Image, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -62,8 +62,8 @@ export default function SignIn() {
               style={{ width: '100%', alignItems: 'center' }}
             >
               <View className="items-center mb-8">
-                <View className="bg-white/20 p-4 rounded-full mb-4 backdrop-blur-lg">
-                  <Ionicons name="people" size={40} color="white" />
+                <View className="bg-white/80 p-2 rounded-full mb-2 backdrop-blur-lg">
+                  <Image source={require("@/assets/images/app-splash.png")} className="scale-75" />
                 </View>
                 <Text className="text-4xl font-extrabold text-white tracking-tight">Populite</Text>
                 <Text className="text-indigo-100 text-lg mt-1 font-medium">Sistem Pendataan Warga</Text>
