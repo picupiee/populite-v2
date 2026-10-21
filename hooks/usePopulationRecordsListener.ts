@@ -1,25 +1,24 @@
-import { PopulationRecord } from "@/constants/data";
+import { useAuth } from "@/context/AuthProvider";
 import { db } from "@/lib/firebase";
+import { usePopulationStore } from "@/stores/usePopulationStore";
 import { mapDocToRecord } from "@/utils/firestoreMappers"; // Ensure this import path is correct
 import { collection, onSnapshot, query } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAccess } from "./useAccess";
-
-interface RealTimeData {
-  records: PopulationRecord[];
-  loading: boolean;
-  error: Error | null;
-}
-
-export const usePopulationRecordsListener = (): RealTimeData => {
+export const usePopulationRecordsListener = () => {
+  const { user } = useAuth();
   const { can, PERMISSIONS } = useAccess();
-
-  const [records, setRecords] = useState<PopulationRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const { records, loading, error, setRecords, setLoading, setError, reset } =
+    usePopulationStore();
 
   useEffect(() => {
-    const firestore = db; // Use your imported db instance
+    if (!user) {
+      reset();
+      return;
+    }
+
+    setLoading(true);
+    const firestore = db;
     const collectionRef = collection(firestore, "populationData");
     const q = query(collectionRef);
 
@@ -27,35 +26,29 @@ export const usePopulationRecordsListener = (): RealTimeData => {
       q,
       (snapshot) => {
         const canViewSenstivieName = can(PERMISSIONS.VIEW_SENSITIVE_NAME);
-        const fetchedRecords: PopulationRecord[] = snapshot.docs.map(
-          (doc) => {
-            let record = mapDocToRecord(doc.data(), doc.id);
+        const fetchedRecords = snapshot.docs.map((doc) => {
+          let record = mapDocToRecord(doc.data(), doc.id);
 
-            if (!canViewSenstivieName) {
-              const maskedName = record.name.charAt(-1) + "********";
-              record = {
-                ...record,
-                name: maskedName,
-              };
-            }
-            return record;
+          if (!canViewSenstivieName) {
+            const maskedName = record.name.charAt(-1) + "********";
+            record = {
+              ...record,
+              name: maskedName,
+            };
           }
-          // mapDocToRecord(doc.data(), doc.id)
-        );
+          return record;
+        });
+
         setRecords(fetchedRecords);
-        setError(null);
-        setLoading(false);
       },
       (err) => {
         console.error("Real-time Listener Error:", err);
         setError(err);
-        setLoading(false);
-      }
+      },
     );
 
-    // CRITICAL: Cleanup function
     return () => unsubscribe();
-  }, [can, PERMISSIONS.VIEW_SENSITIVE_NAME]); // Runs ONCE on mount
+  }, [user, can, PERMISSIONS.VIEW_SENSITIVE_NAME]);
 
   return { records, loading, error };
 };
