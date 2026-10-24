@@ -20,7 +20,8 @@ const firebaseConfig = {
   measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+export const app =
+  getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
 // Analytics is not used, but initialized for future use.
 // const analytics = getAnalytics(app);

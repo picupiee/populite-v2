@@ -1,10 +1,11 @@
 // app/_layout.tsx (The necessary AuthGuard is back!)
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Stack, usePathname, useRouter, useSegments } from "expo-router";
 import React, { useEffect, useMemo } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 // Ensure these paths are correct based on your setup
 import { AuthProvider, useAuth } from "@/context/AuthProvider";
 import "@/global.css";
+import { trackScreenView } from "@/utils/analytics";
 import { PaperProvider } from "react-native-paper";
 import {
   configureReanimatedLogger,
@@ -23,11 +24,18 @@ function AuthGuard() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const segments = useSegments();
+  const pathname = usePathname()
 
   // Check if the current route is within the (auth) group
   const inAuthGroup = useMemo(() => {
     return segments[0] === "(auth)";
   }, [segments]);
+
+  useEffect(() => {
+    if (pathname) {
+      trackScreenView(pathname);
+    }
+  }, [pathname]);
 
   useEffect(() => {
     // Stop any redirects until Firebase has loaded the initial user state
