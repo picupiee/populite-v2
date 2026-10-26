@@ -1,3 +1,4 @@
+import RecordAuditor from "@/components/settings/RecordAuditor";
 import UserManagementSection from "@/components/settings/UserManagementSection";
 import AppButton from "@/components/ui/AppButton";
 import { useAuth } from "@/context/AuthProvider";
@@ -141,6 +142,8 @@ export default function Settings() {
 
           {role === "admin" && (
             <>
+              <RecordAuditor />
+              <View className="h-4" />
               <UserManagementSection />
               <View className="h-4" />
               <AppButton

@@ -102,6 +102,15 @@ export default function DataEntryScreen() {
             (parseInt(String(newState.kidsMale)) || 0) +
             (parseInt(String(newState.kidsFemale)) || 0);
         }
+        if (newState.houseStatus === "Kosong") {
+          newState.adultTotal = 0;
+          newState.kidsTotal = 0;
+          newState.adultMale = 0;
+          newState.adultFemale = 0;
+          newState.kidsMale = 0;
+          newState.kidsFemale = 0;
+          newState.dateOccupied = undefined;
+        }
 
         return newState;
       });
