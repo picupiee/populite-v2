@@ -57,8 +57,9 @@ const INITIAL_ERRORS = {
 
 const DatePlaceholder = () => (
   <Text className="text-gray-400 italic text-xs ml-1">
-    * Pilih tanggal sesuai perkiraan penghuni masuk.
-  </Text>
+    * Pilih tanggal sesuai perkiraan penghuni masuk.{"\n"}
+    * Wajib diisi untuk penghuni yang baru datang (2025 keatas)
+  </Text >
 );
 
 export default function DataEntryScreen() {
@@ -562,7 +563,7 @@ export default function DataEntryScreen() {
                     label=""
                     options={["Gunung Sari", "Lainnya"]}
                     selectedValue={formData.domicile || ""}
-                    onValueChange={(value) => handleChange("domicile", value)}
+                    onValueChange={(value) => handleDomicileChange(value)}
                     horizontal={true}
                   />
                 </View>

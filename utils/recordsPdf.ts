@@ -110,6 +110,8 @@ export const generateRecordsReportHtml = (
   // Filter by Population Category
   if (populationFilter === "kids_only") {
     filteredRecords = filteredRecords.filter((r) => r.kidsTotal > 0);
+  } else if (populationFilter === "adults_only") {
+    filteredRecords = filteredRecords.filter((r) => (r.adultTotal || 0) > 0);
   }
 
   // Filter by Domicile
@@ -122,14 +124,23 @@ export const generateRecordsReportHtml = (
   // 2. Calculate Summaries
   const stats = filteredRecords.reduce(
     (acc, r) => {
+      const aMale = Number(r.adultMale) || 0;
+      const aFemale = Number(r.adultFemale) || 0;
+      const kMale = Number(r.kidsMale) || 0;
+      const kFemale = Number(r.kidsFemale) || 0;
       // Demographics
-      acc.adultMale += r.adultMale || 0;
-      acc.adultFemale += r.adultFemale || 0;
-      acc.kidsMale += r.kidsMale || 0;
-      acc.kidsFemale += r.kidsFemale || 0;
+      acc.adultMale += aMale;
+      acc.adultFemale += aFemale;
+      acc.kidsMale += kMale;
+      acc.kidsFemale += kFemale;
 
       // Totals from fields (fallback to male+female if needed, but per user request data is entered)
       // We will derive totals from the male/female sums to ensure table consistency
+
+      acc.totalAdults +=
+        aMale + aFemale > 0 ? aMale + aFemale : Number(r.adultTotal) || 0;
+      acc.totalKids +=
+        kMale + kFemale > 0 ? kMale + kFemale : Number(r.kidsTotal) || 0;
 
       // House Status
       if (r.houseStatus === "Ditempati") acc.housesOccupied++;
@@ -143,14 +154,16 @@ export const generateRecordsReportHtml = (
       adultFemale: 0,
       kidsMale: 0,
       kidsFemale: 0,
+      totalAdults: 0,
+      totalKids: 0,
       housesOccupied: 0,
       housesRented: 0,
       housesEmpty: 0,
     },
   );
 
-  const totalAdults = stats.adultMale + stats.adultFemale;
-  const totalKids = stats.kidsMale + stats.kidsFemale;
+  const totalAdults = stats.totalAdults;
+  const totalKids = stats.totalKids;
   const totalMale = stats.adultMale + stats.kidsMale;
   const totalFemale = stats.adultFemale + stats.kidsFemale;
   const totalPopulation = totalAdults + totalKids;
@@ -266,8 +279,14 @@ export const generateRecordsReportHtml = (
 
       const sStats = sRecords.reduce(
         (acc, r) => {
-          acc.adults += (r.adultMale || 0) + (r.adultFemale || 0);
-          acc.kids += (r.kidsMale || 0) + (r.kidsFemale || 0);
+          const aMale = Number(r.adultMale) || 0;
+          const aFemale = Number(r.adultFemale) || 0;
+          const kMale = Number(r.kidsMale) || 0;
+          const kFemale = Number(r.kidsFemale) || 0;
+          acc.adults +=
+            aMale + aFemale > 0 ? aMale + aFemale : Number(r.adultTotal) || 0;
+          acc.kids +=
+            kMale + kFemale > 0 ? kMale + kFemale : Number(r.kidsTotal) || 0;
           if (r.houseStatus === "Ditempati") acc.occupied++;
           else if (r.houseStatus === "Sewa") acc.rented++;
           else if (r.houseStatus === "Kosong") acc.empty++;
@@ -366,11 +385,21 @@ export const generateRecordsReportHtml = (
             // It implies modifying the "Ringkasan" (Summary) section mainly.
             // I'll keep the detailed table columns simple (Total Adult, Total Kids) to save space, unless requested.
 
-            const adultCount = r.adultTotal;
-            const kidCount = r.kidsTotal;
+            const adultMale = Number(r.adultMale) || 0;
+            const adultFemale = Number(r.adultFemale) || 0;
+            const kidMale = Number(r.kidsMale) || 0;
+            const kidFemale = Number(r.kidsFemale) || 0;
+            const adultSum =
+              adultMale + adultFemale > 0
+                ? adultMale + adultFemale
+                : Number(r.adultTotal) || 0;
+            const kidSum =
+              kidMale + kidFemale > 0
+                ? kidMale + kidFemale
+                : Number(r.kidsTotal) || 0;
 
-            subTotalAdults += adultCount;
-            subTotalKids += kidCount;
+            subTotalAdults += adultSum;
+            subTotalKids += kidSum;
 
             return `
             <tr>
@@ -379,7 +408,7 @@ export const generateRecordsReportHtml = (
                 <td style="text-align:center;">${escapeHtml(r.houseStatus)}</td>
                 <td>${residentName}</td>
                 <td>${escapeHtml(r.domicile)}</td>
-                 ${!isSimple ? `<td style="text-align:center;">${adultCount}</td><td style="text-align:center;">${kidCount}</td>` : ""}
+                 ${!isSimple ? `<td style="text-align:center;">${adultSum}</td><td style="text-align:center;">${kidSum}</td>` : ""}
             </tr>
             `;
           })

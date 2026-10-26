@@ -290,7 +290,7 @@ export default function EditRecordScreen() {
       {/* Update Domicile status */}
       <View className="mb-4">
         <SelectGroup
-          label="Status Domicile"
+          label="Domisili KTP"
           options={["Gunung Sari", "Lainnya"]}
           selectedValue={formData.domicile || ""}
           onValueChange={(value) => handleChange("domicile", value)}
@@ -304,6 +304,7 @@ export default function EditRecordScreen() {
           value={formData.dateOccupied} // Must be a Date object or undefined
           onChange={(date) => handleChange("dateOccupied", date)}
         />
+        <Text className="text-xs text-center">Wajib diisi untuk penghuni yang baru datang (2025 keatas)</Text>
       </View>
 
       {/* Save Button */}

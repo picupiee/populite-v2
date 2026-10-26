@@ -59,16 +59,28 @@ const calculateSummary = (records: PopulationRecord[]): SummaryData => {
     }
 
     // Accumulate demographics exactly like the monthly report generator
-    summary.adultMale += Number(record.adultMale) || 0;
-    summary.adultFemale += Number(record.adultFemale) || 0;
-    summary.kidsMale += Number(record.kidsMale) || 0;
-    summary.kidsFemale += Number(record.kidsFemale) || 0;
+    const adultMale = Number(record.adultMale) || 0;
+    const adultFemale = Number(record.adultFemale) || 0;
+    const kidsMale = Number(record.kidsMale) || 0;
+    const kidsFemale = Number(record.kidsFemale) || 0;
+    const adultSum = (adultMale + adultFemale) > 0 ? (adultMale + adultFemale) : (Number(record.adultTotal) || 0)
+    const kidSum = (kidsMale + kidsFemale) > 0 ? (kidsMale + kidsFemale) : (Number(record.kidsTotal) || 0)
+
+    summary.adultMale += adultMale
+    summary.adultFemale += adultFemale
+    summary.kidsMale += kidsMale
+    summary.kidsFemale += kidsFemale
+
+    // Fallback to record.adultTotal / record.kidsTotal if gender split wasn't filled
+    const recordAdultSum = adultMale + adultFemale > 0 ? adultMale + adultFemale : Number(record.adultTotal) || 0;
+    const recordKidsSum = kidsMale + kidsFemale > 0 ? kidsMale + kidsFemale : Number(record.kidsTotal) || 0;
+
+    summary.adultTotal += recordAdultSum;
+    summary.kidsTotal += recordKidsSum;
   });
 
   // Derive totals from the gender breakdowns to ensure consistency with the PDF
-  summary.adultTotal = summary.adultMale + summary.adultFemale;
-  summary.kidsTotal = summary.kidsMale + summary.kidsFemale;
-  summary.totalPopulation = summary.adultTotal + summary.kidsTotal;
+  summary.totalPopulation = summary.adultTotal + summary.kidsTotal
 
   return summary;
 };
@@ -261,10 +273,20 @@ export default function SummaryScreen() {
       const allRecords = records || [];
       const stats = allRecords.reduce(
         (acc, r) => {
-          acc.adultMale += r.adultMale || 0;
-          acc.adultFemale += r.adultFemale || 0;
-          acc.kidsMale += r.kidsMale || 0;
-          acc.kidsFemale += r.kidsFemale || 0;
+          const aMale = Number(r.adultMale) || 0;
+          const aFemale = Number(r.adultFemale) || 0;
+          const kMale = Number(r.kidsMale) || 0;
+          const kFemale = Number(r.kidsFemale) || 0;
+
+          acc.adultMale += aMale;
+          acc.adultFemale += aFemale;
+          acc.kidsMale += kMale;
+          acc.kidsFemale += kFemale;
+
+          acc.totalAdults += aMale + aFemale > 0 ? aMale + aFemale : Number(r.adultTotal) || 0;
+          acc.totalKids += kMale + kFemale > 0 ? kMale + kFemale : Number(r.kidsTotal) || 0;
+
+
 
           if (r.houseStatus === "Ditempati") acc.housesOccupied++;
           else if (r.houseStatus === "Sewa") acc.housesRented++;
@@ -277,18 +299,21 @@ export default function SummaryScreen() {
           adultFemale: 0,
           kidsMale: 0,
           kidsFemale: 0,
+          totalAdults: 0,
+          totalKids: 0,
           housesOccupied: 0,
           housesRented: 0,
           housesEmpty: 0,
         }
       );
 
-      const totalAdults = stats.adultMale + stats.adultFemale;
-      const totalKids = stats.kidsMale + stats.kidsFemale;
+      const totalAdults = stats.totalAdults;
+      const totalKids = stats.totalKids;
       const totalMale = stats.adultMale + stats.kidsMale;
       const totalFemale = stats.adultFemale + stats.kidsFemale;
       const totalPopulation = totalAdults + totalKids;
       const totalHouses = allRecords.length;
+
 
       // Save metadata to Firestore
       const now = new Date();
