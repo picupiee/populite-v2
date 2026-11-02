@@ -13,7 +13,7 @@ service cloud.firestore {
     // Allow read/write access to the 'users' collection only if the user is signed in
     match /users/{userId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow create: if isAuthenticated() && request.auth.uid == userId && request.resource.data.role == 'viewer';
       
       // Allow update if:
       // 1. Admin (can update anything, including roles)

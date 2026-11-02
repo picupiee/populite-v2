@@ -303,7 +303,7 @@ export const generateRecordsReportHtml = (
 
       streetRows += `
         <tr>
-          <td class="label-cell" style="text-align:center;">${currentStreet}</td>
+          <td class="label-cell" style="text-align:center;">${escapeHtml(currentStreet)}</td>
           <td class="num-cell" style="text-align:center;">${sStats.adults}</td>
           <td class="num-cell" style="text-align:center;">${sStats.kids}</td>
           <td class="num-cell strong" style="text-align:center;">${sStats.adults + sStats.kids}</td>
@@ -415,7 +415,7 @@ export const generateRecordsReportHtml = (
           .join("");
 
         const tableFragment = `
-          <h3 class="street-header">Jalan ${currentStreet} <span style="font-size:12px; font-weight:normal; color:#666;">(${streetRecords.length} Hunian)</span></h3>
+          <h3 class="street-header">Jalan ${escapeHtml(currentStreet)} <span style="font-size:12px; font-weight:normal; color:#666;">(${streetRecords.length} Hunian)</span></h3>
           <table>
             <thead>
               <tr>
@@ -457,7 +457,9 @@ export const generateRecordsReportHtml = (
   // 4. HTML Template
   const dateStr = format(new Date(), "dd MMMM yyyy HH:mm", { locale: id });
 
-  const streetLabel = isAllStreets ? "Semua Jalan" : street.join(", ");
+  const streetLabel = isAllStreets
+    ? "Semua Jalan"
+    : street.map((s) => escapeHtml(s)).join(", ");
 
   const filterDesc = `Lokasi: ${streetLabel} | Kategori: ${
     populationFilter === "all"
@@ -482,9 +484,10 @@ export const generateRecordsReportHtml = (
   let headerTitleHtml = escapeHtml(baseTitle);
 
   if (isMonthly && revisionNumber && revisionNumber.trim() !== "") {
-    const revText = `(Revisi ${revisionNumber.trim()})`;
+    const cleanRev = escapeHtml(revisionNumber.trim());
+    const revText = `(Revisi ${cleanRev})`;
     documentTitle += ` ${revText}`;
-    headerTitleHtml += `<br>${escapeHtml(revText)}`;
+    headerTitleHtml += `<br>${revText}`;
   }
 
   return `
