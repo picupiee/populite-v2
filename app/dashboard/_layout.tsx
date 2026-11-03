@@ -24,12 +24,6 @@ export default function DashboardLayout() {
       drawerContent={CustomDrawerContent}
     >
       <Drawer.Screen
-        name="home"
-        options={{
-          drawerItemStyle: { height: 0, overflow: "hidden" },
-        }}
-      />
-      <Drawer.Screen
         name="summary"
         options={{
           title: "Beranda",

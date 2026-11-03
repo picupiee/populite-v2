@@ -245,8 +245,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           setRole("unauthenticated");
           setUserProfile(null);
           await AsyncStorarge.removeItem(SESSION_KEY);
-          router.dismissAll;
-          router.push("/(auth)/signIn");
+          router.dismissAll();
+          router.replace("/(auth)/signIn");
         } catch (e) {
           console.error("Failed to logging out: ", e);
         }

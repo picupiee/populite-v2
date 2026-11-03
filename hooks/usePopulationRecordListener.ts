@@ -5,7 +5,7 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 // Ensure mapDocToRecord and db imports are correct for your structure
 import { db } from "@/lib/firebase";
-import { mapDocToRecord } from "@/utils/firestoreMappers";
+import { mapDocToRecord, maskRecord } from "@/utils/firestoreMappers";
 import { useAccess } from "./useAccess";
 
 // Define the interface for clarity and type safety
@@ -19,7 +19,7 @@ interface SingleRecordData {
 const firestore = db; // Assuming db is the Firestore instance
 
 export const usePopulationRecordListener = (
-  id: string | null
+  id: string | null,
 ): SingleRecordData => {
   const { can, PERMISSIONS } = useAccess();
   const [record, setRecord] = useState<PopulationRecord | null>(null);
@@ -43,11 +43,8 @@ export const usePopulationRecordListener = (
       (docSnap) => {
         if (docSnap.exists()) {
           const data = mapDocToRecord(docSnap.data(), docSnap.id);
-          let processedRecord = { ...data };
-          if (!can(PERMISSIONS.VIEW_SENSITIVE_NAME)) {
-            const maskedName = processedRecord.name.charAt(-1) + "***********";
-            processedRecord.name = maskedName;
-          }
+          const canViewSensitive = can(PERMISSIONS.VIEW_SENSITIVE_NAME);
+          const processedRecord = maskRecord(data, canViewSensitive);
           setRecord(processedRecord);
           setError(null);
         } else {
@@ -60,7 +57,7 @@ export const usePopulationRecordListener = (
         console.error("Single Doc Listener Error:", err);
         setError(err);
         setLoading(false);
-      }
+      },
     );
 
     // 3. Return the CRITICAL cleanup function

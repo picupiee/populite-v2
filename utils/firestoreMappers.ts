@@ -8,7 +8,7 @@ import { DocumentData } from "firebase/firestore";
  */
 export const mapDocToRecord = (
   docData: DocumentData,
-  docId: string
+  docId: string,
 ): PopulationRecord => {
   // const data = docData as Omit<
   //   PopulationRecord,
@@ -38,4 +38,31 @@ export const mapDocToRecord = (
     entryDate: data.entryDate.toDate(),
     dateOccupied: data.dateOccupied ? data.dateOccupied.toDate() : undefined,
   } as PopulationRecord;
+};
+
+/**
+ * Masks sensitive fields (Name, Occupied Date, Demographics) for roles without permission (e.g., Viewer).
+ */
+export const maskRecord = (
+  record: PopulationRecord,
+  canViewSensitive: boolean,
+): PopulationRecord => {
+  if (canViewSensitive) return record;
+  // Mask Name: e.g. "Budi Santoso" -> "B***********"
+  const maskedName = record.name
+    ? record.name.charAt(0) + "**********"
+    : "**********";
+  return {
+    ...record,
+    name: maskedName,
+    // Mask demographics
+    adultTotal: 0,
+    adultMale: 0,
+    adultFemale: 0,
+    kidsTotal: 0,
+    kidsMale: 0,
+    kidsFemale: 0,
+    // Mask occupied date
+    dateOccupied: new Date(0), // or leave as dummy timestamp
+  };
 };

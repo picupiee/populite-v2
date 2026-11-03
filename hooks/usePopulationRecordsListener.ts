@@ -1,7 +1,7 @@
 import { useAuth } from "@/context/AuthProvider";
 import { db } from "@/lib/firebase";
 import { usePopulationStore } from "@/stores/usePopulationStore";
-import { mapDocToRecord } from "@/utils/firestoreMappers"; // Ensure this import path is correct
+import { mapDocToRecord, maskRecord } from "@/utils/firestoreMappers"; // Ensure this import path is correct
 import { collection, onSnapshot, query } from "firebase/firestore";
 import { useEffect } from "react";
 import { useAccess } from "./useAccess";
@@ -26,17 +26,10 @@ export const usePopulationRecordsListener = () => {
       q,
       (snapshot) => {
         const canViewSenstivieName = can(PERMISSIONS.VIEW_SENSITIVE_NAME);
-        const fetchedRecords = snapshot.docs.map((doc) => {
-          let record = mapDocToRecord(doc.data(), doc.id);
 
-          if (!canViewSenstivieName) {
-            const maskedName = record.name.charAt(-1) + "********";
-            record = {
-              ...record,
-              name: maskedName,
-            };
-          }
-          return record;
+        const fetchedRecords = snapshot.docs.map((doc) => {
+          const rawRecord = mapDocToRecord(doc.data(), doc.id);
+          return maskRecord(rawRecord, canViewSenstivieName);
         });
 
         setRecords(fetchedRecords);

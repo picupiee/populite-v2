@@ -165,6 +165,13 @@ export default function RecordDetailScreen() {
     );
   }
 
+  const displayValue = (val: number | string) =>
+    canEdit ? String(val) : "**";
+  const displayDate =
+    canEdit && formattedOccupiedDate
+      ? formattedOccupiedDate
+      : "**-**-****";
+
   // --- Render Details ---
   return (
     <View className="flex-1 bg-white">
@@ -214,7 +221,7 @@ export default function RecordDetailScreen() {
         {/* Example Detail Cards */}
         <DetailCard
           title="Nama Penghuni"
-          value={record.name}
+          value={displayValue(record.name)}
           icon="person-outline"
           titleStyle="ml-2"
         />
@@ -233,8 +240,8 @@ export default function RecordDetailScreen() {
         <DetailCard
           title="Mulai Menghuni Sejak"
           value={
-            typeof formattedOccupiedDate === "string"
-              ? formattedOccupiedDate
+            typeof displayDate === "string"
+              ? displayDate
               : "Belum Diisi"
           }
           icon="calendar-outline"
@@ -245,13 +252,13 @@ export default function RecordDetailScreen() {
         </Text>
         <DetailCard
           title="Dewasa"
-          value={String(record.adultTotal)}
+          value={displayValue(record.adultTotal)}
           icon="woman-outline"
           titleStyle="ml-2"
         />
         <DetailCard
           title="Anak-anak"
-          value={String(record.kidsTotal)}
+          value={displayValue(record.kidsTotal)}
           icon="people-outline"
           titleStyle="ml-2"
         />
